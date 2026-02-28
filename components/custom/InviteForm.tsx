@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function InviteForm() {
+export default function InviteForm({ onInvite }: { onInvite?: () => void }) {
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [inviteLink, setInviteLink] = useState<string | null>(null)

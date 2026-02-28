@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["vitest"]
+  },
+  "include": ["lib/**/*.ts", "lib/**/*.test.ts"],
+  "exclude": ["node_modules"]
+}

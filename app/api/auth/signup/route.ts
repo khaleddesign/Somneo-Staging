@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const invitation = result?.profile ? result.profile : null
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: invitation?.email,
-      password: body.password,
+      password: password,
     })
 
     if (signInError) {

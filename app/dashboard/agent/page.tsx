@@ -1,3 +1,5 @@
+"use client"
+
 import { useStudies } from '@/hooks/useStudies'
 import { StudyList } from '@/components/custom/StudyList'
 import InviteForm from '@/components/custom/InviteForm'
@@ -17,11 +19,11 @@ export default function AgentDashboard() {
       </div>
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Études en attente</h2>
-        <StudyList studies={enAttente} loading={loading} error={error} />
+        <StudyList studies={enAttente} loading={loading} error={error} role="agent" />
       </section>
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Toutes les études</h2>
-        <StudyList studies={studies} loading={loading} error={error} />
+        <StudyList studies={studies} loading={loading} error={error} role="agent" />
       </section>
       <section>
         <h2 className="text-xl font-semibold mb-4">Inviter un client</h2>

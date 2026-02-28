@@ -57,6 +57,7 @@ export default async function SignUpPage({
   return (
     <SignupForm 
       token={token} 
+      email={invitation.email}
       fullName={invitation.full_name ?? ''} 
     />
   )

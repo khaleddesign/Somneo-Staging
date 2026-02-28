@@ -1,6 +1,6 @@
 export type Role = 'admin' | 'agent' | 'client'
 export type StudyStatus = 'en_attente' | 'en_cours' | 'termine' | 'annule'
-export type StudyType = 'PSG' | 'PV'
+export type StudyType = 'PSG' | 'PV' | 'MSLT' | 'MWT'
 export type Priority = 'low' | 'medium' | 'high'
 
 export interface Institution {

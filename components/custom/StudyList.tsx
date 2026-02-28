@@ -18,9 +18,10 @@ interface StudyListProps {
   studies: Study[]
   loading: boolean
   error: string | null
+  role?: 'agent' | 'client'
 }
 
-export const StudyList: FC<StudyListProps> = ({ studies, loading, error }) => {
+export const StudyList: FC<StudyListProps> = ({ studies, loading, error, role = 'client' }) => {
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -60,7 +61,21 @@ export const StudyList: FC<StudyListProps> = ({ studies, loading, error }) => {
               </td>
               <td className="px-3 py-2 border">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
               <td className="px-3 py-2 border">
-                <button className="px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 cursor-not-allowed" disabled>Voir</button>
+                {role === 'agent' ? (
+                  <a
+                    href={`/dashboard/agent/studies/${study.id}`}
+                    className="px-2 py-1 bg-blue-100 rounded text-xs text-blue-700 hover:bg-blue-200"
+                  >
+                    Voir
+                  </a>
+                ) : (
+                  <a
+                    href={`/dashboard/client/studies/${study.id}`}
+                    className="px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 hover:bg-gray-300"
+                  >
+                    Voir
+                  </a>
+                )}
               </td>
             </tr>
           ))}
