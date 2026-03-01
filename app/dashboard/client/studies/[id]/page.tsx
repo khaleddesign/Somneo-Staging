@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ReportDownload from '@/components/custom/ReportDownload'
+import CommentThread from '@/components/custom/CommentThread'
+import HeaderWrapper from '@/components/custom/HeaderWrapper'
 
 export default async function ClientStudyDetail({
   params,
@@ -23,7 +25,9 @@ export default async function ClientStudyDetail({
   if (error || !study) return notFound()
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
+    <>
+      <HeaderWrapper />
+      <div className="p-8 max-w-2xl mx-auto">
       <a href="/dashboard/client" className="text-blue-600 hover:underline">
         &larr; Retour au dashboard
       </a>
@@ -44,6 +48,10 @@ export default async function ClientStudyDetail({
       ) : (
         <p className="text-sm text-gray-500">En attente de traitement par un agent.</p>
       )}
-    </div>
+      <div className="mt-8">
+        <CommentThread studyId={study.id} />
+      </div>
+      </div>
+    </>
   )
 }

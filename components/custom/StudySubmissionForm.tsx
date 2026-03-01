@@ -122,8 +122,6 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
               <SelectContent>
                 <SelectItem value="PSG">PSG (Polysomnographie)</SelectItem>
                 <SelectItem value="PV">PV (Polygraphie)</SelectItem>
-                <SelectItem value="MSLT">MSLT (Multiple Sleep Latency Test)</SelectItem>
-                <SelectItem value="MWT">MWT (Maintenance of Wakefulness Test)</SelectItem>
               </SelectContent>
             </Select>
           </div>

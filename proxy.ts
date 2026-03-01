@@ -29,6 +29,19 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
+  if (user && request.nextUrl.pathname.startsWith('/dashboard')) {
+    // Vérifier si l'utilisateur est suspendu
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, is_suspended')
+      .eq('id', user.id)
+      .single()
+
+    if (profile?.is_suspended) {
+      return NextResponse.redirect(new URL('/auth/suspended', request.url))
+    }
+  }
+
   if (user && request.nextUrl.pathname === '/auth/login') {
     const { data: profile } = await supabase
       .from('profiles')

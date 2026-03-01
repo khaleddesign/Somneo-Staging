@@ -4,7 +4,8 @@ import { useCallback, useEffect, useState } from 'react'
 export interface Study {
   id: string
   client_id: string
-  type: 'PSG' | 'PV'
+  patient_reference: string
+  study_type: 'PSG' | 'PV'
   priority: 'low' | 'medium' | 'high'
   status: 'en_attente' | 'en_cours' | 'termine' | 'annule'
   submitted_at: string

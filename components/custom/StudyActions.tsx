@@ -9,6 +9,7 @@ import { Loader2 } from 'lucide-react'
 interface StudyActionsProps {
   studyId: string
   currentStatus: 'en_attente' | 'en_cours' | 'termine' | 'annule'
+  reportPath?: string | null
 }
 
 const statusOptions = [
@@ -18,7 +19,7 @@ const statusOptions = [
   { value: 'annule', label: 'Annulé' },
 ]
 
-export default function StudyActions({ studyId, currentStatus }: StudyActionsProps) {
+export default function StudyActions({ studyId, currentStatus, reportPath }: StudyActionsProps) {
   const [status, setStatus] = useState(currentStatus)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
@@ -166,8 +167,10 @@ export default function StudyActions({ studyId, currentStatus }: StudyActionsPro
       setStatus('termine')
       if (fileInputRef.current) fileInputRef.current.value = ''
 
-      // Effacer le message de succès après 3 secondes
-      setTimeout(() => setUploadSuccess(null), 3000)
+      // Recharger la page après 2 secondes pour refléter le nouveau statut
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
     } catch (err: any) {
       setUploadError(err.message || 'Erreur inconnue')
     } finally {
@@ -194,7 +197,20 @@ export default function StudyActions({ studyId, currentStatus }: StudyActionsPro
       </div>
       {success && <div className="text-green-600 text-sm">{success}</div>}
       {error && <div className="text-red-600 text-sm">{error}</div>}
-      {status === 'termine' && (
+      {reportPath && (
+        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
+          <p className="text-sm text-indigo-900 font-medium mb-2">Rapport actuel</p>
+          <a
+            href={`/api/studies/${studyId}/report?path=${encodeURIComponent(reportPath)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-indigo-600 hover:underline text-sm"
+          >
+            📄 Voir le rapport PDF
+          </a>
+        </div>
+      )}
+      {status !== 'termine' && (
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 space-y-3">
           <p className="text-sm text-blue-900 font-medium">Uploader le rapport PDF</p>
           <form onSubmit={handleReportUpload} className="flex items-center gap-3">

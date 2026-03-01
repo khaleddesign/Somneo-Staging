@@ -2,6 +2,8 @@ import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import StudyActions from '@/components/custom/StudyActions'
+import CommentThread from '@/components/custom/CommentThread'
+import HeaderWrapper from '@/components/custom/HeaderWrapper'
 
 export default async function AgentStudyDetail({
   params,
@@ -32,7 +34,9 @@ export default async function AgentStudyDetail({
   if (error || !study) return notFound()
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
+    <>
+      <HeaderWrapper />
+      <div className="p-8 max-w-2xl mx-auto">
       <a href="/dashboard/agent" className="text-blue-600 hover:underline">
         &larr; Retour au dashboard
       </a>
@@ -46,7 +50,11 @@ export default async function AgentStudyDetail({
         <div><b>Client :</b> {study.profiles?.full_name} ({study.profiles?.email})</div>
         {study.notes && <div><b>Notes :</b> {study.notes}</div>}
       </div>
-      <StudyActions studyId={study.id} currentStatus={study.status} />
-    </div>
+      <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
+      <div className="mt-8">
+        <CommentThread studyId={study.id} />
+      </div>
+      </div>
+    </>
   )
 }
