@@ -9,6 +9,7 @@ export interface Study {
   priority: 'low' | 'medium' | 'high'
   status: 'en_attente' | 'en_cours' | 'termine' | 'annule'
   submitted_at: string
+  archived_at?: string | null
   // Optionnel pour agent :
   client_name?: string
   client_email?: string

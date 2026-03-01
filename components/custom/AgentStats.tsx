@@ -51,9 +51,9 @@ export default function AgentStats() {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[...Array(7)].map((_, i) => (
-          <div key={i} className="bg-gray-100 animate-pulse h-24 rounded-lg" />
+          <div key={i} className="bg-gray-100 animate-pulse h-28 rounded-lg" />
         ))}
       </div>
     )
@@ -120,17 +120,24 @@ export default function AgentStats() {
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {cards.map((card) => {
         const Icon = card.icon
         return (
-          <div key={card.label} className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <div
+            key={card.label}
+            className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150"
+          >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1">{card.label}</p>
-                <p className="text-3xl font-bold text-gray-900">{card.value}</p>
+                <p className="text-sm text-gray-500 mb-1 font-dm">
+                  {card.label}
+                </p>
+                <p className="text-3xl font-bold text-gray-900 font-syne">
+                  {card.value}
+                </p>
               </div>
-              <div className={`${card.bgColor} p-3 rounded-lg`}>
+              <div className={`${card.bgColor} p-3 rounded-full`}>
                 <Icon className={`h-6 w-6 ${card.iconColor}`} />
               </div>
             </div>

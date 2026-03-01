@@ -6,7 +6,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { Mail, Lock } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -32,7 +33,6 @@ export default function LoginPage() {
       return
     }
 
-    // Récupère le rôle pour rediriger vers le bon dashboard
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -46,58 +46,72 @@ export default function LoginPage() {
     }
   }
 
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-slate-900">
-            SomnoConnect
+    <div className="min-h-screen bg-[#06111f] flex items-center justify-center p-6">
+      <Card className="w-full max-w-md bg-[#f0e8d6]">
+        <CardHeader>
+          <CardTitle>
+            <div className="text-center">
+              <h1 className="text-2xl font-syne text-[#06111f]">SOMNOVENTIS</h1>
+              <p className="text-sm text-[#06111f] opacity-80">SomnoConnect</p>
+            </div>
           </CardTitle>
-          <CardDescription>
-            Portail SOMNOVENTIS — Connexion
-          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email professionnel</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="vous@clinique.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={loading}
-              />
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="Email professionnel"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="pl-10"
+                />
+              </div>
             </div>
-            <div className="space-y-2">
+
+            <div>
               <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="Mot de passe"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={loading}
+                  className="pl-10"
+                />
+              </div>
             </div>
+
             {error && (
-              <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
-                {error}
-              </p>
+              <div className="bg-red-50 p-2 rounded-md border border-red-200">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
             )}
+
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-[#1ec8d4] text-[#06111f] font-bold"
               disabled={loading}
             >
               {loading ? 'Connexion...' : 'Se connecter'}
             </Button>
+
+            <p className="text-center mt-2">
+              <a href="#" className="text-[#06111f] underline text-sm">Mot de passe oublié ?</a>
+            </p>
           </form>
-          <p className="text-xs text-center text-slate-500 mt-4">
-            Accès sur invitation uniquement.
-          </p>
         </CardContent>
       </Card>
     </div>

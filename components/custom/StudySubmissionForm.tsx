@@ -26,6 +26,10 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+
+  const patientRefError = !!error && !patientRef
+  const studyTypeError = !!error && !studyType
+  const fileError = !!error && !uploadedFile
   const supabaseRef = useRef(createClient())
 
   const handleUploadComplete = (data: UploadedFileData) => {
@@ -85,8 +89,8 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
         onSuccess?.()
         setSuccess(false)
       }, 2000)
-    } catch (err: any) {
-      setError(err.message || 'Erreur inconnue')
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erreur inconnue')
     } finally {
       setLoading(false)
     }
@@ -109,14 +113,22 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
               placeholder="Ex: PAT-2026-001"
               required
               disabled={loading}
+              aria-invalid={patientRefError}
+              className={patientRefError ? 'border-red-500 focus:border-red-600' : ''}
             />
+            {patientRefError && (
+              <p className="text-sm text-red-600">Champ requis</p>
+            )}
           </div>
 
           {/* Study Type */}
           <div className="space-y-2">
             <Label htmlFor="study-type">Type d'étude *</Label>
             <Select value={studyType} onValueChange={setStudyType} disabled={loading}>
-              <SelectTrigger id="study-type">
+              <SelectTrigger
+                id="study-type"
+                className={studyTypeError ? 'border-red-500 focus:border-red-600' : ''}
+              >
                 <SelectValue placeholder="Sélectionner un type" />
               </SelectTrigger>
               <SelectContent>
@@ -124,6 +136,9 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
                 <SelectItem value="PV">PV (Polygraphie)</SelectItem>
               </SelectContent>
             </Select>
+            {studyTypeError && (
+              <p className="text-sm text-red-600">Champ requis</p>
+            )}
           </div>
 
           {/* Priority */}
@@ -158,6 +173,9 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
           <div className="space-y-2">
             <Label>Fichier EDF *</Label>
             <FileUpload onUploadComplete={handleUploadComplete} />
+            {fileError && (
+              <p className="text-sm text-red-600">Veuillez uploader un fichier</p>
+            )}
           </div>
 
           {/* Messages d'erreur et succès */}
@@ -177,9 +195,9 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
           <Button
             type="submit"
             disabled={loading || !uploadedFile || !patientRef || !studyType}
-            className="w-full"
+            className="w-full bg-[#1ec8d4] text-white hover:bg-[#17adb8]"
           >
-            {loading ? 'Création de l\'étude...' : 'Soumettre l\'étude'}
+            {loading ? "Création de l’étude..." : "Soumettre l’étude"}
           </Button>
         </form>
       </CardContent>

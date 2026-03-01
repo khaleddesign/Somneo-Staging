@@ -18,7 +18,11 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
   const { state, progress, fileName, fileSize, filePath, checksum, errorMessage, uploadFile, pause, resume, cancel } = useFileUpload()
   const [isDragging, setIsDragging] = useState(false)
   const onUploadCompleteRef = useRef(onUploadComplete)
-  onUploadCompleteRef.current = onUploadComplete
+
+  // keep ref up to date without causing render-time assignment warnings
+  useEffect(() => {
+    onUploadCompleteRef.current = onUploadComplete
+  }, [onUploadComplete])
 
   useEffect(() => {
     if (state === 'completed' && fileName && fileSize && filePath && checksum) {
@@ -86,12 +90,14 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
-            isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50 hover:border-gray-400'
+            isDragging
+              ? 'border-[#1ec8d4] bg-[#e0f7f9]'
+              : 'border-gray-300 bg-gray-50 hover:border-[#1ec8d4]'
           }`}
         >
-          <Upload className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-          <p className="text-lg font-medium text-gray-900">Déposer votre fichier EDF</p>
-          <p className="text-sm text-gray-500 mt-1">ou</p>
+          <Upload className="h-12 w-12 mx-auto mb-3 text-[#1ec8d4]" />
+          <p className="text-lg font-medium text-gray-900">Glissez votre fichier EDF ici</p>
+          <p className="text-sm text-gray-500 mt-1">ou cliquez pour parcourir</p>
           <Button
             variant="outline"
             size="sm"
@@ -100,7 +106,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           >
             Parcourir les fichiers
           </Button>
-          <p className="text-xs text-gray-400 mt-3">EDF, ZIP jusqu'à 2 Go</p>
+          <p className="text-xs text-gray-400 mt-3">EDF, ZIP jusqu&#39;à 2 Go</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -122,9 +128,14 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           </div>
 
           {/* Barre de progression */}
+          {state === 'uploading' && (
+            <p className="text-sm text-gray-600">
+              {progress === 0 ? 'Calcul du checksum...' : 'Upload en cours...'}
+            </p>
+          )}
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
+              className="bg-[#1ec8d4] h-2 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>

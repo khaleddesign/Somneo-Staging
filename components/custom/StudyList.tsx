@@ -1,6 +1,7 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
 import { FC } from 'react'
+import { Package } from 'lucide-react'
 
 const priorityColors = {
   low: 'bg-gray-200 text-gray-700',
@@ -45,6 +46,7 @@ export const StudyList: FC<StudyListProps> = ({ studies, loading, error, role = 
             <th className="px-3 py-2 border">Priorité</th>
             <th className="px-3 py-2 border">Statut</th>
             <th className="px-3 py-2 border">Date de soumission</th>
+            <th className="px-3 py-2 border text-center">Archive</th>
             <th className="px-3 py-2 border">Actions</th>
           </tr>
         </thead>
@@ -60,6 +62,15 @@ export const StudyList: FC<StudyListProps> = ({ studies, loading, error, role = 
                 <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
               </td>
               <td className="px-3 py-2 border">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
+              <td className="px-3 py-2 border text-center">
+                {study.archived_at ? (
+                  <span title={`Archivé le ${new Date(study.archived_at).toLocaleDateString('fr-FR')}`}>
+                    <Package className="h-5 w-5 text-gray-500 inline" />
+                  </span>
+                ) : (
+                  ''
+                )}
+              </td>
               <td className="px-3 py-2 border">
                 {role === 'agent' ? (
                   <a

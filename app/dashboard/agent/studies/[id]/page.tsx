@@ -2,8 +2,8 @@ import { notFound } from 'next/navigation'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import StudyActions from '@/components/custom/StudyActions'
-import CommentThread from '@/components/custom/CommentThread'
-import HeaderWrapper from '@/components/custom/HeaderWrapper'
+import StudyComments from '@/components/custom/StudyComments'
+import AppLayout from '@/components/custom/AppLayout'
 
 export default async function AgentStudyDetail({
   params,
@@ -18,7 +18,7 @@ export default async function AgentStudyDetail({
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('role')
+    .select('role, full_name')
     .eq('id', user.id)
     .single()
 
@@ -34,8 +34,7 @@ export default async function AgentStudyDetail({
   if (error || !study) return notFound()
 
   return (
-    <>
-      <HeaderWrapper />
+    <AppLayout>
       <div className="p-8 max-w-2xl mx-auto">
       <a href="/dashboard/agent" className="text-blue-600 hover:underline">
         &larr; Retour au dashboard
@@ -52,9 +51,12 @@ export default async function AgentStudyDetail({
       </div>
       <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
       <div className="mt-8">
-        <CommentThread studyId={study.id} />
+        <StudyComments
+          studyId={study.id}
+          currentUser={{ id: user.id, name: profile?.full_name || null }}
+        />
       </div>
       </div>
-    </>
+    </AppLayout>
   )
 }

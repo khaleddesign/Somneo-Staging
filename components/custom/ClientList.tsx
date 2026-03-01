@@ -2,7 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Loader2 } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table'
+import { Loader2, Ban, CheckCircle } from 'lucide-react'
 
 interface Client {
   id: string
@@ -16,7 +18,7 @@ export default function ClientList() {
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [actionLoading, setActionLoading] = useState(false)
+  const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   async function fetchClients() {
     setLoading(true)
@@ -47,7 +49,7 @@ export default function ClientList() {
       return
     }
 
-    setActionLoading(true)
+    setActionLoading(clientId)
     setError(null)
     try {
       const res = await fetch('/api/clients', {
@@ -64,13 +66,12 @@ export default function ClientList() {
         throw new Error(data.error || 'Erreur lors de la mise à jour')
       }
 
-      // Rafraîchir la liste
       await fetchClients()
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : String(e)
       setError(message)
     } finally {
-      setActionLoading(false)
+      setActionLoading(null)
     }
   }
 
@@ -83,60 +84,57 @@ export default function ClientList() {
   }
 
   if (clients.length === 0) {
-    return <div className="text-center py-8 text-gray-500">Aucun client enregistré</div>
+    return (
+      <div className="text-center py-12 text-gray-500">
+        <p className="text-lg font-medium mb-2">Aucun client pour le moment</p>
+        <p className="text-sm">Invitez votre premier client pour commencer</p>
+      </div>
+    )
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full border-collapse">
-        <thead>
-          <tr className="bg-gray-100 border-b">
-            <th className="text-left px-4 py-3 font-semibold text-sm">Nom</th>
-            <th className="text-left px-4 py-3 font-semibold text-sm">Email</th>
-            <th className="text-left px-4 py-3 font-semibold text-sm">Inscription</th>
-            <th className="text-left px-4 py-3 font-semibold text-sm">Statut</th>
-            <th className="text-center px-4 py-3 font-semibold text-sm">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {clients.map((client) => (
-            <tr key={client.id} className="border-b hover:bg-gray-50">
-              <td className="px-4 py-3 text-sm">{client.full_name}</td>
-              <td className="px-4 py-3 text-sm text-gray-600">{client.email}</td>
-              <td className="px-4 py-3 text-sm">
-                {new Date(client.created_at).toLocaleDateString('fr-FR')}
-              </td>
-              <td className="px-4 py-3 text-sm">
-                {client.is_suspended ? (
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    Suspendu
-                  </span>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Nom</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Inscription</TableHead>
+          <TableHead>Statut</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {clients.map((client) => (
+          <TableRow key={client.id}>
+            <TableCell className="font-medium">{client.full_name}</TableCell>
+            <TableCell className="text-gray-600">{client.email}</TableCell>
+            <TableCell>{new Date(client.created_at).toLocaleDateString('fr-FR')}</TableCell>
+            <TableCell>
+              {client.is_suspended ? (
+                <Badge variant="destructive">Suspendu</Badge>
+              ) : (
+                <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200">Actif</Badge>
+              )}
+            </TableCell>
+            <TableCell className="text-right">
+              <Button
+                onClick={() => handleToggleSuspend(client.id, client.is_suspended)}
+                disabled={actionLoading === client.id}
+                size="sm"
+                variant="ghost"
+              >
+                {actionLoading === client.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : client.is_suspended ? (
+                  <><CheckCircle className="h-4 w-4 mr-1" /> Réactiver</>
                 ) : (
-                  <span className="inline-block px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Actif
-                  </span>
+                  <><Ban className="h-4 w-4 mr-1" /> Suspendre</>
                 )}
-              </td>
-              <td className="px-4 py-3 text-sm text-center">
-                <Button
-                  onClick={() => handleToggleSuspend(client.id, client.is_suspended)}
-                  disabled={actionLoading}
-                  size="sm"
-                  variant={client.is_suspended ? 'default' : 'destructive'}
-                >
-                  {actionLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : client.is_suspended ? (
-                    'Réactiver'
-                  ) : (
-                    'Suspendre'
-                  )}
-                </Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+              </Button>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   )
 }

@@ -2,7 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { User, Lock, Mail } from 'lucide-react'
 
 interface SignupFormProps {
   token: string
@@ -17,7 +20,6 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -49,48 +51,81 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-slate-700">Nom complet</label>
-        <input
-          className="mt-1 block w-full rounded-md border px-3 py-2"
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="relative">
+        <Label htmlFor="name" className="sr-only">
+          Nom complet
+        </Label>
+        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+        <Input
+          id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
           required
+          disabled={loading}
+          className="pl-10"
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700">Mot de passe</label>
-        <input
-          className="mt-1 block w-full rounded-md border px-3 py-2"
+      <div className="relative">
+        <Label htmlFor="email" className="sr-only">
+          Email
+        </Label>
+        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+        <Input
+          id="email"
+          type="email"
+          value={email}
+          disabled
+          className="pl-10 bg-slate-100"
+        />
+      </div>
+
+      <div className="relative">
+        <Label htmlFor="password" className="sr-only">
+          Mot de passe
+        </Label>
+        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+        <Input
+          id="password"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          disabled={loading}
+          className="pl-10"
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-slate-700">Confirmer le mot de passe</label>
-        <input
-          className="mt-1 block w-full rounded-md border px-3 py-2"
+      <div className="relative">
+        <Label htmlFor="confirm" className="sr-only">
+          Confirmer le mot de passe
+        </Label>
+        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+        <Input
+          id="confirm"
           type="password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
           required
+          disabled={loading}
+          className="pl-10"
         />
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && (
+        <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+          {error}
+        </p>
+      )}
 
-      <button
+      <Button
         type="submit"
-        className="inline-flex items-center rounded bg-slate-800 px-4 py-2 text-white"
+        className="w-full bg-[#1ec8d4] text-white hover:bg-[#17adb8]"
         disabled={loading}
       >
         {loading ? 'Création...' : 'Créer mon compte'}
-      </button>
+      </Button>
     </form>
   )
 }

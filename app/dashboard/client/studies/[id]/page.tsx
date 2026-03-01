@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ReportDownload from '@/components/custom/ReportDownload'
-import CommentThread from '@/components/custom/CommentThread'
-import HeaderWrapper from '@/components/custom/HeaderWrapper'
+import StudyComments from '@/components/custom/StudyComments'
+import AppLayout from '@/components/custom/AppLayout'
 
 export default async function ClientStudyDetail({
   params,
@@ -15,6 +15,13 @@ export default async function ClientStudyDetail({
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return notFound()
 
+  // fetch client profile to get full name for avatar
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', user.id)
+    .single()
+
   const { data: study, error } = await supabase
     .from('studies')
     .select('*')
@@ -25,8 +32,7 @@ export default async function ClientStudyDetail({
   if (error || !study) return notFound()
 
   return (
-    <>
-      <HeaderWrapper />
+    <AppLayout>
       <div className="p-8 max-w-2xl mx-auto">
       <a href="/dashboard/client" className="text-blue-600 hover:underline">
         &larr; Retour au dashboard
@@ -49,9 +55,12 @@ export default async function ClientStudyDetail({
         <p className="text-sm text-gray-500">En attente de traitement par un agent.</p>
       )}
       <div className="mt-8">
-        <CommentThread studyId={study.id} />
+        <StudyComments
+          studyId={study.id}
+          currentUser={{ id: user.id, name: profile?.full_name || null }}
+        />
       </div>
       </div>
-    </>
+    </AppLayout>
   )
 }

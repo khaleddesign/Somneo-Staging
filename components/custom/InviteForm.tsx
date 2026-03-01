@@ -6,7 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
-export default function InviteForm({ onInvite }: { onInvite?: () => void }) {
+interface InviteFormProps {
+  onInvite?: () => void
+  onSuccess?: () => void
+}
+
+export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
   const [email, setEmail] = useState('')
   const [fullName, setFullName] = useState('')
   const [inviteLink, setInviteLink] = useState<string | null>(null)
@@ -43,6 +48,13 @@ export default function InviteForm({ onInvite }: { onInvite?: () => void }) {
     setEmail('')
     setFullName('')
     setLoading(false)
+    onInvite?.()
+    // Auto-close dialog after 2 seconds if onSuccess callback is provided
+    if (onSuccess) {
+      setTimeout(() => {
+        onSuccess()
+      }, 2000)
+    }
   }
 
   return (
@@ -94,3 +106,4 @@ export default function InviteForm({ onInvite }: { onInvite?: () => void }) {
     </Card>
   )
 }
+
