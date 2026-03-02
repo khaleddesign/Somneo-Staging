@@ -1,4 +1,4 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -6,12 +6,13 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Mail, Lock } from 'lucide-react'
+import AuthLeftPanel from '@/components/custom/AuthLeftPanel'
+import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -22,12 +23,12 @@ export default function LoginPage() {
     setLoading(true)
     setError(null)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
+    const { data, error: authError } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
 
-    if (error) {
+    if (authError) {
       setError('Email ou mot de passe incorrect.')
       setLoading(false)
       return
@@ -35,9 +36,15 @@ export default function LoginPage() {
 
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, is_suspended')
       .eq('id', data.user.id)
       .single()
+
+    if (profile?.is_suspended) {
+      await supabase.auth.signOut()
+      router.push('/auth/suspended')
+      return
+    }
 
     if (profile?.role === 'client') {
       router.push('/dashboard/client')
@@ -46,74 +53,100 @@ export default function LoginPage() {
     }
   }
 
-
   return (
-    <div className="min-h-screen bg-[#06111f] flex items-center justify-center p-6">
-      <Card className="w-full max-w-md bg-[#f0e8d6]">
-        <CardHeader>
-          <CardTitle>
-            <div className="text-center">
-              <h1 className="text-2xl font-syne text-[#06111f]">SOMNOVENTIS</h1>
-              <p className="text-sm text-[#06111f] opacity-80">SomnoConnect</p>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <Label htmlFor="email">Email</Label>
+    <div className="flex h-screen">
+      {/* Left Panel */}
+      <AuthLeftPanel />
+
+      {/* Right Panel */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
+        <div className="w-full max-w-md">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+              Bon retour
+            </h1>
+            <p className="text-gray-600">Connectez-vous à votre espace</p>
+          </div>
+
+          <form onSubmit={handleLogin} className="space-y-5">
+            {/* Email Input */}
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Email professionnel"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  placeholder="votre.email@example.com"
                   required
                   disabled={loading}
-                  className="pl-10"
+                  className="pl-10 bg-gray-50 border border-gray-300 rounded-lg"
                 />
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="password">Mot de passe</Label>
+            {/* Password Input */}
+            <div className="space-y-2">
+              <Label htmlFor="password" className="text-gray-700 font-medium">Mot de passe</Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="password"
-                  type="password"
-                  placeholder="Mot de passe"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
                   required
                   disabled={loading}
-                  className="pl-10"
+                  className="pl-10 pr-10 bg-gray-50 border border-gray-300 rounded-lg"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-5 w-5" />
+                  ) : (
+                    <Eye className="h-5 w-5" />
+                  )}
+                </button>
               </div>
             </div>
 
+            {/* Error Message */}
             {error && (
-              <div className="bg-red-50 p-2 rounded-md border border-red-200">
-                <p className="text-sm text-red-700">{error}</p>
+              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+                {error}
               </div>
             )}
 
+            {/* Login Button */}
             <Button
               type="submit"
-              className="w-full bg-[#1ec8d4] text-[#06111f] font-bold"
               disabled={loading}
+              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg transition-colors"
             >
-              {loading ? 'Connexion...' : 'Se connecter'}
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Connexion...
+                </>
+              ) : (
+                'Se connecter'
+              )}
             </Button>
-
-            <p className="text-center mt-2">
-              <a href="#" className="text-[#06111f] underline text-sm">Mot de passe oublié ?</a>
-            </p>
           </form>
-        </CardContent>
-      </Card>
+
+          {/* Footer */}
+          <div className="mt-8 text-center text-sm text-gray-600">
+            <p>Pas encore de compte ? <a href="/auth/signup" className="text-teal-600 hover:underline font-medium">Créer un compte</a></p>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

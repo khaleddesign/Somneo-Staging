@@ -19,16 +19,21 @@ export async function POST(req: Request) {
     }
 
     // envoi mail via Resend
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: 'no-reply@somnoventis.com',
       to: email,
       subject,
       html: message,
     })
 
-    return NextResponse.json({ success: true })
-  } catch (err: any) {
+    if (error) {
+      console.error('[notifications] erreur Resend', error)
+      return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ success: true, id: data?.id })
+  } catch (err: unknown) {
     console.error('[notifications] erreur', err)
-    return NextResponse.json({ error: err.message || 'Erreur interne' }, { status: 500 })
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Erreur interne' }, { status: 500 })
   }
 }

@@ -9,9 +9,18 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { FileText, Users, Settings } from 'lucide-react'
 
+interface AgentKpiRow {
+  agent_id: string
+  agent_name: string
+  en_cours: number
+  termine_ce_mois: number
+}
+
 export default function AgentDashboardPage() {
   const [agentName, setAgentName] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
+  const [agentKpis, setAgentKpis] = useState<AgentKpiRow[]>([])
+  const [loadingAgentKpis, setLoadingAgentKpis] = useState(false)
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -25,8 +34,19 @@ export default function AgentDashboardPage() {
           .eq('id', user.id)
           .single()
 
+        const admin = profileData?.role === 'admin'
         setAgentName(profileData?.full_name || 'Agent')
-        setIsAdmin(profileData?.role === 'admin')
+        setIsAdmin(admin)
+
+        if (admin) {
+          setLoadingAgentKpis(true)
+          const res = await fetch('/api/stats/agents')
+          if (res.ok) {
+            const data = await res.json()
+            setAgentKpis(data.agents || [])
+          }
+          setLoadingAgentKpis(false)
+        }
       }
     }
 
@@ -47,6 +67,47 @@ export default function AgentDashboardPage() {
         <div className="mb-10">
           <AgentStats />
         </div>
+
+        {isAdmin && (
+          <div className="mb-10">
+            <Card className="p-6">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>
+                KPI par agent
+              </h2>
+              {loadingAgentKpis ? (
+                <p className="text-sm text-gray-500">Chargement des indicateurs...</p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-sm border">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="px-4 py-2 text-left border">Nom agent</th>
+                        <th className="px-4 py-2 text-left border">Études en cours</th>
+                        <th className="px-4 py-2 text-left border">Études terminées ce mois</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {agentKpis.map((row) => (
+                        <tr key={row.agent_id}>
+                          <td className="px-4 py-2 border">{row.agent_name}</td>
+                          <td className="px-4 py-2 border">{row.en_cours}</td>
+                          <td className="px-4 py-2 border">{row.termine_ce_mois}</td>
+                        </tr>
+                      ))}
+                      {agentKpis.length === 0 && (
+                        <tr>
+                          <td className="px-4 py-3 text-gray-500 border" colSpan={3}>
+                            Aucun agent trouvé.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+          </div>
+        )}
 
         {/* Quick Access Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -1,5 +1,4 @@
 import { notFound } from 'next/navigation'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { createClient } from '@/lib/supabase/server'
 import StudyActions from '@/components/custom/StudyActions'
 import StudyComments from '@/components/custom/StudyComments'
@@ -24,8 +23,7 @@ export default async function AgentStudyDetail({
 
   if (!profile || !['agent', 'admin'].includes(profile.role)) return notFound()
 
-  const admin = createAdminClient()
-  const { data: study, error } = await admin
+  const { data: study, error } = await supabase
     .from('studies')
     .select('*, profiles!studies_client_id_fkey(full_name, email)')
     .eq('id', id)

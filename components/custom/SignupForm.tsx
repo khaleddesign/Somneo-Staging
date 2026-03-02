@@ -1,11 +1,11 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { User, Lock, Mail } from 'lucide-react'
+import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
 
 interface SignupFormProps {
   token: string
@@ -13,19 +13,44 @@ interface SignupFormProps {
   fullName?: string | null
 }
 
+function getPasswordStrength(password: string): { score: number; label: string; color: string } {
+  if (!password) return { score: 0, label: '', color: '' }
+  
+  let score = 0
+  if (password.length >= 8) score++
+  if (password.length >= 12) score++
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
+  if (/\d/.test(password)) score++
+  if (/[^a-zA-Z\d]/.test(password)) score++
+
+  if (score <= 1) return { score: 1, label: 'Faible', color: 'bg-red-500' }
+  if (score <= 2) return { score: 2, label: 'Moyen', color: 'bg-orange-500' }
+  if (score <= 3) return { score: 3, label: 'Bon', color: 'bg-yellow-500' }
+  return { score: 4, label: 'Fort', color: 'bg-green-500' }
+}
+
 export default function SignupForm({ token, email, fullName }: SignupFormProps) {
   const [name, setName] = useState(fullName ?? '')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
+  const passwordStrength = getPasswordStrength(password)
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
-    if (password.length < 8) return setError('Mot de passe trop court (>=8 caractères)')
-    if (password !== confirm) return setError('Les mots de passe ne correspondent pas')
+    
+    if (password.length < 8) {
+      return setError('Mot de passe trop court (minimum 8 caractères)')
+    }
+    if (password !== confirm) {
+      return setError('Les mots de passe ne correspondent pas')
+    }
 
     setLoading(true)
     try {
@@ -37,94 +62,154 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       const data = await res.json()
       if (!res.ok) {
-        setError(data?.error || 'Erreur')
+        setError(data?.error || 'Erreur lors de la création du compte')
         setLoading(false)
         return
       }
 
       router.push(data.redirect)
-    } catch (err: any) {
-      setError(err?.message ?? 'Erreur réseau')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur réseau'
+      setError(message)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="relative">
-        <Label htmlFor="name" className="sr-only">
-          Nom complet
-        </Label>
-        <User className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
-        <Input
-          id="name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
-          disabled={loading}
-          className="pl-10"
-        />
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Name Input */}
+      <div className="space-y-2">
+        <Label htmlFor="name" className="text-gray-700 font-medium">Nom complet</Label>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Jean Dupont"
+            required
+            disabled={loading}
+            className="pl-10 bg-gray-50 border border-gray-300 rounded-lg"
+          />
+        </div>
       </div>
 
-      <div className="relative">
-        <Label htmlFor="email" className="sr-only">
-          Email
-        </Label>
-        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          disabled
-          className="pl-10 bg-slate-100"
-        />
+      {/* Email Input (Read-only) */}
+      <div className="space-y-2">
+        <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+        <div className="relative">
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            disabled
+            className="bg-gray-100 border border-gray-300 rounded-lg text-gray-600"
+          />
+        </div>
       </div>
 
-      <div className="relative">
-        <Label htmlFor="password" className="sr-only">
-          Mot de passe
-        </Label>
-        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          disabled={loading}
-          className="pl-10"
-        />
+      {/* Password Input */}
+      <div className="space-y-2">
+        <Label htmlFor="password" className="text-gray-700 font-medium">Mot de passe</Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Input
+            id="password"
+            type={showPassword ? 'text' : 'password'}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="••••••••"
+            required
+            disabled={loading}
+            className="pl-10 pr-10 bg-gray-50 border border-gray-300 rounded-lg"
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+          >
+            {showPassword ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
+        </div>
+
+        {/* Password Strength Indicator */}
+        {password && (
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className={`h-full ${passwordStrength.color} transition-all duration-300`}
+                  style={{ width: `${(passwordStrength.score * 25)}%` }}
+                />
+              </div>
+              <span className="text-xs font-medium text-gray-600">
+                {passwordStrength.label}
+              </span>
+            </div>
+            <p className="text-xs text-gray-500">
+              Utilisez au moins 8 caractères, majuscules, minuscules et chiffres
+            </p>
+          </div>
+        )}
       </div>
 
-      <div className="relative">
-        <Label htmlFor="confirm" className="sr-only">
-          Confirmer le mot de passe
-        </Label>
-        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-[#06111f]/50" />
-        <Input
-          id="confirm"
-          type="password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          required
-          disabled={loading}
-          className="pl-10"
-        />
+      {/* Confirm Password Input */}
+      <div className="space-y-2">
+        <Label htmlFor="confirm" className="text-gray-700 font-medium">Confirmer le mot de passe</Label>
+        <div className="relative">
+          <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Input
+            id="confirm"
+            type={showConfirm ? 'text' : 'password'}
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            placeholder="••••••••"
+            required
+            disabled={loading}
+            className="pl-10 pr-10 bg-gray-50 border border-gray-300 rounded-lg"
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirm(!showConfirm)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            tabIndex={-1}
+          >
+            {showConfirm ? (
+              <EyeOff className="h-5 w-5" />
+            ) : (
+              <Eye className="h-5 w-5" />
+            )}
+          </button>
+        </div>
       </div>
 
+      {/* Error Message */}
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 p-3 rounded-md">
+        <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
           {error}
-        </p>
+        </div>
       )}
 
+      {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full bg-[#1ec8d4] text-white hover:bg-[#17adb8]"
         disabled={loading}
+        className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg transition-colors"
       >
-        {loading ? 'Création...' : 'Créer mon compte'}
+        {loading ? (
+          <>
+            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            Création...
+          </>
+        ) : (
+          'Créer mon compte'
+        )}
       </Button>
     </form>
   )

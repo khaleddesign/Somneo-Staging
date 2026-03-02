@@ -1,6 +1,6 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
-import { FC } from 'react'
+import { FC, useState } from 'react'
 import { Package } from 'lucide-react'
 
 const priorityColors = {
@@ -20,9 +20,37 @@ interface StudyListProps {
   loading: boolean
   error: string | null
   role?: 'agent' | 'client'
+  currentUserId?: string | null
+  onAssigned?: () => void
 }
 
-export const StudyList: FC<StudyListProps> = ({ studies, loading, error, role = 'client' }) => {
+export const StudyList: FC<StudyListProps> = ({
+  studies,
+  loading,
+  error,
+  role = 'client',
+  currentUserId = null,
+  onAssigned,
+}) => {
+  const [assigningStudyId, setAssigningStudyId] = useState<string | null>(null)
+
+  async function handleAssign(studyId: string) {
+    setAssigningStudyId(studyId)
+    try {
+      const res = await fetch(`/api/studies/${studyId}/assign`, { method: 'PATCH' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => null)
+        throw new Error(data?.error || 'Impossible de prendre en charge cette étude')
+      }
+      onAssigned?.()
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur lors de l’assignation'
+      alert(message)
+    } finally {
+      setAssigningStudyId(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -73,12 +101,23 @@ export const StudyList: FC<StudyListProps> = ({ studies, loading, error, role = 
               </td>
               <td className="px-3 py-2 border">
                 {role === 'agent' ? (
-                  <a
-                    href={`/dashboard/agent/studies/${study.id}`}
-                    className="px-2 py-1 bg-blue-100 rounded text-xs text-blue-700 hover:bg-blue-200"
-                  >
-                    Voir
-                  </a>
+                  !study.assigned_agent_id ? (
+                    <button
+                      type="button"
+                      onClick={() => handleAssign(study.id)}
+                      disabled={assigningStudyId === study.id}
+                      className="px-2 py-1 bg-teal-100 rounded text-xs text-teal-700 hover:bg-teal-200 disabled:opacity-60"
+                    >
+                      {assigningStudyId === study.id ? 'Assignation...' : 'Prendre en charge'}
+                    </button>
+                  ) : study.assigned_agent_id === currentUserId ? (
+                    <a
+                      href={`/dashboard/agent/studies/${study.id}`}
+                      className="px-2 py-1 bg-blue-100 rounded text-xs text-blue-700 hover:bg-blue-200"
+                    >
+                      Voir
+                    </a>
+                  ) : null
                 ) : (
                   <a
                     href={`/dashboard/client/studies/${study.id}`}
