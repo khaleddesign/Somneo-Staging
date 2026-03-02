@@ -103,36 +103,36 @@ export default function SettingsPage() {
   return (
     <AppLayout>
       <div className="p-8 max-w-2xl">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8" style={{ fontFamily: 'Syne, sans-serif' }}>
+        <h1 className="text-4xl text-midnight mb-8">
           Paramètres
         </h1>
 
         {/* Account Information */}
-        <Card className="mb-8">
+        <Card className="mb-8 rounded-xl border border-gray-100 shadow-sm">
           <CardHeader>
-            <CardTitle>Informations du compte</CardTitle>
+            <CardTitle className="font-heading">Informations du compte</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <Label className="text-gray-600">Nom</Label>
-              <p className="mt-1 text-lg font-medium text-gray-900">{profile?.full_name}</p>
+                <Label className="text-gray-600 font-heading">Nom</Label>
+              <p className="mt-1 text-lg text-gray-900 font-body">{profile?.full_name}</p>
             </div>
             <div>
-              <Label className="text-gray-600">Email</Label>
-              <p className="mt-1 text-lg font-medium text-gray-900">{profile?.email}</p>
+              <Label className="text-gray-600 font-heading">Email</Label>
+              <p className="mt-1 text-lg text-gray-900 font-body">{profile?.email}</p>
             </div>
           </CardContent>
         </Card>
 
         {/* Change Password */}
-        <Card>
+        <Card className="rounded-xl border border-gray-100 shadow-sm">
           <CardHeader>
-            <CardTitle>Changer le mot de passe</CardTitle>
+            <CardTitle className="font-heading">Changer le mot de passe</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current-password">Mot de passe actuel</Label>
+                <Label htmlFor="current-password" className="font-heading text-sm text-gray-700">Mot de passe actuel</Label>
                 <Input
                   id="current-password"
                   type="password"
@@ -140,11 +140,12 @@ export default function SettingsPage() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
                   disabled={passwordLoading}
+                  className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="new-password">Nouveau mot de passe</Label>
+                <Label htmlFor="new-password" className="font-heading text-sm text-gray-700">Nouveau mot de passe</Label>
                 <Input
                   id="new-password"
                   type="password"
@@ -153,11 +154,12 @@ export default function SettingsPage() {
                   placeholder="••••••••"
                   disabled={passwordLoading}
                   required
+                  className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirm-password" className="font-heading text-sm text-gray-700">Confirmer le mot de passe</Label>
                 <Input
                   id="confirm-password"
                   type="password"
@@ -166,13 +168,14 @@ export default function SettingsPage() {
                   placeholder="••••••••"
                   disabled={passwordLoading}
                   required
+                  className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={passwordLoading}
-                className="bg-teal-600 hover:bg-teal-700 text-white w-full"
+                className="bg-teal hover:bg-teal/90 text-white w-full rounded-lg"
               >
                 {passwordLoading ? (
                   <>

@@ -44,9 +44,9 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
     new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border border-gray-100 rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle>Discussion</CardTitle>
+        <CardTitle className="font-heading text-midnight">Discussion</CardTitle>
       </CardHeader>
       <CardContent className="flex flex-col h-80">
         <div
@@ -68,24 +68,24 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
                 className={`flex items-end ${mine ? 'justify-end' : 'justify-start'}`}
               >
                 {!mine && (
-                  <Avatar name={c.profiles.full_name} className="mr-2" />
+                  <Avatar name={c.profiles?.full_name || "Inconnu"} className="mr-2 bg-midnight text-sand font-heading" />
                 )}
                 <div
-                  className={`p-2 rounded-lg max-w-[70%] break-words ${
+                  className={`p-2 rounded-lg max-w-[70%] wrap-break-word ${
                     mine
-                      ? 'bg-[#1ec8d4] text-[#f0e8d6]'
-                      : 'bg-gray-100 text-[#06111f]'
+                      ? 'bg-teal text-white'
+                      : 'bg-gray-100 text-midnight'
                   }`}
                 >
                   <div className="text-sm whitespace-pre-wrap">{c.message}</div>
-                  <div className="text-xs text-gray-500 mt-1 text-right">
+                  <div className={`text-xs mt-1 text-right font-body ${mine ? 'text-white/80' : 'text-gray-400'}`}>
                     {formatTime(c.created_at)}
                   </div>
                 </div>
                 {mine && (
                   <Avatar
                     name={currentUser.name || 'Vous'}
-                    className="ml-2"
+                    className="ml-2 bg-midnight text-sand font-heading"
                   />
                 )}
               </div>
@@ -100,11 +100,12 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
             onChange={(e) => setText(e.target.value)}
             placeholder="Écrivez votre message..."
             disabled={sending}
+            className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20 rounded-xl"
           />
           <Button
             type="submit"
             disabled={sending || !text.trim()}
-            className="bg-[#06111f] text-white hover:bg-[#1a2230] p-2"
+            className="bg-teal text-white hover:bg-teal/90 p-2"
           >
             <Send className="h-4 w-4" />
           </Button>

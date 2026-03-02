@@ -50,11 +50,11 @@ export default function AuthSide({
   }, [])
 
   return (
-    <div className="hidden lg:flex w-2/5 bg-[#06111f] relative">
+    <div className="hidden lg:flex w-2/5 bg-midnight relative">
       <canvas ref={canvasRef} className="absolute inset-0" />
       <div className="p-8 z-10 flex flex-col justify-center">
-        <h1 className="text-4xl font-syne text-[#1ec8d4] mb-4">{title}</h1>
-        <p className="text-xl font-dm text-[#f0e8d6]">{subtitle}</p>
+        <h1 className="text-4xl font-syne text-teal mb-4">{title}</h1>
+        <p className="text-xl font-dm text-sand">{subtitle}</p>
       </div>
     </div>
   )

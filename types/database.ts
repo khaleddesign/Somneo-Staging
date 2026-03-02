@@ -72,3 +72,16 @@ export interface Comment {
   attachment_path: string | null
   created_at: string
 }
+
+export interface Database {
+  public: {
+    Tables: {
+      institutions: { Row: Institution }
+      profiles: { Row: Profile }
+      invitations: { Row: Invitation }
+      studies: { Row: Study }
+      study_history: { Row: StudyHistory }
+      comments: { Row: Comment }
+    }
+  }
+}

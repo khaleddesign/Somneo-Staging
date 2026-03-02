@@ -11,14 +11,14 @@ export default async function SignUpPage({
 
   if (!token) {
     return (
-      <div className="flex h-screen">
+      <div className="min-h-screen flex flex-col lg:flex-row">
         <AuthLeftPanel />
-        <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
+        <div className="w-full lg:basis-3/5 flex items-center justify-center bg-sand p-8 lg:p-12">
           <div className="w-full max-w-md">
-            <h1 className="text-3xl font-bold text-red-600 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <h1 className="text-4xl lg:text-5xl text-red-600 mb-2 leading-tight">
               Lien invalide
             </h1>
-            <p className="text-gray-600">Token manquant dans l&apos;URL.</p>
+            <p className="text-gray-500 font-body">Token manquant dans l&apos;URL.</p>
           </div>
         </div>
       </div>
@@ -36,14 +36,14 @@ export default async function SignUpPage({
 
   if (errorMsg) {
     return (
-      <div className="flex h-screen">
+      <div className="min-h-screen flex flex-col lg:flex-row">
         <AuthLeftPanel />
-        <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
+        <div className="w-full lg:basis-3/5 flex items-center justify-center bg-sand p-8 lg:p-12">
           <div className="w-full max-w-md">
-            <h1 className="text-3xl font-bold text-red-600 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <h1 className="text-4xl lg:text-5xl text-red-600 mb-2 leading-tight">
               Erreur
             </h1>
-            <p className="text-gray-600">{errorMsg}</p>
+            <p className="text-gray-500 font-body">{errorMsg}</p>
           </div>
         </div>
       </div>
@@ -52,14 +52,14 @@ export default async function SignUpPage({
 
   if (!invitation) {
     return (
-      <div className="flex h-screen">
+      <div className="min-h-screen flex flex-col lg:flex-row">
         <AuthLeftPanel />
-        <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
+        <div className="w-full lg:basis-3/5 flex items-center justify-center bg-sand p-8 lg:p-12">
           <div className="w-full max-w-md">
-            <h1 className="text-3xl font-bold text-red-600 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <h1 className="text-4xl lg:text-5xl text-red-600 mb-2 leading-tight">
               Invitation expirée
             </h1>
-            <p className="text-gray-600">Ce lien est invalide ou déjà utilisé.</p>
+            <p className="text-gray-500 font-body">Ce lien est invalide ou déjà utilisé.</p>
           </div>
         </div>
       </div>
@@ -67,15 +67,15 @@ export default async function SignUpPage({
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="min-h-screen flex flex-col lg:flex-row">
       <AuthLeftPanel />
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
+      <div className="w-full lg:basis-3/5 flex items-center justify-center bg-sand p-8 lg:p-12">
         <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <div className="mb-10">
+            <h1 className="text-4xl lg:text-5xl text-midnight mb-2 leading-tight">
               Créer votre compte
             </h1>
-            <p className="text-gray-600">Invitation requise pour accéder à la plateforme</p>
+            <p className="text-gray-500 font-body">Invitation requise pour accéder à la plateforme</p>
           </div>
           <SignupForm
             token={token}

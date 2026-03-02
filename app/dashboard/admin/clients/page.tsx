@@ -1,0 +1,206 @@
+'use client'
+
+import { useEffect, useMemo, useState } from 'react'
+import AdminLayout from '@/components/custom/AdminLayout'
+import { Button } from '@/components/ui/button'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Plus, Pencil, Ban, Search } from 'lucide-react'
+
+interface ClientRow {
+  id: string
+  full_name: string | null
+  email: string
+  institution_name?: string
+  studies_count?: number
+  last_study_at?: string | null
+  is_suspended: boolean
+}
+
+export default function AdminClientsPage() {
+  const [clients, setClients] = useState<ClientRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [query, setQuery] = useState('')
+  const [inviteOpen, setInviteOpen] = useState(false)
+  const [editOpen, setEditOpen] = useState(false)
+  const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null)
+  const [inviteForm, setInviteForm] = useState({ full_name: '', email: '' })
+  const [form, setForm] = useState({ full_name: '', email: '' })
+
+  async function fetchClients() {
+    setLoading(true)
+    const res = await fetch('/api/clients')
+    const data = await res.json()
+    setClients(data.clients || [])
+    setLoading(false)
+  }
+
+  useEffect(() => {
+    fetchClients()
+  }, [])
+
+  const filtered = useMemo(() => {
+    const term = query.toLowerCase()
+    return clients.filter((client) =>
+      `${client.full_name || ''} ${client.email}`.toLowerCase().includes(term),
+    )
+  }, [clients, query])
+
+  async function inviteClient() {
+    await fetch('/api/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: inviteForm.full_name,
+        email: inviteForm.email,
+        role: 'client',
+      }),
+    })
+    setInviteOpen(false)
+    setInviteForm({ full_name: '', email: '' })
+  }
+
+  function openEdit(client: ClientRow) {
+    setSelectedClient(client)
+    setForm({ full_name: client.full_name || '', email: client.email })
+    setEditOpen(true)
+  }
+
+  async function saveEdit() {
+    if (!selectedClient) return
+    await fetch('/api/clients', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        user_id: selectedClient.id,
+        full_name: form.full_name,
+        email: form.email,
+      }),
+    })
+    setEditOpen(false)
+    await fetchClients()
+  }
+
+  async function toggleSuspend(client: ClientRow) {
+    await fetch('/api/clients', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: client.id, is_suspended: !client.is_suspended }),
+    })
+    await fetchClients()
+  }
+
+  return (
+    <AdminLayout>
+      <div className="p-2 md:p-4 space-y-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-4xl text-midnight">Gestion des clients</h1>
+            <p className="text-gray-500 font-body">Gestion complète des comptes clients</p>
+          </div>
+          <Button className="bg-teal text-white hover:bg-teal/90" onClick={() => setInviteOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" /> Inviter un client
+          </Button>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+          <div className="relative mb-4 max-w-md">
+            <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Input
+              className="pl-9 border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
+              placeholder="Rechercher un client"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-sm">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Nom</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Email</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Institution</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Études soumises</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Dernière étude</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Statut</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((client) => (
+                  <tr key={client.id} className="border-t border-gray-100">
+                    <td className="px-3 py-3 font-body text-midnight">{client.full_name || '—'}</td>
+                    <td className="px-3 py-3 font-body">{client.email}</td>
+                    <td className="px-3 py-3 font-body">{client.institution_name || '—'}</td>
+                    <td className="px-3 py-3 font-body">{client.studies_count || 0}</td>
+                    <td className="px-3 py-3 font-body">{client.last_study_at ? new Date(client.last_study_at).toLocaleDateString('fr-FR') : '—'}</td>
+                    <td className="px-3 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs font-heading ${client.is_suspended ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+                        {client.is_suspended ? 'Suspendu' : 'Actif'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" onClick={() => openEdit(client)}>
+                          <Pencil className="h-4 w-4 mr-1" /> Modifier
+                        </Button>
+                        <Button variant="outline" onClick={() => toggleSuspend(client)}>
+                          <Ban className="h-4 w-4 mr-1" /> {client.is_suspended ? 'Réactiver' : 'Suspendre'}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {!loading && filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">Aucun client</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-heading">Inviter un client</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="font-heading">Nom complet</Label>
+              <Input value={inviteForm.full_name} onChange={(e) => setInviteForm((s) => ({ ...s, full_name: e.target.value }))} />
+            </div>
+            <div>
+              <Label className="font-heading">Email</Label>
+              <Input value={inviteForm.email} onChange={(e) => setInviteForm((s) => ({ ...s, email: e.target.value }))} />
+            </div>
+            <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={inviteClient}>Envoyer l'invitation</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-heading">Modifier le client</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label className="font-heading">Nom complet</Label>
+              <Input value={form.full_name} onChange={(e) => setForm((s) => ({ ...s, full_name: e.target.value }))} />
+            </div>
+            <div>
+              <Label className="font-heading">Email</Label>
+              <Input value={form.email} onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))} />
+            </div>
+            <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={saveEdit}>Enregistrer</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </AdminLayout>
+  )
+}

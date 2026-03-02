@@ -80,7 +80,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Name Input */}
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-gray-700 font-medium">Nom complet</Label>
+        <Label htmlFor="name" className="text-gray-700 font-medium font-heading">Nom complet</Label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
@@ -90,28 +90,28 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
             placeholder="Jean Dupont"
             required
             disabled={loading}
-            className="pl-10 bg-gray-50 border border-gray-300 rounded-lg"
+            className="pl-10 bg-white border border-gray-200 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
           />
         </div>
       </div>
 
       {/* Email Input (Read-only) */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+        <Label htmlFor="email" className="text-gray-700 font-medium font-heading">Email</Label>
         <div className="relative">
           <Input
             id="email"
             type="email"
             value={email}
             disabled
-            className="bg-gray-100 border border-gray-300 rounded-lg text-gray-600"
+            className="bg-gray-100 border border-gray-200 rounded-lg text-gray-600"
           />
         </div>
       </div>
 
       {/* Password Input */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-gray-700 font-medium">Mot de passe</Label>
+        <Label htmlFor="password" className="text-gray-700 font-medium font-heading">Mot de passe</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
@@ -122,7 +122,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
             placeholder="••••••••"
             required
             disabled={loading}
-            className="pl-10 pr-10 bg-gray-50 border border-gray-300 rounded-lg"
+            className="pl-10 pr-10 bg-white border border-gray-200 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
           />
           <button
             type="button"
@@ -161,7 +161,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       {/* Confirm Password Input */}
       <div className="space-y-2">
-        <Label htmlFor="confirm" className="text-gray-700 font-medium">Confirmer le mot de passe</Label>
+        <Label htmlFor="confirm" className="text-gray-700 font-medium font-heading">Confirmer le mot de passe</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
@@ -172,7 +172,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
             placeholder="••••••••"
             required
             disabled={loading}
-            className="pl-10 pr-10 bg-gray-50 border border-gray-300 rounded-lg"
+            className="pl-10 pr-10 bg-white border border-gray-200 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
           />
           <button
             type="button"
@@ -200,7 +200,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
       <Button
         type="submit"
         disabled={loading}
-        className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg transition-colors"
+        className="w-full bg-teal hover:bg-teal/90 text-white font-semibold py-2.5 rounded-lg transition-colors"
       >
         {loading ? (
           <>

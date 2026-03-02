@@ -12,6 +12,8 @@ interface StudyActionsProps {
   reportPath?: string | null
 }
 
+type StudyStatus = StudyActionsProps['currentStatus']
+
 const statusOptions = [
   { value: 'en_attente', label: 'En attente' },
   { value: 'en_cours', label: 'En cours' },
@@ -20,7 +22,7 @@ const statusOptions = [
 ]
 
 export default function StudyActions({ studyId, currentStatus, reportPath }: StudyActionsProps) {
-  const [status, setStatus] = useState(currentStatus)
+  const [status, setStatus] = useState<StudyStatus>(currentStatus)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -44,8 +46,9 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || 'Erreur')
       setSuccess('Statut mis à jour')
-    } catch (e: any) {
-      setError(e.message)
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Erreur'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -171,8 +174,9 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
       setTimeout(() => {
         window.location.reload()
       }, 2000)
-    } catch (err: any) {
-      setUploadError(err.message || 'Erreur inconnue')
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue'
+      setUploadError(message)
     } finally {
       setUploading(false)
     }
@@ -181,7 +185,7 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Select value={status} onValueChange={(value) => setStatus(value as any)} disabled={loading}>
+        <Select value={status} onValueChange={(value) => setStatus(value as StudyStatus)} disabled={loading}>
           <SelectTrigger className="w-48">
             <SelectValue />
           </SelectTrigger>

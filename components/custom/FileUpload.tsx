@@ -89,13 +89,13 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
-          className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition ${
+          className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
             isDragging
-              ? 'border-[#1ec8d4] bg-[#e0f7f9]'
-              : 'border-gray-300 bg-gray-50 hover:border-[#1ec8d4]'
+              ? 'border-teal bg-teal/10'
+              : 'border-teal/30 bg-teal/5 hover:bg-teal/10'
           }`}
         >
-          <Upload className="h-12 w-12 mx-auto mb-3 text-[#1ec8d4]" />
+          <Upload className="h-12 w-12 mx-auto mb-3 text-teal" />
           <p className="text-lg font-medium text-gray-900">Glissez votre fichier EDF ici</p>
           <p className="text-sm text-gray-500 mt-1">ou cliquez pour parcourir</p>
           <Button
@@ -118,7 +118,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
       ) : null}
 
       {state === 'uploading' || state === 'paused' || state === 'completed' ? (
-        <div className="bg-white p-4 rounded-lg border border-gray-200 space-y-3">
+        <div className="bg-white p-4 rounded-xl border border-gray-200 space-y-3">
           <div className="flex items-center justify-between">
             <div>
               <p className="font-medium text-sm text-gray-900">{fileName}</p>
@@ -135,7 +135,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           )}
           <div className="w-full bg-gray-200 rounded-full h-2">
             <div
-              className="bg-[#1ec8d4] h-2 rounded-full transition-all"
+              className="bg-teal h-2 rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -182,7 +182,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
 
       {errorMessage && (
         <div className="bg-red-50 p-4 rounded-lg border border-red-200 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <AlertCircle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
           <div>
             <p className="font-medium text-red-800 text-sm">{errorMessage}</p>
           </div>

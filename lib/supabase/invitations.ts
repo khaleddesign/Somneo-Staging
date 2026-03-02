@@ -1,25 +1,15 @@
 import { createAdminClient } from './admin'
 import { createClient as createServerClient } from './server'
+import type { Database } from '@/types/database'
 
-export type InvitationRow = {
-  id: string
-  email: string
-  full_name: string | null
-  token: string
-  role_invited: string
-  created_by: string
-  institution_id: string | null
-  expires_at: string | null
-  used_at: string | null
-  created_at: string
-}
+export type InvitationRow = Database['public']['Tables']['invitations']['Row']
 
 export async function createInvitation(params: {
   email: string
   institution_id: string | null
   created_by: string
   full_name?: string | null
-  role_invited?: string
+  role_invited?: 'admin' | 'agent' | 'client'
 }) {
   const { email, institution_id, created_by, full_name = null, role_invited = 'client' } = params
 
@@ -34,7 +24,8 @@ export async function createInvitation(params: {
     .single()
 
   if (error) throw error
-  return { token: (data as any).token }
+  const invitation = data as InvitationRow
+  return { token: invitation.token }
 }
 
 export async function getInvitationByToken(token: string) {
@@ -82,22 +73,26 @@ export async function createUserAndProfileFromInvitation(token: string, password
     email: invitation.email,
     password,
     email_confirm: true,
-  } as any)
+  })
 
   if (createErr) throw createErr
 
-  const userId = (userData as any).user?.id
+  const userId = userData.user?.id
   if (!userId) throw new Error('Impossible de créer l\'utilisateur')
 
 
   // Insert profile in public.profiles (use full_name from invitation if present)
+  const invitedRole = ['admin', 'agent', 'client'].includes(invitation.role_invited)
+    ? invitation.role_invited
+    : 'client'
+
   const { data: profileData, error: profileErr } = await admin
     .from('profiles')
     .insert({
       id: userId,
       email: invitation.email,
       full_name: invitation.full_name ?? null,
-      role: 'client',
+      role: invitedRole,
       institution_id: invitation.institution_id,
       is_active: true,
     })
@@ -107,7 +102,7 @@ export async function createUserAndProfileFromInvitation(token: string, password
   if (profileErr) throw profileErr
 
   // Mark invitation used
-  const { data: usedData, error: usedErr } = await admin
+  const { error: usedErr } = await admin
     .from('invitations')
     .update({ used_at: new Date().toISOString() })
     .eq('id', invitation.id)
@@ -116,5 +111,5 @@ export async function createUserAndProfileFromInvitation(token: string, password
 
   if (usedErr) throw usedErr
 
-  return { userId, profile: profileData }
+  return { userId, profile: profileData, role: invitedRole as 'admin' | 'agent' | 'client' }
 }

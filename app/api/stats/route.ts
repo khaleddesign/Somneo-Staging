@@ -34,6 +34,12 @@ export async function GET() {
       .select('*', { count: 'exact', head: true })
       .eq('status', 'en_attente')
 
+    const { count: en_attente_non_assignees } = await admin
+      .from('studies')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'en_attente')
+      .is('assigned_agent_id', null)
+
     // En cours
     const { count: en_cours } = await admin
       .from('studies')
@@ -45,6 +51,16 @@ export async function GET() {
       .from('studies')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'termine')
+
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+
+    const { count: termine_ce_mois } = await admin
+      .from('studies')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'termine')
+      .gte('completed_at', startOfMonth.toISOString())
 
     // This week
     const oneWeekAgo = new Date()
@@ -79,14 +95,23 @@ export async function GET() {
       .eq('role', 'client')
       .eq('is_suspended', false)
 
+    const { count: total_agents } = await admin
+      .from('profiles')
+      .select('*', { count: 'exact', head: true })
+      .in('role', ['agent', 'admin'])
+      .eq('is_suspended', false)
+
     return NextResponse.json({
       total_studies: total_studies || 0,
       en_attente: en_attente || 0,
+      en_attente_non_assignees: en_attente_non_assignees || 0,
       en_cours: en_cours || 0,
       termine: termine || 0,
+      termine_ce_mois: termine_ce_mois || 0,
       this_week: this_week || 0,
       avg_turnaround: Math.round(avg_turnaround * 10) / 10, // round to 1 decimal
       total_clients: total_clients || 0,
+      total_agents: total_agents || 0,
     })
   } catch (err: unknown) {
     console.error('[GET /api/stats]', err)

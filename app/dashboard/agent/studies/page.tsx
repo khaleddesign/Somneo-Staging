@@ -47,14 +47,14 @@ export default function StudiesPage() {
   return (
     <AppLayout>
       <div className="p-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8" style={{ fontFamily: 'Syne, sans-serif' }}>
+        <h1 className="text-4xl text-midnight mb-8">
           Études
         </h1>
 
         <section className="mb-10">
           <div className="flex items-center gap-3 mb-4">
-            <h2 className="text-xl font-semibold text-gray-800">Pool d'études disponibles</h2>
-            <span className="px-3 py-1 rounded-full text-sm font-semibold bg-teal-100 text-teal-700">
+            <h2 className="text-xl text-midnight font-heading">Pool d'études disponibles</h2>
+            <span className="bg-teal/10 text-teal font-heading text-sm px-3 py-1 rounded-full">
               {poolStudies.length} étude{poolStudies.length > 1 ? 's' : ''} disponible{poolStudies.length > 1 ? 's' : ''}
             </span>
           </div>
@@ -69,7 +69,7 @@ export default function StudiesPage() {
         </section>
 
         <section className="mb-10">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Mes études en cours</h2>
+          <h2 className="text-xl mb-4 text-midnight font-heading">Mes études en cours</h2>
           <StudyList
             studies={myInProgressStudies}
             loading={loading}
@@ -80,7 +80,7 @@ export default function StudiesPage() {
         </section>
 
         <section>
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Mes études terminées</h2>
+          <h2 className="text-xl mb-4 text-midnight font-heading">Mes études terminées</h2>
           <StudyList
             studies={myCompletedStudies}
             loading={loading}

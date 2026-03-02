@@ -35,12 +35,19 @@ export async function POST(req: Request) {
       })
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      redirect: '/dashboard/client' 
+    const role = result?.role || result?.profile?.role
+    const redirect = role === 'admin'
+      ? '/dashboard/admin'
+      : role === 'agent'
+        ? '/dashboard/agent'
+        : '/dashboard/client'
+
+    return NextResponse.json({
+      success: true,
+      redirect,
     })
-  } catch (err: any) {
-    const message = err?.message ?? 'Erreur interne'
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erreur interne'
     return NextResponse.json({ error: message }, { status: 400 })
   }
 }

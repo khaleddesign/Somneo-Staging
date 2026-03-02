@@ -17,7 +17,7 @@ export default function AuthLeftPanel() {
     canvas.height = canvas.offsetHeight
 
     // Create stars
-    const stars: Array<{ x: number; y: number; radius: number; opacity: number; speed: number }> = []
+    const stars: Array<{ x: number; y: number; radius: number; opacity: number; speed: number; dx: number; dy: number }> = []
     const starCount = 50
 
     for (let i = 0; i < starCount; i++) {
@@ -27,6 +27,8 @@ export default function AuthLeftPanel() {
         radius: Math.random() * 1.5,
         opacity: Math.random() * 0.5 + 0.5,
         speed: Math.random() * 0.02 + 0.01,
+        dx: (Math.random() - 0.5) * 0.06,
+        dy: (Math.random() - 0.5) * 0.06,
       })
     }
 
@@ -44,6 +46,14 @@ export default function AuthLeftPanel() {
         if (star.opacity >= 1 || star.opacity <= 0.3) {
           star.speed *= -1
         }
+
+        star.x += star.dx
+        star.y += star.dy
+
+        if (star.x < 0) star.x = canvas.width
+        if (star.x > canvas.width) star.x = 0
+        if (star.y < 0) star.y = canvas.height
+        if (star.y > canvas.height) star.y = 0
 
         // Draw star
         ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`
@@ -63,7 +73,7 @@ export default function AuthLeftPanel() {
   }, [])
 
   return (
-    <div className="hidden lg:flex w-1/2 bg-[#06111f] flex-col justify-between p-12 text-white relative overflow-hidden">
+    <div className="flex w-full lg:basis-2/5 bg-midnight flex-col justify-between p-8 lg:p-12 text-white relative overflow-hidden min-h-[40vh] lg:min-h-screen">
       {/* Canvas for stars */}
       <canvas
         ref={canvasRef}
@@ -73,26 +83,26 @@ export default function AuthLeftPanel() {
       {/* Content */}
       <div className="relative z-10">
         <div className="mb-12">
-          <h1 className="text-4xl font-bold text-teal-400 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h1 className="text-4xl lg:text-5xl text-teal mb-2 font-display leading-tight">
             SomnoConnect
           </h1>
-          <p className="text-[#f0e8d6] opacity-70 text-sm">by SOMNOVENTIS</p>
+          <p className="text-sand/60 text-sm tracking-widest uppercase font-heading">by SOMNOVENTIS</p>
         </div>
 
         <div className="max-w-md">
-          <h2 className="text-2xl font-semibold mb-4 text-white" style={{ fontFamily: 'Syne, sans-serif' }}>
-            Le portail sécurisé pour vos études du sommeil
+          <h2 className="text-lg lg:text-xl mb-3 text-sand font-heading font-medium">
+            Plateforme sécurisée d&apos;analyse du sommeil
           </h2>
-          <p className="text-gray-300 text-sm leading-relaxed">
-            Accédez à vos données de sommeil en toute sécurité. Notre plateforme est conforme aux normes de protection des données et garantit la confidentialité de vos informations médicales.
+          <p className="text-sand/70 text-sm leading-relaxed font-body max-w-sm">
+            Infrastructure médicale sécurisée pour centraliser vos études, échanges cliniques et rapports en toute confidentialité.
           </p>
         </div>
       </div>
 
       {/* Security Badge */}
-      <div className="relative z-10 flex items-center gap-2 text-xs text-gray-300 bg-white/5 backdrop-blur-sm px-4 py-3 rounded-lg border border-white/10 w-fit">
+      <div className="relative z-10 flex items-center gap-2 text-xs text-sand/80 bg-white/5 backdrop-blur-sm px-4 py-3 rounded-lg border border-white/10 w-fit font-body">
         <span>🔒</span>
-        <span>Données médicales chiffrées · RGPD</span>
+        <span>Données médicales chiffrées · RGPD compliant</span>
       </div>
     </div>
   )

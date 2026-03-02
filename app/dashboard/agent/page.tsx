@@ -58,10 +58,10 @@ export default function AgentDashboardPage() {
       <div className="p-8">
         {/* Greeting */}
         <div className="mb-10">
-          <h1 className="text-4xl font-bold text-gray-900" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h1 className="text-4xl text-midnight">
             Bonjour, {agentName} 👋
           </h1>
-          <p className="text-gray-600 mt-2">Bienvenue sur votre dashboard SomnoConnect</p>
+          <p className="text-gray-500 mt-2 font-body">Bienvenue sur votre dashboard SomnoConnect</p>
         </div>
         {/* KPIs Section */}
         <div className="mb-10">
@@ -71,7 +71,7 @@ export default function AgentDashboardPage() {
         {isAdmin && (
           <div className="mb-10">
             <Card className="p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4" style={{ fontFamily: 'Syne, sans-serif' }}>
+              <h2 className="text-xl text-midnight mb-4 font-heading">
                 KPI par agent
               </h2>
               {loadingAgentKpis ? (
@@ -113,16 +113,16 @@ export default function AgentDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Studies Card */}
           <Link href="/dashboard/agent/studies">
-            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-teal-200">
+            <Card className="p-6 hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 rounded-xl">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-teal-50 rounded-lg">
-                  <FileText className="h-6 w-6 text-teal-600" />
+                <div className="p-3 bg-teal/10 rounded-full">
+                  <FileText className="h-6 w-6 text-teal" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Études</h3>
-              <p className="text-gray-600 text-sm">Gérez vos études et consultez les détails</p>
+              <h3 className="text-lg text-gray-900 mb-1 font-heading">Études</h3>
+              <p className="text-gray-600 text-sm font-body">Gérez vos études et consultez les détails</p>
               <div className="mt-4">
-                <Button className="bg-teal-600 hover:bg-teal-700 text-white w-full">
+                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-lg">
                   Accéder
                 </Button>
               </div>
@@ -131,16 +131,16 @@ export default function AgentDashboardPage() {
 
           {/* Clients Card */}
           <Link href="/dashboard/agent/clients">
-            <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-teal-200">
+            <Card className="p-6 hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 rounded-xl">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-teal-50 rounded-lg">
-                  <Users className="h-6 w-6 text-teal-600" />
+                <div className="p-3 bg-gold/10 rounded-full">
+                  <Users className="h-6 w-6 text-gold" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-1">Clients</h3>
-              <p className="text-gray-600 text-sm">Gérez vos clients et invitez-en de nouveaux</p>
+              <h3 className="text-lg text-gray-900 mb-1 font-heading">Clients</h3>
+              <p className="text-gray-600 text-sm font-body">Gérez vos clients et invitez-en de nouveaux</p>
               <div className="mt-4">
-                <Button className="bg-teal-600 hover:bg-teal-700 text-white w-full">
+                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-lg">
                   Accéder
                 </Button>
               </div>
@@ -150,16 +150,16 @@ export default function AgentDashboardPage() {
           {/* Admin Panel Card - Only for admins */}
           {isAdmin && (
             <Link href="/dashboard/agent/settings">
-              <Card className="p-6 hover:shadow-lg transition-shadow cursor-pointer border-2 border-transparent hover:border-purple-200 bg-purple-50">
+              <Card className="p-6 hover:shadow-md transition-all duration-200 cursor-pointer border border-purple-100 bg-purple-50 rounded-xl">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-purple-100 rounded-lg">
+                  <div className="p-3 bg-purple-100 rounded-full">
                     <Settings className="h-6 w-6 text-purple-600" />
                   </div>
                 </div>
-                <h3 className="text-lg font-semibold text-purple-900 mb-1">Panel Admin</h3>
-                <p className="text-purple-700 text-sm">Gérez les paramètres et configurations</p>
+                <h3 className="text-lg text-purple-900 mb-1 font-heading">Panel Admin</h3>
+                <p className="text-purple-700 text-sm font-body">Gérez les paramètres et configurations</p>
                 <div className="mt-4">
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white w-full">
+                  <Button className="bg-purple-600 hover:bg-purple-700 text-white w-full rounded-lg">
                     Accéder
                   </Button>
                 </div>

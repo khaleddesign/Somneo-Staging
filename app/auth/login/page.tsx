@@ -46,7 +46,9 @@ export default function LoginPage() {
       return
     }
 
-    if (profile?.role === 'client') {
+    if (profile?.role === 'admin') {
+      router.push('/dashboard/admin')
+    } else if (profile?.role === 'client') {
       router.push('/dashboard/client')
     } else {
       router.push('/dashboard/agent')
@@ -54,18 +56,18 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex h-screen">
+    <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Panel */}
       <AuthLeftPanel />
 
       {/* Right Panel */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center bg-white p-8">
+      <div className="w-full lg:basis-3/5 flex items-center justify-center bg-sand p-8 lg:p-12">
         <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <div className="mb-10">
+            <h1 className="text-4xl lg:text-5xl text-midnight mb-2 leading-tight">
               Bon retour
             </h1>
-            <p className="text-gray-600">Connectez-vous à votre espace</p>
+            <p className="text-gray-500 font-body">Connectez-vous à votre espace</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -82,7 +84,7 @@ export default function LoginPage() {
                   placeholder="votre.email@example.com"
                   required
                   disabled={loading}
-                  className="pl-10 bg-gray-50 border border-gray-300 rounded-lg"
+                  className="pl-10 bg-white border border-gold/30 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
                 />
               </div>
             </div>
@@ -100,7 +102,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                   disabled={loading}
-                  className="pl-10 pr-10 bg-gray-50 border border-gray-300 rounded-lg"
+                  className="pl-10 pr-10 bg-white border border-gold/30 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
                 />
                 <button
                   type="button"
@@ -119,7 +121,7 @@ export default function LoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="p-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg">
+              <div className="text-red-500 text-sm font-body">
                 {error}
               </div>
             )}
@@ -128,7 +130,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2.5 rounded-lg transition-colors"
+              className="w-full bg-teal hover:bg-teal/90 text-white font-semibold py-2.5 rounded-lg transition-colors"
             >
               {loading ? (
                 <>
@@ -143,7 +145,7 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-gray-600">
-            <p>Pas encore de compte ? <a href="/auth/signup" className="text-teal-600 hover:underline font-medium">Créer un compte</a></p>
+            <p className="font-body">Pas encore de compte ? <a href="/auth/signup" className="text-teal hover:underline font-medium">Créer un compte</a></p>
           </div>
         </div>
       </div>

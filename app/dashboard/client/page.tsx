@@ -6,6 +6,7 @@ import { StudySubmissionForm } from '@/components/custom/StudySubmissionForm'
 import { StudyList } from '@/components/custom/StudyList'
 import AppLayout from '@/components/custom/AppLayout'
 import { BarChart3, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function ClientDashboard() {
   const { studies, loading, error, refresh } = useStudies()
@@ -21,56 +22,88 @@ export default function ClientDashboard() {
 
   return (
     <AppLayout>
-      <div className="p-8">
-        <h1 className="text-2xl font-bold mb-6">Mon espace client</h1>
+      <div className="p-5 md:p-8 space-y-8">
+        <div>
+          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Mon espace client</h1>
+          <p className="text-gray-500 mt-2 font-body">Suivez et soumettez vos études du sommeil</p>
+        </div>
         
         {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Total études</p>
-                <p className="text-3xl font-bold text-[#06111f]">{stats.total}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <Card className="shadow-sm border-gray-200">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1 font-body">Total études</p>
+                  <p className="text-3xl text-midnight font-display">{stats.total}</p>
+                </div>
+                <div className="p-3 rounded-full bg-teal/10">
+                  <BarChart3 className="h-6 w-6 text-teal" />
+                </div>
               </div>
-              <BarChart3 className="h-10 w-10 text-[#1ec8d4]" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">En attente</p>
-                <p className="text-3xl font-bold text-[#06111f]">{stats.enAttente}</p>
+          <Card className="shadow-sm border-gray-200">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1 font-body">En attente</p>
+                  <p className="text-3xl text-midnight font-display">{stats.enAttente}</p>
+                </div>
+                <div className="p-3 rounded-full bg-gold/10">
+                  <AlertCircle className="h-6 w-6 text-gold" />
+                </div>
               </div>
-              <AlertCircle className="h-10 w-10 text-[#1ec8d4]" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">En cours</p>
-                <p className="text-3xl font-bold text-[#06111f]">{stats.enCours}</p>
+          <Card className="shadow-sm border-gray-200">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1 font-body">En cours</p>
+                  <p className="text-3xl text-midnight font-display">{stats.enCours}</p>
+                </div>
+                <div className="p-3 rounded-full bg-teal/10">
+                  <Clock className="h-6 w-6 text-teal" />
+                </div>
               </div>
-              <Clock className="h-10 w-10 text-[#1ec8d4]" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
 
-          <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">Terminées</p>
-                <p className="text-3xl font-bold text-[#06111f]">{stats.termine}</p>
+          <Card className="shadow-sm border-gray-200">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1 font-body">Terminées</p>
+                  <p className="text-3xl text-midnight font-display">{stats.termine}</p>
+                </div>
+                <div className="p-3 rounded-full bg-gold/10">
+                  <CheckCircle2 className="h-6 w-6 text-gold" />
+                </div>
               </div>
-              <CheckCircle2 className="h-10 w-10 text-[#1ec8d4]" />
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </div>
 
-        <StudySubmissionForm onSuccess={refresh} />
-        <hr className="my-8" />
-        <h2 className="text-xl font-semibold mb-4">Mes études</h2>
-        <StudyList studies={studies} loading={loading} error={error} role="client" />
+        <Card className="shadow-sm border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-xl text-midnight font-heading">Nouvelle soumission</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StudySubmissionForm onSuccess={refresh} />
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-xl text-midnight font-heading">Mes études</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StudyList studies={studies} loading={loading} error={error} role="client" />
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   )

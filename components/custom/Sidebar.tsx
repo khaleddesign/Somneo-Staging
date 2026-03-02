@@ -72,23 +72,23 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         onClick={onClose}
       />
       <aside
-        className={`fixed top-0 left-0 h-full w-60 bg-[#06111f] text-white z-50 transform transition-transform lg:translate-x-0 ${
+        className={`fixed top-0 left-0 h-full w-60 bg-midnight text-white z-50 transform transition-transform lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex items-center justify-between px-6 py-4 lg:hidden">
-          <span className="text-teal-400 text-xl font-bold" style={{ fontFamily: 'var(--font-syne)' }}>
+          <span className="text-teal text-xl font-display">
             SomnoConnect
           </span>
-          <button onClick={onClose} className="text-[#f0e8d6]">
+          <button onClick={onClose} className="text-sand">
             <X className="h-6 w-6" />
           </button>
         </div>
         <div className="px-6 py-4 hidden lg:block">
-          <span className="text-teal-400 text-2xl font-bold" style={{ fontFamily: 'var(--font-syne)' }}>
+          <span className="text-teal text-xl font-display leading-none">
             SomnoConnect
           </span>
-          <p className="text-[#c8a45a] text-xs font-medium tracking-widest uppercase">by SOMNOVENTIS</p>
+          <p className="text-sand/50 text-xs tracking-widest uppercase font-heading mt-1">BY SOMNOVENTIS</p>
         </div>
         <nav className="mt-6 px-2">
           {items.map((item) => {
@@ -96,11 +96,11 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             return (
               <Link key={item.href} href={item.href} onClick={onClose} className={`flex items-center gap-3 px-4 py-2 my-1 rounded ${
                 active
-                  ? 'bg-[#1ec8d4]/10 border-l-4 border-[#1ec8d4] text-[#1ec8d4]'
-                  : 'text-[#f0e8d6]/70 hover:bg-white/5'
+                  ? 'bg-teal/10 border-l-2 border-teal text-teal'
+                  : 'text-sand/70 hover:text-sand hover:bg-white/5'
               }`}>
                 <item.icon className="h-5 w-5" />
-                <span className="text-sm font-medium">{item.label}</span>
+                <span className="text-sm font-body">{item.label}</span>
               </Link>
             )
           })}
@@ -108,10 +108,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         <div className="mt-auto px-6 py-4">
           {email && (
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-[#1ec8d4] rounded-full flex items-center justify-center text-[#06111f] font-bold">
+              <div className="w-8 h-8 bg-teal/20 rounded-full flex items-center justify-center text-teal font-heading">
                 {email.charAt(0).toUpperCase()}
               </div>
-              <span className="text-xs text-[#f0e8d6] break-all">{email}</span>
+              <span className="text-sm text-sand/60 break-all font-body">{email}</span>
             </div>
           )}
           <button
@@ -120,7 +120,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
               await supabase.auth.signOut()
               window.location.href = '/auth/login'
             }}
-            className="mt-3 flex items-center gap-2 text-sm text-[#f0e8d6]/80 hover:text-[#f0e8d6]"
+            className="mt-3 flex items-center gap-2 text-sm text-sand/50 hover:text-red-400 font-body"
           >
             <LogOut className="h-4 w-4" />
             Déconnexion

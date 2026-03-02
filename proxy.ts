@@ -40,6 +40,21 @@ export async function proxy(request: NextRequest) {
     if (profile?.is_suspended) {
       return NextResponse.redirect(new URL('/auth/suspended', request.url))
     }
+
+    const role = profile?.role
+    const path = request.nextUrl.pathname
+
+    if (path.startsWith('/dashboard/admin') && role !== 'admin') {
+      return NextResponse.redirect(new URL('/dashboard/agent', request.url))
+    }
+
+    if (role === 'admin' && path.startsWith('/dashboard/agent')) {
+      return NextResponse.redirect(new URL('/dashboard/admin', request.url))
+    }
+
+    if (role === 'admin' && path.startsWith('/dashboard/client')) {
+      return NextResponse.redirect(new URL('/dashboard/admin', request.url))
+    }
   }
 
   if (user && request.nextUrl.pathname === '/auth/login') {
@@ -50,7 +65,10 @@ export async function proxy(request: NextRequest) {
       .single()
 
     const role = profile?.role
-    if (role === 'agent' || role === 'admin') {
+    if (role === 'admin') {
+      return NextResponse.redirect(new URL('/dashboard/admin', request.url))
+    }
+    if (role === 'agent') {
       return NextResponse.redirect(new URL('/dashboard/agent', request.url))
     }
     return NextResponse.redirect(new URL('/dashboard/client', request.url))

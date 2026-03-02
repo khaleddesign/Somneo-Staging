@@ -34,8 +34,9 @@ export default function ReportDownload({ reportPath }: ReportDownloadProps) {
 
       // déclenchement du téléchargement
       window.location.href = data.signedUrl
-    } catch (e: any) {
-      setError(e.message || 'Erreur lors de la préparation du téléchargement')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Erreur lors de la préparation du téléchargement'
+      setError(message)
     } finally {
       setLoading(false)
     }
@@ -43,7 +44,12 @@ export default function ReportDownload({ reportPath }: ReportDownloadProps) {
 
   return (
     <div className="mt-4">
-      <Button onClick={handleDownload} disabled={loading} size="sm">
+      <Button
+        onClick={handleDownload}
+        disabled={loading}
+        size="sm"
+        className="bg-teal text-midnight hover:bg-teal/90 font-heading shadow-sm"
+      >
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />

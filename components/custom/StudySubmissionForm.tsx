@@ -97,15 +97,15 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
   }
 
   return (
-    <Card className="w-full">
+    <Card className="w-full border border-gray-100 rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle>Soumettre une nouvelle étude</CardTitle>
+        <CardTitle className="text-midnight font-heading">Soumettre une nouvelle étude</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Patient Reference */}
           <div className="space-y-2">
-            <Label htmlFor="patient-ref">Référence patient *</Label>
+            <Label htmlFor="patient-ref" className="font-heading text-sm text-gray-700">Référence patient *</Label>
             <Input
               id="patient-ref"
               value={patientRef}
@@ -114,7 +114,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
               required
               disabled={loading}
               aria-invalid={patientRefError}
-              className={patientRefError ? 'border-red-500 focus:border-red-600' : ''}
+              className={patientRefError ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20'}
             />
             {patientRefError && (
               <p className="text-sm text-red-600">Champ requis</p>
@@ -123,11 +123,11 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
 
           {/* Study Type */}
           <div className="space-y-2">
-            <Label htmlFor="study-type">Type d'étude *</Label>
+            <Label htmlFor="study-type" className="font-heading text-sm text-gray-700">Type d'étude *</Label>
             <Select value={studyType} onValueChange={setStudyType} disabled={loading}>
               <SelectTrigger
                 id="study-type"
-                className={studyTypeError ? 'border-red-500 focus:border-red-600' : ''}
+                className={studyTypeError ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-teal'}
               >
                 <SelectValue placeholder="Sélectionner un type" />
               </SelectTrigger>
@@ -143,9 +143,9 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
 
           {/* Priority */}
           <div className="space-y-2">
-            <Label htmlFor="priority">Priorité</Label>
+            <Label htmlFor="priority" className="font-heading text-sm text-gray-700">Priorité</Label>
             <Select value={priority} onValueChange={setPriority} disabled={loading}>
-              <SelectTrigger id="priority">
+              <SelectTrigger id="priority" className="border-gray-200 focus:border-teal">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -158,7 +158,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optionnel)</Label>
+            <Label htmlFor="notes" className="font-heading text-sm text-gray-700">Notes (optionnel)</Label>
             <Textarea
               id="notes"
               value={notes}
@@ -166,12 +166,13 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
               placeholder="Informations supplémentaires..."
               disabled={loading}
               rows={3}
+              className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
             />
           </div>
 
           {/* File Upload */}
           <div className="space-y-2">
-            <Label>Fichier EDF *</Label>
+            <Label className="font-heading text-sm text-gray-700">Fichier EDF *</Label>
             <FileUpload onUploadComplete={handleUploadComplete} />
             {fileError && (
               <p className="text-sm text-red-600">Veuillez uploader un fichier</p>
@@ -195,7 +196,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
           <Button
             type="submit"
             disabled={loading || !uploadedFile || !patientRef || !studyType}
-            className="w-full bg-[#1ec8d4] text-white hover:bg-[#17adb8]"
+            className="w-full bg-teal text-white hover:bg-teal/90"
           >
             {loading ? "Création de l’étude..." : "Soumettre l’étude"}
           </Button>

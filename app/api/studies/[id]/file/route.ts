@@ -45,7 +45,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     }
 
     return NextResponse.json({ success: true })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message ?? 'Erreur interne' }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erreur interne'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -17,8 +17,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
     return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
   }
-  const { status } = await req.json()
-  if (!['en_cours', 'termine', 'annule'].includes(status)) {
+  const body = (await req.json()) as { status?: string }
+  const status = body.status
+  if (status !== 'en_cours' && status !== 'termine' && status !== 'annule') {
     return NextResponse.json({ error: 'Statut invalide' }, { status: 400 })
   }
   // Récupérer l'ancien statut
@@ -31,7 +32,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
   }
   // Mettre à jour l'étude
-  const updateFields: any = { status, updated_at: new Date().toISOString() }
+  const updateFields: { status: string; updated_at: string; completed_at?: string } = {
+    status,
+    updated_at: new Date().toISOString(),
+  }
   if (status === 'termine') {
     updateFields.completed_at = new Date().toISOString()
   }

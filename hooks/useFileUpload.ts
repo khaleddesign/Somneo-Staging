@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react'
 import * as tus from 'tus-js-client'
-import CryptoJS from 'crypto-js'
+import SparkMD5 from 'spark-md5'
 import { createClient } from '@/lib/supabase/client'
 
 export type UploadState = 'idle' | 'uploading' | 'paused' | 'completed' | 'error'
@@ -39,18 +39,17 @@ export function useFileUpload(): UseFileUploadResult {
   const calculateMD5 = useCallback(async (file: File): Promise<string> => {
     const chunkSize = 2097152 // 2MB
     const chunks = Math.ceil(file.size / chunkSize)
-    let hash = CryptoJS.MD5('')
+    const spark = new SparkMD5.ArrayBuffer()
     
     for (let i = 0; i < chunks; i++) {
       const start = i * chunkSize
       const end = Math.min(start + chunkSize, file.size)
       const chunk = file.slice(start, end)
       const arrayBuffer = await chunk.arrayBuffer()
-      const wordArray = CryptoJS.lib.WordArray.create(arrayBuffer as any)
-      hash = CryptoJS.MD5(hash.toString() + wordArray.toString())
+      spark.append(arrayBuffer)
     }
     
-    return hash.toString()
+    return spark.end()
   }, [])
 
   const uploadFile = useCallback(
@@ -115,8 +114,9 @@ export function useFileUpload(): UseFileUploadResult {
 
         uploadRef.current = tusUpload
         tusUpload.start()
-      } catch (err: any) {
-        setErrorMessage(err.message || 'Erreur inconnue')
+      } catch (err: unknown) {
+        const message = err instanceof Error ? err.message : 'Erreur inconnue'
+        setErrorMessage(message)
         setState('error')
       }
     },

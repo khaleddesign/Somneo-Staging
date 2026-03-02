@@ -3,6 +3,14 @@ import { createClient } from '@/lib/supabase/server'
 import ReportDownload from '@/components/custom/ReportDownload'
 import StudyComments from '@/components/custom/StudyComments'
 import AppLayout from '@/components/custom/AppLayout'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+
+function getStatusBadge(status: string) {
+  if (status === 'en_attente') return 'bg-teal/10 text-midnight border border-teal/30'
+  if (status === 'en_cours') return 'bg-midnight text-sand border border-midnight/70'
+  if (status === 'termine') return 'bg-gold/15 text-midnight border border-gold/40'
+  return 'bg-gray-50 text-gray-700 border border-gray-200'
+}
 
 export default async function ClientStudyDetail({
   params,
@@ -33,33 +41,82 @@ export default async function ClientStudyDetail({
 
   return (
     <AppLayout>
-      <div className="p-8 max-w-2xl mx-auto">
-      <a href="/dashboard/client" className="text-blue-600 hover:underline">
-        &larr; Retour au dashboard
-      </a>
-      <h1 className="text-2xl font-bold mt-4 mb-6">Détail de l'étude</h1>
-      <div className="space-y-2 mb-8 bg-white p-4 rounded-lg border">
-        <div><b>ID patient :</b> {study.patient_reference}</div>
-        <div><b>Type :</b> {study.study_type}</div>
-        <div><b>Priorité :</b> {study.priority}</div>
-        <div><b>Statut :</b> {study.status}</div>
-        <div><b>Date de soumission :</b> {new Date(study.submitted_at).toLocaleDateString('fr-FR')}</div>
-        {study.notes && <div><b>Notes :</b> {study.notes}</div>}
-        {study.file_size_orig && (
-          <div><b>Taille du fichier :</b> {(study.file_size_orig / 1024 / 1024).toFixed(2)} Mo</div>
-        )}
-      </div>
-      {study.report_path && study.status === 'termine' ? (
-        <ReportDownload reportPath={study.report_path} />
-      ) : (
-        <p className="text-sm text-gray-500">En attente de traitement par un agent.</p>
-      )}
-      <div className="mt-8">
-        <StudyComments
-          studyId={study.id}
-          currentUser={{ id: user.id, name: profile?.full_name || null }}
-        />
-      </div>
+      <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+        <a href="/dashboard/client" className="text-teal hover:underline font-body text-sm">
+          &larr; Retour au dashboard
+        </a>
+
+        <div>
+          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
+          <p className="text-gray-500 font-body mt-1">Suivi de votre étude du sommeil</p>
+        </div>
+
+        <Card className="shadow-sm border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-2xl text-midnight font-heading">Informations</CardTitle>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">ID patient</p>
+              <p className="text-midnight font-body mt-1">{study.patient_reference}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Type</p>
+              <p className="text-midnight font-body mt-1">{study.study_type}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priorité</p>
+              <p className="text-midnight font-body mt-1">{study.priority}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Statut</p>
+              <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
+                {study.status.replace('_', ' ')}
+              </span>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
+              <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</p>
+            </div>
+            {study.file_size_orig && (
+              <div>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Taille du fichier</p>
+                <p className="text-midnight font-body mt-1">{(study.file_size_orig / 1024 / 1024).toFixed(2)} Mo</p>
+              </div>
+            )}
+            {study.notes && (
+              <div className="sm:col-span-2">
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Notes</p>
+                <p className="text-midnight font-body mt-1">{study.notes}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-xl text-midnight font-heading">Rapport</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {study.report_path && study.status === 'termine' ? (
+              <ReportDownload reportPath={study.report_path} />
+            ) : (
+              <p className="text-sm text-gray-500 font-body">En attente de traitement par un agent.</p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm border-gray-200">
+          <CardHeader>
+            <CardTitle className="text-xl text-midnight font-heading">Discussion</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <StudyComments
+              studyId={study.id}
+              currentUser={{ id: user.id, name: profile?.full_name || null }}
+            />
+          </CardContent>
+        </Card>
       </div>
     </AppLayout>
   )

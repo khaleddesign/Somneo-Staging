@@ -29,14 +29,14 @@ export default function ClientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900" style={{ fontFamily: 'Syne, sans-serif' }}>
+          <h1 className="text-4xl text-midnight">
             Gestion des Clients
           </h1>
-          <p className="text-gray-600 mt-2">Gérez vos clients et envoyez des invitations</p>
+          <p className="text-gray-500 mt-2 font-body">Gérez vos clients et envoyez des invitations</p>
         </div>
         <Button
           onClick={() => setIsDialogOpen(true)}
-          className="bg-teal-600 hover:bg-teal-700 text-white"
+          className="bg-teal hover:bg-teal/90 text-white rounded-lg"
         >
           <UserPlus className="h-4 w-4 mr-2" />
           Inviter un nouveau client
@@ -44,13 +44,13 @@ export default function ClientsPage() {
       </div>
 
       {/* Client List Table */}
-      <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
         <ClientList key={`client-list-${refreshTrigger}`} />
       </div>
 
       {/* Invitation Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-125">
           <DialogHeader>
             <DialogTitle>Inviter un nouveau client</DialogTitle>
           </DialogHeader>

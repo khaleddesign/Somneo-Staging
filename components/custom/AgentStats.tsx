@@ -72,14 +72,14 @@ export default function AgentStats() {
       label: 'Total études',
       value: stats.total_studies,
       icon: BarChart3,
-      bgColor: 'bg-gray-100',
-      iconColor: 'text-gray-600',
+      bgColor: 'bg-teal/10',
+      iconColor: 'text-teal',
     },
     {
       label: 'En attente',
       value: stats.en_attente,
       icon: AlertCircle,
-      bgColor: 'bg-yellow-100',
+      bgColor: 'bg-gold/10',
       iconColor: 'text-yellow-600',
     },
     {
@@ -114,8 +114,8 @@ export default function AgentStats() {
       label: 'Clients actifs',
       value: stats.total_clients,
       icon: Users,
-      bgColor: 'bg-teal-100',
-      iconColor: 'text-teal-600',
+      bgColor: 'bg-midnight/10',
+      iconColor: 'text-midnight',
     },
   ]
 
@@ -126,14 +126,14 @@ export default function AgentStats() {
         return (
           <div
             key={card.label}
-            className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow duration-150"
+            className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm"
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1 font-dm">
+                <p className="text-sm text-gray-500 mb-1 font-body">
                   {card.label}
                 </p>
-                <p className="text-3xl font-bold text-gray-900 font-syne">
+                <p className="text-3xl text-midnight font-display leading-none">
                   {card.value}
                 </p>
               </div>

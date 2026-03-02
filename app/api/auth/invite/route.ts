@@ -33,7 +33,7 @@ export async function POST(req: Request) {
       .maybeSingle()
 
     if (profErr) return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
-    const role = (profile as any)?.role
+    const role = profile?.role
     if (!role || !['agent', 'admin'].includes(role)) {
       return NextResponse.json({ error: 'Interdit' }, { status: 403 })
     }
@@ -46,7 +46,8 @@ export async function POST(req: Request) {
     })
 
     return NextResponse.json({ success: true, token: result.token })
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message ?? 'Erreur interne' }, { status: 500 })
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Erreur interne'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
