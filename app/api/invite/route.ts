@@ -15,6 +15,12 @@ interface Body {
 
 export async function POST(req: Request) {
   try {
+    const cookieHeader = req.headers.get('cookie')
+    console.error('[POST /api/invite] cookie debug', {
+      hasCookieHeader: Boolean(cookieHeader),
+      cookieHeaderPreview: cookieHeader ? `${cookieHeader.slice(0, 120)}...` : null,
+    })
+
     const body: Body = await req.json()
     const email = body.email?.trim().toLowerCase()
     const fullName = body.full_name?.trim() || null
@@ -26,19 +32,44 @@ export async function POST(req: Request) {
 
     const supabase = await createClient()
     const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession()
+
+    const {
       data: { user },
       error: userError,
     } = await supabase.auth.getUser()
 
+    let authProfile: { id: string; email: string; role: string; institution_id: string | null } | null = null
+    let authProfileError: string | null = null
+
+    if (user?.id) {
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, email, role, institution_id')
+        .eq('id', user.id)
+        .maybeSingle()
+
+      authProfile = profileData
+      authProfileError = profileError?.message || null
+    }
+
     if (userError || !user) {
+      console.error('[POST /api/invite] 401 debug', {
+        sessionExists: Boolean(session),
+        sessionUserId: session?.user?.id ?? null,
+        sessionError: sessionError?.message ?? null,
+        user: user ? { id: user.id, email: user.email } : null,
+        userError: userError?.message ?? null,
+        profile: authProfile,
+        profileError: authProfileError,
+      })
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    const { data: caller, error: callerError } = await supabase
-      .from('profiles')
-      .select('role, institution_id')
-      .eq('id', user.id)
-      .single()
+    const caller = authProfile
+    const callerError = authProfile ? null : { message: authProfileError || 'Profil introuvable' }
 
     if (callerError || !caller || caller.role !== 'admin') {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
