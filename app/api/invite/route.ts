@@ -68,7 +68,7 @@ export async function POST(req: Request) {
       role_invited: role,
     })
 
-    const signupUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/signup?token=${token}`
+    const signupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/signup?token=${token}`
 
     const isAgentLike = role === 'agent' || role === 'admin'
     const subject = isAgentLike
@@ -87,19 +87,22 @@ export async function POST(req: Request) {
 
     if (process.env.RESEND_API_KEY) {
       const { error: emailError } = await resend.emails.send({
-        from: 'no-reply@somnoventis.com',
+        from: 'SomnoConnect <noreply@somnoventis.com>',
         to: email,
         subject,
         html,
       })
 
       if (emailError) {
-        console.error('[POST /api/invite] email error', emailError)
+        console.error('Resend Error:', emailError)
+        const resendMessage = emailError.message || 'Erreur envoi email Resend'
+        return NextResponse.json({ error: resendMessage }, { status: 500 })
       }
     }
 
     return NextResponse.json({ success: true, token })
   } catch (err: unknown) {
+    console.error('Resend Error:', err)
     console.error('[POST /api/invite]', err)
     const message = err instanceof Error ? err.message : 'Erreur serveur'
     return NextResponse.json({ error: message }, { status: 500 })
