@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useStudies } from '@/hooks/useStudies'
-import { StudyList } from '@/components/custom/StudyList'
+import StudyListWithFilters from '@/components/custom/StudyListWithFilters'
 import AppLayout from '@/components/custom/AppLayout'
 import { createClient } from '@/lib/supabase/client'
 
@@ -58,7 +58,7 @@ export default function StudiesPage() {
               {poolStudies.length} étude{poolStudies.length > 1 ? 's' : ''} disponible{poolStudies.length > 1 ? 's' : ''}
             </span>
           </div>
-          <StudyList
+          <StudyListWithFilters
             studies={poolStudies}
             loading={loading}
             error={error}
@@ -70,7 +70,7 @@ export default function StudiesPage() {
 
         <section className="mb-10">
           <h2 className="text-xl mb-4 text-midnight font-heading">Mes études en cours</h2>
-          <StudyList
+          <StudyListWithFilters
             studies={myInProgressStudies}
             loading={loading}
             error={error}
@@ -81,7 +81,7 @@ export default function StudiesPage() {
 
         <section>
           <h2 className="text-xl mb-4 text-midnight font-heading">Mes études terminées</h2>
-          <StudyList
+          <StudyListWithFilters
             studies={myCompletedStudies}
             loading={loading}
             error={error}

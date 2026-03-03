@@ -1,37 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SomnoConnect
 
-## Getting Started
+Plateforme SaaS de gestion d'études du sommeil (soumission client, traitement agent, pilotage admin) développée avec Next.js et Supabase.
 
-First, run the development server:
+## Stack technique
+
+- Next.js 16 (App Router) + React 19 + TypeScript
+- Supabase (Auth, Postgres, Storage, Realtime, RLS)
+- Tailwind CSS + composants shadcn/ui
+- Resend pour l'envoi d'emails transactionnels
+- Vitest pour les tests unitaires
+
+## Setup local
+
+1. Installer les dépendances :
+
+```bash
+npm install
+```
+
+2. Créer le fichier `.env.local` à la racine (voir variables ci-dessous).
+
+3. Lancer l'application :
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Ouvrir : http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Variables d'environnement requises
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+RESEND_API_KEY=
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
 
-## Learn More
+## Commandes utiles
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Développement
+npm run dev
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Build production
+npm run build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Démarrage en mode production
+npm run start
 
-## Deploy on Vercel
+# Lint
+npm run lint
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Tests
+npm run test
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-# Somneo
+## Modules principaux
+
+- Authentification par invitation (`/auth/signup?token=...`)
+- Dashboards dédiés : client, agent, admin
+- Workflow pool/assignation/réassignation des études
+- Messagerie d'étude + notifications email + notifications in-app Realtime
+- Support client intégré (`/support`)

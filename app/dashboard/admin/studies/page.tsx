@@ -7,11 +7,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
+import StudyListWithFilters from '@/components/custom/StudyListWithFilters'
 
 interface Study {
   id: string
   patient_reference: string
-  study_type: string
+  study_type: 'PSG' | 'PV'
   priority: 'low' | 'medium' | 'high'
   status: 'en_attente' | 'en_cours' | 'termine' | 'annule'
   submitted_at: string
@@ -184,6 +185,17 @@ export default function AdminStudiesPage() {
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
+          <h2 className="text-lg text-midnight font-heading mb-4">Vue filtrable</h2>
+          <StudyListWithFilters
+            studies={filtered}
+            loading={loading}
+            error={null}
+            role="admin"
+          />
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
+          <h2 className="text-lg text-midnight font-heading mb-4">Réassignation avancée</h2>
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50">
               <tr>

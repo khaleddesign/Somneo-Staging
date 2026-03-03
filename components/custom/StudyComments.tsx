@@ -68,7 +68,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
                 className={`flex items-end ${mine ? 'justify-end' : 'justify-start'}`}
               >
                 {!mine && (
-                  <Avatar name={c.profiles?.full_name || "Inconnu"} className="mr-2 bg-midnight text-sand font-heading" />
+                  <Avatar name={c.profiles?.full_name || "Utilisateur inconnu"} className="mr-2 bg-midnight text-sand font-heading" />
                 )}
                 <div
                   className={`p-2 rounded-lg max-w-[70%] wrap-break-word ${

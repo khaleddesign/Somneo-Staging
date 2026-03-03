@@ -79,7 +79,7 @@ export default function AdminDashboardPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-500 font-body">{card.label}</p>
-                      <p className="text-3xl text-midnight font-display mt-1">{loading ? '…' : card.value}</p>
+                      <p className="text-3xl text-midnight font-display mt-1 tabular-nums">{loading ? '…' : card.value}</p>
                     </div>
                     <div className={`h-11 w-11 rounded-full flex items-center justify-center ${card.bg}`}>
                       <Icon className={`h-5 w-5 ${card.color}`} />
@@ -97,22 +97,22 @@ export default function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <table className="min-w-full text-sm">
+              <table className="min-w-full text-sm font-body">
                 <thead className="bg-midnight/5">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Nom agent</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">En cours</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Terminées</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Délai moyen</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Dernière activité</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-widest text-gray-500 font-heading">Nom agent</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-widest text-gray-500 font-heading">En cours</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-widest text-gray-500 font-heading">Terminées</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-widest text-gray-500 font-heading">Délai moyen</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-widest text-gray-500 font-heading">Dernière activité</th>
                 </tr>
                 </thead>
                 <tbody>
                   {agents.map((agent) => (
                     <tr key={agent.agent_id} className="border-t border-gray-100">
                       <td className="px-3 py-3 font-body text-midnight">{agent.agent_name}</td>
-                      <td className="px-3 py-3 font-display text-midnight">{agent.en_cours}</td>
-                      <td className="px-3 py-3 font-display text-midnight">{agent.termine_total}</td>
+                      <td className="px-3 py-3 font-display text-midnight tabular-nums">{agent.en_cours}</td>
+                      <td className="px-3 py-3 font-display text-midnight tabular-nums">{agent.termine_total}</td>
                       <td className="px-3 py-3 font-body text-midnight">{agent.avg_turnaround} h</td>
                       <td className="px-3 py-3 font-body text-gray-600">
                         {agent.last_activity ? new Date(agent.last_activity).toLocaleString('fr-FR') : '—'}

@@ -1,8 +1,10 @@
 "use client"
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Study } from '@/hooks/useStudies'
 import { StudyList } from './StudyList'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -10,12 +12,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Search } from 'lucide-react'
 
 interface StudyListWithFiltersProps {
   studies: Study[]
   loading: boolean
   error: string | null
-  role: 'agent' | 'client'
+  role: 'agent' | 'client' | 'admin'
+  currentUserId?: string | null
+  onAssigned?: () => void
 }
 
 export default function StudyListWithFilters({
@@ -23,9 +28,14 @@ export default function StudyListWithFilters({
   loading,
   error,
   role,
+  currentUserId,
+  onAssigned,
 }: StudyListWithFiltersProps) {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 10
 
   const filteredStudies = useMemo(() => {
     let result = studies
@@ -38,15 +48,54 @@ export default function StudyListWithFilters({
       result = result.filter((s) => s.priority === priorityFilter)
     }
 
+    const normalizedQuery = searchQuery.trim().toLowerCase()
+    if (normalizedQuery) {
+      result = result.filter((s) =>
+        s.patient_reference.toLowerCase().includes(normalizedQuery)
+      )
+    }
+
     return result
-  }, [studies, statusFilter, priorityFilter])
+  }, [studies, statusFilter, priorityFilter, searchQuery])
+
+  const totalPages = Math.max(1, Math.ceil(filteredStudies.length / pageSize))
+  const paginatedStudies = useMemo(() => {
+    const safePage = Math.min(currentPage, totalPages)
+    const startIndex = (safePage - 1) * pageSize
+    return filteredStudies.slice(startIndex, startIndex + pageSize)
+  }, [filteredStudies, currentPage, totalPages])
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
 
   return (
     <div className="space-y-4">
       <div className="flex gap-4 flex-wrap">
+        <div className="w-full">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Recherche patient</label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value)
+                setCurrentPage(1)
+              }}
+              placeholder="Rechercher par référence patient"
+              className="pl-9"
+            />
+          </div>
+        </div>
+
         <div className="flex-1 min-w-48">
           <label className="block text-sm font-medium text-gray-700 mb-2">Statut</label>
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value) => {
+            setStatusFilter(value)
+            setCurrentPage(1)
+          }}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -62,7 +111,10 @@ export default function StudyListWithFilters({
 
         <div className="flex-1 min-w-48">
           <label className="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
-          <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+          <Select value={priorityFilter} onValueChange={(value) => {
+            setPriorityFilter(value)
+            setCurrentPage(1)
+          }}>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -75,12 +127,14 @@ export default function StudyListWithFilters({
           </Select>
         </div>
 
-        {(statusFilter !== 'all' || priorityFilter !== 'all') && (
+        {(statusFilter !== 'all' || priorityFilter !== 'all' || searchQuery.trim() !== '') && (
           <div className="flex items-end">
             <button
               onClick={() => {
                 setStatusFilter('all')
                 setPriorityFilter('all')
+                setSearchQuery('')
+                setCurrentPage(1)
               }}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 underline"
             >
@@ -94,12 +148,41 @@ export default function StudyListWithFilters({
         <p className="text-sm text-gray-500 mb-4">
           {filteredStudies.length} étude{filteredStudies.length !== 1 ? 's' : ''}
         </p>
-        <StudyList
-          studies={filteredStudies}
-          loading={loading}
-          error={error}
-          role={role}
-        />
+
+        {!loading && !error && filteredStudies.length === 0 && searchQuery.trim() !== '' ? (
+          <div className="text-center text-gray-500 py-8">Aucune étude trouvée pour cette référence</div>
+        ) : (
+          <StudyList
+            studies={paginatedStudies}
+            loading={loading}
+            error={error}
+            role={role}
+            currentUserId={currentUserId}
+            onAssigned={onAssigned}
+          />
+        )}
+
+        {!loading && !error && filteredStudies.length > 0 && (
+          <div className="flex items-center justify-between mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={currentPage === 1}
+            >
+              Précédent
+            </Button>
+            <p className="text-sm text-gray-500">
+              Page {currentPage} sur {totalPages}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages}
+            >
+              Suivant
+            </Button>
+          </div>
+        )}
       </div>
     </div>
   )

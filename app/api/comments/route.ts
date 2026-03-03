@@ -56,6 +56,37 @@ export async function POST(req: Request) {
 
     if (insertErr) throw insertErr
 
+    // in-app notification
+    try {
+      const { data: studyData, error: studyErr } = await admin
+        .from('studies')
+        .select('client_id, assigned_agent_id')
+        .eq('id', study_id)
+        .single()
+
+      if (studyErr) throw studyErr
+
+      if (comment.profiles.role === 'client') {
+        if (studyData?.assigned_agent_id) {
+          await admin.from('notifications').insert({
+            user_id: studyData.assigned_agent_id,
+            title: 'Nouveau message client',
+            message: `Vous avez reçu un message pour l'étude ${study_id}`,
+          })
+        }
+      } else if (comment.profiles.role === 'agent' || comment.profiles.role === 'admin') {
+        if (studyData?.client_id) {
+          await admin.from('notifications').insert({
+            user_id: studyData.client_id,
+            title: 'Nouvelle réponse',
+            message: 'Un agent a répondu à votre étude.',
+          })
+        }
+      }
+    } catch (e) {
+      console.error('erreur notification in-app commentaire', e)
+    }
+
     // email notification
     try {
       let recipientEmail: string | null = null

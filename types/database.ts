@@ -73,6 +73,15 @@ export interface Comment {
   created_at: string
 }
 
+export interface Notification {
+  id: string
+  user_id: string
+  title: string
+  message: string
+  is_read: boolean
+  created_at: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -82,6 +91,7 @@ export interface Database {
       studies: { Row: Study }
       study_history: { Row: StudyHistory }
       comments: { Row: Comment }
+      notifications: { Row: Notification }
     }
   }
 }

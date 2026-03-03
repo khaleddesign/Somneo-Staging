@@ -10,7 +10,7 @@ export interface Comment {
   profiles: {
     full_name: string
     role: string
-  }
+  } | null
 }
 
 export function useComments(studyId: string) {

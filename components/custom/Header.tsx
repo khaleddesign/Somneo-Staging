@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
+import NotificationBell from '@/components/custom/NotificationBell'
 
 export default function Header() {
   const [email, setEmail] = useState<string | null>(null)
@@ -33,6 +34,7 @@ export default function Header() {
     <header className="bg-white border-b border-gray-200 h-16 flex items-center justify-between px-8">
       <div className="text-xl font-bold text-blue-600">SomnoConnect</div>
       <div className="flex items-center gap-4">
+        <NotificationBell />
         {email && <span className="text-sm text-gray-600">{email}</span>}
         <Button
           onClick={handleLogout}

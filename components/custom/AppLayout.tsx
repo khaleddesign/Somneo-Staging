@@ -3,6 +3,8 @@
 import { ReactNode, useState } from 'react'
 import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
+import HeaderWrapper from './HeaderWrapper'
+import NotificationBell from './NotificationBell'
 
 interface AppLayoutProps {
   children: ReactNode
@@ -23,8 +25,11 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <span className="text-teal text-lg font-display">
             SomnoConnect
           </span>
-          <div />
+          <NotificationBell />
         </header>
+        <div className="hidden lg:block">
+          <HeaderWrapper />
+        </div>
         <main className="bg-slate-50 flex-1 p-6 overflow-auto ml-0 lg:ml-60">
       {children}
     </main>
