@@ -22,6 +22,8 @@ export async function POST(req: Request) {
     })
 
     const body: Body = await req.json()
+    console.log('Données reçues :', body)
+
     const email = body.email?.trim().toLowerCase()
     const fullName = body.full_name?.trim() || null
     const role: InviteRole = body.role && ['admin', 'agent', 'client'].includes(body.role) ? body.role : 'client'
@@ -117,11 +119,25 @@ export async function POST(req: Request) {
          <p>Ce lien est personnel et sécurisé.</p>`
 
     if (process.env.RESEND_API_KEY) {
+      const fallbackSubject = 'Invitation SomnoConnect'
+      const normalizedSubject = subject?.trim() || fallbackSubject
+      const normalizedHtml = html?.trim()
+      const resendPayload = normalizedHtml
+        ? {
+            from: 'SomnoConnect <noreply@somnoventis.com>',
+            to: email,
+            subject: normalizedSubject,
+            html: normalizedHtml,
+          }
+        : {
+            from: 'SomnoConnect <noreply@somnoventis.com>',
+            to: email,
+            subject: normalizedSubject,
+            text: `Vous avez reçu une invitation SomnoConnect. Lien: ${signupUrl}`,
+          }
+
       const { error: emailError } = await resend.emails.send({
-        from: 'SomnoConnect <noreply@somnoventis.com>',
-        to: email,
-        subject,
-        html,
+        ...resendPayload,
       })
 
       if (emailError) {
@@ -132,10 +148,10 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, token })
-  } catch (err: unknown) {
-    console.error('Resend Error:', err)
-    console.error('[POST /api/invite]', err)
-    const message = err instanceof Error ? err.message : 'Erreur serveur'
-    return NextResponse.json({ error: message }, { status: 500 })
+  } catch (error: unknown) {
+    console.error('Resend Error:', error)
+    console.error('[POST /api/invite]', error)
+    const normalizedError = error instanceof Error ? error : new Error(String(error))
+    return NextResponse.json({ error: normalizedError.message, detail: error }, { status: 400 })
   }
 }
