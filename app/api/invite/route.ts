@@ -80,26 +80,42 @@ export async function POST(req: Request) {
     let institutionId = caller.institution_id || null
 
     if (!institutionId) {
-      const { data: firstInstitution } = await supabase
+      const { data: firstInstitution, error: instError } = await supabase
         .from('institutions')
         .select('id')
         .limit(1)
         .maybeSingle()
 
+      console.error('[POST /api/invite] institution lookup', {
+        callerInstitutionId: caller.institution_id,
+        firstInstitution,
+        instError: instError?.message ?? null,
+      })
+
       institutionId = firstInstitution?.id || null
     }
 
+    // Fallback sûr : on autorise institution_id null si la table est vide
+    // (l'insert invitations accepte null, la contrainte FK est nullable)
     if (!institutionId) {
-      return NextResponse.json({ error: 'Aucune institution disponible' }, { status: 400 })
+      console.error('[POST /api/invite] aucune institution trouvée — proceeding avec institution_id: null')
     }
 
-    const { token } = await createInvitation({
-      email,
-      full_name: fullName,
-      institution_id: institutionId,
-      created_by: user.id,
-      role_invited: role,
-    })
+    let token: string
+    try {
+      const result = await createInvitation({
+        email,
+        full_name: fullName,
+        institution_id: institutionId,
+        created_by: user.id,
+        role_invited: role,
+      })
+      token = result.token
+    } catch (invErr: unknown) {
+      console.error('[POST /api/invite] createInvitation failed', invErr)
+      const msg = invErr instanceof Error ? invErr.message : String(invErr)
+      return NextResponse.json({ error: `Échec création invitation : ${msg}` }, { status: 500 })
+    }
 
     const signupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/signup?token=${token}`
 
@@ -149,9 +165,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true, token })
   } catch (error: unknown) {
-    console.error('Resend Error:', error)
-    console.error('[POST /api/invite]', error)
-    const normalizedError = error instanceof Error ? error : new Error(String(error))
-    return NextResponse.json({ error: normalizedError.message, detail: error }, { status: 400 })
+    console.error('[POST /api/invite] unhandled error', error)
+    const msg = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: `Erreur inattendue : ${msg}` }, { status: 500 })
   }
 }
