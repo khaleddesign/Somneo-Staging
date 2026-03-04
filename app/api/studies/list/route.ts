@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 
 export async function GET() {
   try {
@@ -32,7 +33,9 @@ export async function GET() {
       if (error) throw error
       studies = data
     } else {
-      const { data, error } = await supabase
+      // agent/admin : bypass RLS pour voir toutes les études
+      const admin = createAdminClient()
+      const { data, error } = await admin
         .from('studies')
         .select('*, profiles!studies_client_id_fkey(full_name, email)')
         .order('submitted_at', { ascending: false })
