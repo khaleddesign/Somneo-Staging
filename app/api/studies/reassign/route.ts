@@ -38,10 +38,13 @@ export async function PATCH(req: Request) {
 
     const admin = createAdminClient()
 
+    const newAgentId = assigned_agent_id || null
+
     const { error: updateError } = await admin
       .from('studies')
       .update({
-        assigned_agent_id: assigned_agent_id || null,
+        assigned_agent_id: newAgentId,
+        status: newAgentId ? 'en_cours' : 'en_attente',
         updated_at: new Date().toISOString(),
       })
       .eq('id', study_id)
