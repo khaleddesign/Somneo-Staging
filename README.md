@@ -64,3 +64,4 @@ npm run test
 - Workflow pool/assignation/réassignation des études
 - Messagerie d'étude + notifications email + notifications in-app Realtime
 - Support client intégré (`/support`)
+# somneo-local
