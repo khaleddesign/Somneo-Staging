@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import AdminLayout from '@/components/custom/AdminLayout'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -30,6 +30,7 @@ export default function AdminAgentsPage() {
   const [form, setForm] = useState({ full_name: '', email: '', role: 'agent' })
   const [inviteForm, setInviteForm] = useState({ full_name: '', email: '', role: 'agent' })
   const [submitting, setSubmitting] = useState(false)
+  const [inviteError, setInviteError] = useState<string | null>(null)
 
   async function fetchAgents() {
     setLoading(true)
@@ -52,8 +53,9 @@ export default function AdminAgentsPage() {
 
   async function inviteAgent() {
     setSubmitting(true)
+    setInviteError(null)
     const roleToSend = inviteForm.role === 'admin' ? 'admin' : 'agent'
-    await fetch('/api/invite', {
+    const res = await fetch('/api/invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -62,6 +64,16 @@ export default function AdminAgentsPage() {
         role: roleToSend,
       }),
     })
+
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      const message = data?.error || 'Erreur lors de l\'invitation'
+      console.error('[AdminAgentsPage] invite error:', data)
+      setInviteError(message)
+      setSubmitting(false)
+      return
+    }
+
     setSubmitting(false)
     setInviteOpen(false)
     setInviteForm({ full_name: '', email: '', role: 'agent' })
@@ -187,6 +199,9 @@ export default function AdminAgentsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-heading">Envoyer l'invitation</DialogTitle>
+            <DialogDescription className="font-body text-gray-500">
+              Envoyez une invitation sécurisée à un agent ou administrateur.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -212,6 +227,9 @@ export default function AdminAgentsPage() {
             <Button className="w-full bg-teal text-white hover:bg-teal/90" disabled={submitting} onClick={inviteAgent}>
               Envoyer l'invitation
             </Button>
+            {inviteError && (
+              <p className="text-sm text-red-600 font-body">{inviteError}</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
@@ -220,6 +238,9 @@ export default function AdminAgentsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-heading">Modifier l'agent</DialogTitle>
+            <DialogDescription className="font-body text-gray-500">
+              Mettez à jour les informations du compte sélectionné.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>

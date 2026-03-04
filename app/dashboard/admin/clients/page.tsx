@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import AdminLayout from '@/components/custom/AdminLayout'
 import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Plus, Pencil, Ban, Search } from 'lucide-react'
@@ -27,6 +27,8 @@ export default function AdminClientsPage() {
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null)
   const [inviteForm, setInviteForm] = useState({ full_name: '', email: '' })
   const [form, setForm] = useState({ full_name: '', email: '' })
+  const [inviteError, setInviteError] = useState<string | null>(null)
+  const [submittingInvite, setSubmittingInvite] = useState(false)
 
   async function fetchClients() {
     setLoading(true)
@@ -48,17 +50,38 @@ export default function AdminClientsPage() {
   }, [clients, query])
 
   async function inviteClient() {
-    await fetch('/api/invite', {
+    const normalizedEmail = inviteForm.email.trim().toLowerCase()
+    const normalizedName = inviteForm.full_name.trim()
+
+    if (!normalizedEmail) {
+      setInviteError('Email requis')
+      return
+    }
+
+    setSubmittingInvite(true)
+    setInviteError(null)
+
+    const res = await fetch('/api/invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        full_name: inviteForm.full_name,
-        email: inviteForm.email,
+        full_name: normalizedName,
+        email: normalizedEmail,
         role: 'client',
       }),
     })
+
+    const data = await res.json().catch(() => null)
+    if (!res.ok) {
+      const message = data?.error || 'Erreur lors de l\'invitation client'
+      setInviteError(message)
+      setSubmittingInvite(false)
+      return
+    }
+
     setInviteOpen(false)
     setInviteForm({ full_name: '', email: '' })
+    setSubmittingInvite(false)
   }
 
   function openEdit(client: ClientRow) {
@@ -168,6 +191,9 @@ export default function AdminClientsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-heading">Inviter un client</DialogTitle>
+            <DialogDescription className="font-body text-gray-500">
+              Envoyez une invitation sécurisée au portail client SomnoConnect.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -176,9 +202,12 @@ export default function AdminClientsPage() {
             </div>
             <div>
               <Label className="font-heading">Email</Label>
-              <Input value={inviteForm.email} onChange={(e) => setInviteForm((s) => ({ ...s, email: e.target.value }))} />
+              <Input type="email" value={inviteForm.email} onChange={(e) => setInviteForm((s) => ({ ...s, email: e.target.value }))} />
             </div>
-            <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={inviteClient}>Envoyer l'invitation</Button>
+            <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={inviteClient} disabled={submittingInvite || !inviteForm.email.trim()}>
+              {submittingInvite ? 'Envoi...' : "Envoyer l'invitation"}
+            </Button>
+            {inviteError && <p className="text-sm text-red-600 font-body">{inviteError}</p>}
           </div>
         </DialogContent>
       </Dialog>
@@ -187,6 +216,9 @@ export default function AdminClientsPage() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle className="font-heading">Modifier le client</DialogTitle>
+            <DialogDescription className="font-body text-gray-500">
+              Mettez à jour les informations du client sélectionné.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
