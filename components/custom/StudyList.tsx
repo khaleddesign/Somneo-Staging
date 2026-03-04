@@ -144,6 +144,13 @@ export const StudyList: FC<StudyListProps> = ({
                   >
                     Voir
                   </a>
+                ) : role === 'admin' ? (
+                  <a
+                    href={`/dashboard/admin/studies/${study.id}`}
+                    className="border border-teal text-teal text-sm px-3 py-1 rounded-lg hover:bg-teal/5"
+                  >
+                    Voir
+                  </a>
                 ) : (
                   <span className="text-xs text-gray-400">—</span>
                 )}
