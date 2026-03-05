@@ -424,6 +424,41 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     })
   }
 
+  function fillTestData() {
+    setContent((prev) => ({
+      ...prev,
+      values: {
+        ...prev.values,
+        sommeil: {
+          temps_lit: '487',
+          temps_sommeil: '398',
+          efficacite: '81',
+          latence_endormissement: '18',
+          index_eveil: '14',
+        },
+        respiratoire: {
+          iah: '24',
+          iah_supin: '38',
+          iah_non_supin: '11',
+          iah_rem: '41',
+          iah_nrem: '18',
+          longest_apnea_sec: '52',
+        },
+        oximetrie: {
+          spo2_moyenne: '93',
+          spo2_min: '79',
+          ct90: '12',
+          spo2_base_awake: '96',
+          time_under_88: '4',
+        },
+        conclusion: {
+          richtext:
+            'Syndrome d\'apnées obstructives du sommeil (SAOS) d\'intensité modérée avec un IAH à 24/h, prédominant en position dorsale (IAH supin 38/h) et en sommeil paradoxal (IAH REM 41/h). Désaturation nocturne significative avec SpO2 minimale à 79% et CT90 à 12%. Efficacité du sommeil conservée à 81%.\n\nRecommandation : mise en place d\'une ventilation en pression positive continue (PPC). Contrôle clinique et polygraphique à 3 mois.',
+        },
+      },
+    }))
+  }
+
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-100 p-6 text-sm text-gray-500">
@@ -553,10 +588,22 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       </div>
 
       <div className="sticky bottom-0 z-20 -mx-6 mt-6 flex flex-col gap-3 border-t border-gray-100 bg-white px-6 py-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-emerald-600 font-body inline-flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-          {lastSavedAt ? `Sauvegardé à ${lastSavedAt}` : 'Autosave actif'}
-        </p>
+        <div className="inline-flex items-center gap-3">
+          <p className="text-xs text-emerald-600 font-body inline-flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            {lastSavedAt ? `Sauvegardé à ${lastSavedAt}` : 'Autosave actif'}
+          </p>
+          {process.env.NODE_ENV === 'development' && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={fillTestData}
+              className="h-7 rounded-md border-dashed border-gray-300 px-2 text-xs text-gray-400 hover:border-gray-400 hover:text-gray-600"
+            >
+              Remplir avec données test
+            </Button>
+          )}
+        </div>
 
         <div className="flex items-center gap-2">
           <Button
