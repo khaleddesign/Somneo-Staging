@@ -164,6 +164,10 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   // Ref qui pointe toujours vers le content le plus récent
   // Évite la stale closure dans saveReport (useCallback ne recapture pas content à chaque frappe)
   const contentRef = useRef<ReportContent>({ values: {} })
+
+  // Flag : autosave et generate interdits tant que loadData() n'a pas terminé
+  // Empêche l'autosave de sauvegarder values:{} avant que le contenu soit chargé
+  const isLoaded = useRef(false)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [generatingPdf, setGeneratingPdf] = useState(false)
@@ -224,7 +228,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   }, [reportId]) // content retiré des deps — on lit depuis contentRef à la place
 
   const generatePdf = useCallback(async () => {
-    if (!reportId) return
+    if (!reportId || !isLoaded.current) return
 
     setGeneratingPdf(true)
     setGenerateError(null)
@@ -342,13 +346,13 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
         if (currentReport) {
           setReportId(currentReport.id)
           const normalized = normalizeContent(currentReport.content)
-          // BUG 2 FIX — initialisation directe sans functional updater
-          // Évite que l'état rassis (prev.values = {}) efface les valeurs sauvegardées
           setContent({
             study_type: normalized.study_type,
-            values: normalized.values,   // réinjecte les valeurs du rapport existant
+            values: normalized.values,
             sections: loadedTemplate.sections,
           })
+          // Autoriser autosave et generate seulement après chargement complet
+          isLoaded.current = true
         }
       } catch (err: unknown) {
         if (!mounted) return
@@ -372,7 +376,8 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     if (!reportId) return
 
     const intervalId = window.setInterval(() => {
-      void saveReport().catch(() => undefined) // autosave silencieux
+      if (!isLoaded.current) return // attendre la fin du chargement initial
+      void saveReport().catch(() => undefined)
     }, 30000)
 
     return () => {
