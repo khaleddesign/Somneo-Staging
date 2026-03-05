@@ -47,6 +47,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params
     const body = (await req.json()) as UpdateReportBody
 
+    console.log('[PATCH report] id:', id)
+    console.log('[PATCH report] content reçu:', JSON.stringify(body.content))
+
     if (body.content === undefined) {
       return NextResponse.json({ error: 'content requis' }, { status: 400 })
     }
@@ -58,8 +61,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
+      console.log('[PATCH report] auth error:', authError?.message)
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
+
+    console.log('[PATCH report] user.id:', user.id)
 
     const admin = createAdminClient()
     const { data: profile, error: profileError } = await admin
@@ -69,6 +75,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
+      console.log('[PATCH report] profile error ou accès refusé:', profileError?.message, profile?.role)
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
@@ -81,6 +88,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .eq('id', id)
       .select('id, study_id, agent_id, content, status, pdf_path, created_at, validated_at, updated_at')
       .single()
+
+    console.log('[PATCH report] résultat DB data:', JSON.stringify(updated?.content))
+    console.log('[PATCH report] résultat DB error:', updateError?.message)
 
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })
