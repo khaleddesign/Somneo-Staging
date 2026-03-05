@@ -8,6 +8,7 @@ async function loginClient(page: import('@playwright/test').Page) {
   await page.getByLabel('Email').fill(CLIENT_EMAIL as string)
   await page.getByLabel('Mot de passe').fill(CLIENT_PASSWORD as string)
   await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.waitForURL(/\/dashboard\/client/, { timeout: 10000 })
 }
 
 test.describe('Client E2E', () => {
