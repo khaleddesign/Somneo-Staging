@@ -5,6 +5,14 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 
 interface ReportEditorProps {
   studyId: string
@@ -60,6 +68,12 @@ interface ReportCreateResponse {
 
 interface TemplateGetResponse {
   template: ReportTemplate
+}
+
+interface GeneratePdfResponse {
+  success?: boolean
+  pdf_url?: string
+  error?: string
 }
 
 function isObject(value: unknown): value is Record<string, unknown> {
@@ -130,8 +144,12 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const [content, setContent] = useState<ReportContent>({ values: {} })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [generatingPdf, setGeneratingPdf] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [generateError, setGenerateError] = useState<string | null>(null)
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null)
+  const [showPdfModal, setShowPdfModal] = useState(false)
 
   const sectionsToRender = useMemo(() => {
     if (template?.sections?.length) return template.sections
@@ -168,6 +186,34 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       setSaving(false)
     }
   }, [content, reportId])
+
+  const generatePdf = useCallback(async () => {
+    if (!reportId) return
+
+    setGeneratingPdf(true)
+    setGenerateError(null)
+
+    try {
+      await saveReport()
+
+      const res = await fetch(`/api/reports/${reportId}/generate`, {
+        method: 'POST',
+      })
+
+      const payload = (await res.json()) as GeneratePdfResponse
+      if (!res.ok || !payload.pdf_url) {
+        throw new Error(payload.error || 'Impossible de générer le PDF')
+      }
+
+      setPdfUrl(payload.pdf_url)
+      setShowPdfModal(true)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur de génération PDF'
+      setGenerateError(message)
+    } finally {
+      setGeneratingPdf(false)
+    }
+  }, [reportId, saveReport])
 
   useEffect(() => {
     let mounted = true
@@ -288,6 +334,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   return (
     <div className="space-y-6 rounded-xl border border-gray-100 bg-white p-6">
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {generateError && <p className="text-sm text-red-600">{generateError}</p>}
 
       {sectionsToRender.map((section) => {
         const sectionValues = content.values[section.id] ?? {}
@@ -371,13 +418,45 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
 
           <Button
             type="button"
-            disabled
-            className="bg-gold text-white opacity-50 hover:bg-gold"
+            onClick={() => void generatePdf()}
+            disabled={generatingPdf || !reportId}
+            className="bg-gold text-white hover:bg-gold/90 disabled:opacity-50"
           >
-            Générer le PDF
+            {generatingPdf ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Génération en cours...
+              </>
+            ) : (
+              'Générer le PDF'
+            )}
           </Button>
         </div>
       </div>
+
+      <Dialog open={showPdfModal} onOpenChange={setShowPdfModal}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>PDF généré</DialogTitle>
+            <DialogDescription>
+              Le rapport PDF a été généré avec succès.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            {pdfUrl && (
+              <a
+                href={pdfUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-9 items-center justify-center rounded-md bg-teal px-4 py-2 text-sm font-medium text-white hover:bg-teal/90"
+              >
+                Télécharger le PDF
+              </a>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
