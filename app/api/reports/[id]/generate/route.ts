@@ -4,6 +4,7 @@ import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import ReportPDF from '@/lib/pdf/ReportPDF'
+import { enhanceTemplateSections } from '@/lib/reports/templateSections'
 
 export const runtime = 'nodejs'
 
@@ -145,7 +146,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Template introuvable' }, { status: 404 })
     }
 
-    const sections = toTemplateSections(template.sections)
+    const sections = toTemplateSections(enhanceTemplateSections(study.study_type as StudyType, template.sections))
     const values = toValues(report.content)
 
     const nowIso = new Date().toISOString()

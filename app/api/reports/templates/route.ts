@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { enhanceTemplateSections } from '@/lib/reports/templateSections'
 
 export async function GET(req: NextRequest) {
   try {
@@ -36,7 +37,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: `Template introuvable pour ${studyType}` }, { status: 404 })
     }
 
-    return NextResponse.json({ template })
+    return NextResponse.json({
+      template: {
+        ...template,
+        sections: enhanceTemplateSections(template.study_type, template.sections),
+      },
+    })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erreur interne'
     return NextResponse.json({ error: message }, { status: 500 })

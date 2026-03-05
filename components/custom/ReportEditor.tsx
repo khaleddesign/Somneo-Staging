@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { parseTextReport } from '@/lib/reports/parseTextReport'
 import {
   Dialog,
   DialogContent,
@@ -76,6 +77,23 @@ interface GeneratePdfResponse {
   error?: string
 }
 
+interface AutoDraftResponse {
+  success?: boolean
+  report?: StudyReport
+  error?: string
+}
+
+const selectFieldOptions: Record<string, string[]> = {
+  snoring: ['Absent', 'Intermittent', 'Continu', 'Positionnel'],
+  baseline_stability: ['Stable', 'Instable'],
+}
+
+const technicalQuickAdd = [
+  'Artefact de mouvement (périodes d\'éveil).',
+  'Pression PPC instable (fuites).',
+  'Signal EEG bruité (impédances hautes).',
+]
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
@@ -145,11 +163,14 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [generatingPdf, setGeneratingPdf] = useState(false)
+  const [generatingDraft, setGeneratingDraft] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [generateError, setGenerateError] = useState<string | null>(null)
+  const [draftError, setDraftError] = useState<string | null>(null)
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null)
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [showPdfModal, setShowPdfModal] = useState(false)
+  const [rawInput, setRawInput] = useState('')
 
   const sectionsToRender = useMemo(() => {
     if (template?.sections?.length) return template.sections
@@ -212,6 +233,38 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       setGenerateError(message)
     } finally {
       setGeneratingPdf(false)
+    }
+  }, [reportId, saveReport])
+
+  const generateAutoDraft = useCallback(async () => {
+    if (!reportId) return
+
+    setGeneratingDraft(true)
+    setDraftError(null)
+
+    try {
+      await saveReport()
+
+      const res = await fetch(`/api/reports/${reportId}/autodraft`, {
+        method: 'POST',
+      })
+
+      const payload = (await res.json()) as AutoDraftResponse
+      if (!res.ok || !payload.report) {
+        throw new Error(payload.error || 'Impossible de générer le brouillon médical')
+      }
+
+      const normalized = normalizeContent(payload.report.content)
+      setContent((prev) => ({
+        ...prev,
+        ...normalized,
+      }))
+      setLastSavedAt(formatSavedAt(new Date()))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur de génération du brouillon'
+      setDraftError(message)
+    } finally {
+      setGeneratingDraft(false)
     }
   }, [reportId, saveReport])
 
@@ -323,6 +376,32 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     }))
   }
 
+  function appendTechnicalIncident(text: string) {
+    const current = content.values.technical?.text ?? ''
+    const separator = current.trim() ? '\n- ' : '- '
+    updateValue('technical', 'text', `${current}${separator}${text}`)
+  }
+
+  function applyParsedRawText() {
+    const parsed = parseTextReport(rawInput)
+    if (parsed.length === 0) return
+
+    setContent((prev) => {
+      const nextValues: Record<string, Record<string, string>> = { ...prev.values }
+      parsed.forEach((item) => {
+        nextValues[item.sectionId] = {
+          ...(nextValues[item.sectionId] ?? {}),
+          [item.key]: item.value,
+        }
+      })
+
+      return {
+        ...prev,
+        values: nextValues,
+      }
+    })
+  }
+
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-100 p-6 text-sm text-gray-500">
@@ -335,6 +414,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     <div className="space-y-6 rounded-xl border border-gray-100 bg-white p-6">
       {error && <p className="text-sm text-red-600">{error}</p>}
       {generateError && <p className="text-sm text-red-600">{generateError}</p>}
+      {draftError && <p className="text-sm text-red-600">{draftError}</p>}
 
       {sectionsToRender.map((section) => {
         const sectionValues = content.values[section.id] ?? {}
@@ -355,12 +435,30 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
             )}
 
             {section.type === 'text' && (
-              <Textarea
-                placeholder={section.placeholder ?? ''}
-                value={sectionValues.text ?? ''}
-                onChange={(e) => updateValue(section.id, 'text', e.target.value)}
-                className="rounded-lg border-gray-200 focus-visible:border-teal"
-              />
+              <div className="space-y-3">
+                <Textarea
+                  placeholder={section.placeholder ?? ''}
+                  value={sectionValues.text ?? ''}
+                  onChange={(e) => updateValue(section.id, 'text', e.target.value)}
+                  className="rounded-lg border-gray-200 focus-visible:border-teal"
+                />
+
+                {section.id === 'technical' && (
+                  <div className="flex flex-wrap gap-2">
+                    {technicalQuickAdd.map((incident) => (
+                      <Button
+                        key={incident}
+                        type="button"
+                        variant="outline"
+                        onClick={() => appendTechnicalIncident(incident)}
+                        className="border-gray-200"
+                      >
+                        {incident}
+                      </Button>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
 
             {section.type === 'metrics' && (
@@ -370,29 +468,67 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
                     <span className="text-sm text-midnight">
                       {field.label}{field.unit ? ` (${field.unit})` : ''}
                     </span>
-                    <Input
-                      type="number"
-                      inputMode="decimal"
-                      value={sectionValues[field.key] ?? ''}
-                      onChange={(e) => updateValue(section.id, field.key, e.target.value)}
-                      className="rounded-lg border-gray-200 focus-visible:border-teal"
-                    />
+                    {selectFieldOptions[field.key] ? (
+                      <select
+                        value={sectionValues[field.key] ?? ''}
+                        onChange={(e) => updateValue(section.id, field.key, e.target.value)}
+                        className="h-9 w-full rounded-lg border border-gray-200 bg-white px-3 text-sm focus:border-teal"
+                      >
+                        <option value="">Sélectionner</option>
+                        {selectFieldOptions[field.key].map((option) => (
+                          <option key={option} value={option}>{option}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <Input
+                        type="number"
+                        inputMode="decimal"
+                        value={sectionValues[field.key] ?? ''}
+                        onChange={(e) => updateValue(section.id, field.key, e.target.value)}
+                        className="rounded-lg border-gray-200 focus-visible:border-teal"
+                      />
+                    )}
                   </label>
                 ))}
               </div>
             )}
 
             {section.type === 'richtext' && (
-              <Textarea
-                placeholder={section.placeholder ?? ''}
-                value={sectionValues.richtext ?? ''}
-                onChange={(e) => updateValue(section.id, 'richtext', e.target.value)}
-                className="min-h-[150px] rounded-lg border-gray-200 focus-visible:border-teal"
-              />
+              <div className="space-y-3">
+                <Textarea
+                  placeholder={section.placeholder ?? ''}
+                  value={sectionValues.richtext ?? ''}
+                  onChange={(e) => updateValue(section.id, 'richtext', e.target.value)}
+                  className="min-h-[150px] rounded-lg border-gray-200 focus-visible:border-teal"
+                />
+                {section.id === 'conclusion' && (
+                  <label className="flex items-center gap-2 text-sm text-midnight">
+                    <input
+                      type="checkbox"
+                      checked={sectionValues.renew_exam === 'true'}
+                      onChange={(e) => updateValue(section.id, 'renew_exam', e.target.checked ? 'true' : 'false')}
+                    />
+                    Examen à renouveler pour cause technique
+                  </label>
+                )}
+              </div>
             )}
           </section>
         )
       })}
+
+      <div className="space-y-3 rounded-lg border border-gray-200 p-4">
+        <p className="font-heading text-midnight">Extraction auto (copier-coller brut)</p>
+        <Textarea
+          placeholder="Collez ici un résumé brut (ex: AHI: 22, SpO2 min: 84, Efficiency: 68...)"
+          value={rawInput}
+          onChange={(e) => setRawInput(e.target.value)}
+          className="min-h-[110px] rounded-lg border-gray-200 focus-visible:border-teal"
+        />
+        <Button type="button" variant="outline" onClick={applyParsedRawText} className="border-gray-200">
+          Extraire automatiquement les métriques
+        </Button>
+      </div>
 
       <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-gray-500">
@@ -400,6 +536,22 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
         </p>
 
         <div className="flex items-center gap-2">
+          <Button
+            type="button"
+            onClick={() => void generateAutoDraft()}
+            disabled={generatingDraft || !reportId}
+            className="bg-midnight text-white hover:bg-midnight/90"
+          >
+            {generatingDraft ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Génération du brouillon...
+              </>
+            ) : (
+              'Auto-générer le brouillon médical'
+            )}
+          </Button>
+
           <Button
             type="button"
             onClick={() => void saveReport()}

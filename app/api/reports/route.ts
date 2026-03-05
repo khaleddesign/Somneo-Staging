@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { enhanceTemplateSections } from '@/lib/reports/templateSections'
 
 interface CreateReportBody {
   study_id?: string
@@ -109,6 +110,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Template introuvable pour ${study.study_type}` }, { status: 404 })
     }
 
+    const enhancedSections = enhanceTemplateSections(study.study_type, template.sections)
+
     const { data: created, error: createError } = await admin
       .from('study_reports')
       .insert({
@@ -117,7 +120,7 @@ export async function POST(req: NextRequest) {
         status: 'draft',
         content: {
           study_type: study.study_type,
-          sections: template.sections,
+          sections: enhancedSections,
         },
       })
       .select('id, study_id, agent_id, content, status, pdf_path, created_at, validated_at, updated_at')

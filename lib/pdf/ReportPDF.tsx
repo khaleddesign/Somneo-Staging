@@ -185,6 +185,30 @@ const styles = StyleSheet.create({
     width: 0,
     height: 0,
   },
+  techConclusion: {
+    marginTop: 4,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  techConclusionTitle: {
+    backgroundColor: colors.lightGray,
+    color: colors.midnight,
+    fontWeight: 'bold',
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    fontSize: 10,
+  },
+  techConclusionBody: {
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  checkboxLine: {
+    fontSize: 10,
+  },
 })
 
 function getValue(values: Record<string, Record<string, string>>, sectionId: string, key: string): string {
@@ -270,6 +294,16 @@ export default function ReportPDF({
             </View>
           </View>
         ))}
+
+        <View style={styles.techConclusion}>
+          <Text style={styles.techConclusionTitle}>Conclusion du Technicien</Text>
+          <View style={styles.techConclusionBody}>
+            <Text style={styles.paragraph}>{values.conclusion?.richtext || 'Non renseigné'}</Text>
+            <Text style={styles.checkboxLine}>
+              {values.conclusion?.renew_exam === 'true' ? '☑' : '☐'} Examen à renouveler pour cause technique
+            </Text>
+          </View>
+        </View>
 
         <View fixed style={styles.footer}>
           <Text style={styles.footerLine1}>SOMNOVENTIS F.Z.E | contact@somnoventis.com</Text>
