@@ -45,7 +45,7 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
         onClick={onClose}
       />
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-midnight text-white z-50 transform transition-transform lg:translate-x-0 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-[#06111f] text-white z-50 transform transition-transform lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -58,10 +58,10 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
 
         <div className="px-6 py-4 hidden lg:block border-b border-white/10">
           <div className="flex items-center gap-2">
-            <span className="text-teal text-xl font-display">SomnoConnect</span>
-            <span className="text-xs bg-gold/20 text-gold px-2 py-0.5 rounded-full font-heading tracking-wide">ADMIN</span>
+            <span className="text-teal text-2xl font-display">SomnoConnect</span>
+            <span className="text-[9px] tracking-[3px] bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded-full font-heading">ADMIN</span>
           </div>
-          <p className="text-sand/50 text-xs tracking-widest uppercase font-heading mt-1">BY SOMNOVENTIS</p>
+          <p className="text-sand/40 text-[9px] tracking-[3px] uppercase font-heading mt-1">BY SOMNOVENTIS</p>
         </div>
 
         <nav className="mt-6 px-2">
@@ -72,14 +72,14 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={onClose}
-                className={`flex items-center gap-3 px-4 py-2 my-1 rounded ${
+                className={`flex items-center gap-3 px-4 py-2 my-1 rounded-lg transition-colors ${
                   active
                     ? 'bg-teal/10 text-teal border-l-2 border-teal'
-                    : 'text-sand/70 hover:text-sand hover:bg-white/5'
+                    : 'text-sand/50 hover:text-sand hover:bg-white/4'
                 }`}
               >
                 <item.icon className="h-5 w-5" />
-                <span className="text-sm font-body">{item.label}</span>
+                <span className="text-sm font-heading tracking-wide">{item.label}</span>
               </Link>
             )
           })}
