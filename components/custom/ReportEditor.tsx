@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -160,6 +160,10 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const [reportId, setReportId] = useState<string | null>(null)
   const [template, setTemplate] = useState<ReportTemplate | null>(null)
   const [content, setContent] = useState<ReportContent>({ values: {} })
+
+  // Ref qui pointe toujours vers le content le plus récent
+  // Évite la stale closure dans saveReport (useCallback ne recapture pas content à chaque frappe)
+  const contentRef = useRef<ReportContent>({ values: {} })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [generatingPdf, setGeneratingPdf] = useState(false)
@@ -172,6 +176,11 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [rawInput, setRawInput] = useState('')
 
+  // Toujours synchroniser la ref avec le state courant
+  useEffect(() => {
+    contentRef.current = content
+  }, [content])
+
   const sectionsToRender = useMemo(() => {
     if (template?.sections?.length) return template.sections
     if (content.sections?.length) return content.sections
@@ -181,6 +190,11 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const saveReport = useCallback(async () => {
     if (!reportId) return
 
+    // Lire depuis la ref pour toujours avoir le content le plus récent
+    // (évite la stale closure : useCallback n'a plus content dans ses deps)
+    const currentContent = contentRef.current
+    console.log('[saveReport] saving content:', JSON.stringify(currentContent))
+
     setSaving(true)
     setError(null)
 
@@ -188,7 +202,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       const res = await fetch(`/api/reports/${reportId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content: currentContent }),
       })
 
       const payload: unknown = await res.json()
@@ -203,11 +217,11 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur de sauvegarde'
       setError(message)
-      throw err // BUG 1 FIX — re-throw pour que generatePdf puisse interrompre si save échoue
+      throw err
     } finally {
       setSaving(false)
     }
-  }, [content, reportId])
+  }, [reportId]) // content retiré des deps — on lit depuis contentRef à la place
 
   const generatePdf = useCallback(async () => {
     if (!reportId) return
@@ -235,7 +249,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     } finally {
       setGeneratingPdf(false)
     }
-  }, [reportId, saveReport])
+  }, [reportId, saveReport]) // saveReport stable — reportId suffit en pratique
 
   const generateAutoDraft = useCallback(async () => {
     if (!reportId) return
