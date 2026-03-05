@@ -203,6 +203,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Erreur de sauvegarde'
       setError(message)
+      throw err // BUG 1 FIX — re-throw pour que generatePdf puisse interrompre si save échoue
     } finally {
       setSaving(false)
     }
@@ -327,11 +328,13 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
         if (currentReport) {
           setReportId(currentReport.id)
           const normalized = normalizeContent(currentReport.content)
-          setContent((prev) => ({
-            ...prev,
-            ...normalized,
+          // BUG 2 FIX — initialisation directe sans functional updater
+          // Évite que l'état rassis (prev.values = {}) efface les valeurs sauvegardées
+          setContent({
+            study_type: normalized.study_type,
+            values: normalized.values,   // réinjecte les valeurs du rapport existant
             sections: loadedTemplate.sections,
-          }))
+          })
         }
       } catch (err: unknown) {
         if (!mounted) return
@@ -355,7 +358,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     if (!reportId) return
 
     const intervalId = window.setInterval(() => {
-      void saveReport()
+      void saveReport().catch(() => undefined) // autosave silencieux
     }, 30000)
 
     return () => {

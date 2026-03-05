@@ -146,8 +146,12 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: 'Template introuvable' }, { status: 404 })
     }
 
+    console.log('[generate] report.content:', JSON.stringify(report.content))
+
     const sections = toTemplateSections(enhanceTemplateSections(study.study_type as StudyType, template.sections))
     const values = toValues(report.content)
+
+    console.log('[generate] values extracted:', JSON.stringify(values))
 
     const nowIso = new Date().toISOString()
     const nowDate = new Date().toLocaleDateString('fr-FR')
