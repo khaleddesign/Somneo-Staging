@@ -132,15 +132,15 @@ export default function AdminStudiesPage() {
 
   return (
     <AdminLayout>
-      <div className="p-2 md:p-4 space-y-6">
+      <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div>
-          <h1 className="text-4xl text-midnight">Toutes les études</h1>
+          <h1 className="text-4xl text-midnight font-display">Toutes les études</h1>
           <p className="text-gray-500 font-body">Vision globale et réassignation des études</p>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 grid grid-cols-1 md:grid-cols-5 gap-3">
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger><SelectValue placeholder="Statut" /></SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Statut" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous statuts</SelectItem>
               <SelectItem value="en_attente">En attente</SelectItem>
@@ -151,7 +151,7 @@ export default function AdminStudiesPage() {
           </Select>
 
           <Select value={priority} onValueChange={setPriority}>
-            <SelectTrigger><SelectValue placeholder="Priorité" /></SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Priorité" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Toutes priorités</SelectItem>
               <SelectItem value="low">Basse</SelectItem>
@@ -161,7 +161,7 @@ export default function AdminStudiesPage() {
           </Select>
 
           <Select value={agent} onValueChange={setAgent}>
-            <SelectTrigger><SelectValue placeholder="Agent" /></SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Agent" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous agents</SelectItem>
               <SelectItem value="unassigned">Non assignées</SelectItem>
@@ -172,7 +172,7 @@ export default function AdminStudiesPage() {
           </Select>
 
           <Select value={client} onValueChange={setClient}>
-            <SelectTrigger><SelectValue placeholder="Client" /></SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Client" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous clients</SelectItem>
               {clients.map((c) => (
@@ -181,10 +181,10 @@ export default function AdminStudiesPage() {
             </SelectContent>
           </Select>
 
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal" />
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
           <h2 className="text-lg text-midnight font-heading mb-4">Vue filtrable</h2>
           <StudyListWithFilters
             studies={filtered}
@@ -194,10 +194,10 @@ export default function AdminStudiesPage() {
           />
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
           <h2 className="text-lg text-midnight font-heading mb-4">Réassignation avancée</h2>
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50">
+            <thead className="bg-[#fafbfc] border-b border-gray-100">
               <tr>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Patient</th>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Client</th>
@@ -210,7 +210,7 @@ export default function AdminStudiesPage() {
             </thead>
             <tbody>
               {filtered.map((study) => (
-                <tr key={study.id} className="border-t border-gray-100 hover:bg-blue-50/30 transition-colors">
+                <tr key={study.id} className="border-t border-gray-100 hover:bg-teal/3 transition-colors">
                   <td className="px-3 py-3 font-body">{study.patient_reference}</td>
                   <td className="px-3 py-3 font-body">{study.profiles?.full_name || clientMap.get(study.client_id) || '—'}</td>
                   <td className="px-3 py-3 font-body">{study.status.replace('_', ' ')}</td>

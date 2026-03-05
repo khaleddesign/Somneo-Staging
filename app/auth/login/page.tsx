@@ -61,10 +61,10 @@ export default function LoginPage() {
       <AuthLeftPanel />
 
       {/* Right Panel */}
-      <div className="w-full lg:basis-3/5 flex items-center justify-center bg-sand p-8 lg:p-12">
+      <div className="w-full lg:basis-[55%] flex items-center justify-center bg-white p-8 lg:p-12">
         <div className="w-full max-w-md">
           <div className="mb-10">
-            <h1 className="text-4xl lg:text-5xl text-midnight mb-2 leading-tight">
+            <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">
               Bon retour
             </h1>
             <p className="text-gray-500 font-body">Connectez-vous à votre espace</p>
@@ -73,7 +73,7 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email Input */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 font-medium">Email</Label>
+              <Label htmlFor="email" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
@@ -84,14 +84,14 @@ export default function LoginPage() {
                   placeholder="votre.email@example.com"
                   required
                   disabled={loading}
-                  className="pl-10 bg-white border border-gold/30 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
+                  className="pl-10 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
                 />
               </div>
             </div>
 
             {/* Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700 font-medium">Mot de passe</Label>
+              <Label htmlFor="password" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Mot de passe</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
@@ -102,7 +102,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   required
                   disabled={loading}
-                  className="pl-10 pr-10 bg-white border border-gold/30 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
+                  className="pl-10 pr-10 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
                 />
                 <button
                   type="button"
@@ -130,7 +130,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-teal hover:bg-teal/90 text-white font-semibold py-2.5 rounded-lg transition-colors"
+              className="w-full bg-teal hover:bg-teal/90 text-white font-heading py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-px"
             >
               {loading ? (
                 <>

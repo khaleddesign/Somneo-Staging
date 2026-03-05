@@ -61,27 +61,27 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="p-3 md:p-5 space-y-8">
+      <div className="p-3 md:p-5 space-y-8 bg-[#f0f4f8]">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Tour de contrôle</h1>
             <p className="text-gray-500 font-body mt-1">Pilotage complet de la plateforme SomnoConnect</p>
           </div>
-          <Badge className="border-gold/40 bg-gold/15 text-midnight font-heading px-3 py-1">ADMIN</Badge>
+          <Badge className="text-[9px] tracking-[3px] bg-gold/10 text-gold border border-gold/20 rounded-full px-2 py-0.5 font-heading">ADMIN</Badge>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {cards.map((card) => {
             const Icon = card.icon
             return (
-              <Card key={card.label} className="shadow-sm border-gray-200">
+              <Card key={card.label} className="shadow-sm border-gray-100 rounded-2xl bg-white transition-all hover:shadow-md hover:-translate-y-px">
                 <CardContent className="pt-6">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm text-gray-500 font-body">{card.label}</p>
+                      <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">{card.label}</p>
                       <p className="text-3xl text-midnight font-display mt-1 tabular-nums">{loading ? '…' : card.value}</p>
                     </div>
-                    <div className={`h-11 w-11 rounded-full flex items-center justify-center ${card.bg}`}>
+                    <div className={`h-11 w-11 rounded-xl flex items-center justify-center ${card.bg}`}>
                       <Icon className={`h-5 w-5 ${card.color}`} />
                     </div>
                   </div>

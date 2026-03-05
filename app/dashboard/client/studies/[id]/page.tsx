@@ -41,7 +41,7 @@ export default async function ClientStudyDetail({
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6 bg-[#f0f4f8]">
         <a href="/dashboard/client" className="text-teal hover:underline font-body text-sm">
           &larr; Retour au dashboard
         </a>
@@ -51,7 +51,7 @@ export default async function ClientStudyDetail({
           <p className="text-gray-500 font-body mt-1">Suivi de votre étude du sommeil</p>
         </div>
 
-        <Card className="shadow-sm border-gray-200">
+        <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
           <CardHeader>
             <CardTitle className="text-2xl text-midnight font-heading">Informations</CardTitle>
           </CardHeader>
@@ -93,7 +93,7 @@ export default async function ClientStudyDetail({
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-gray-200">
+        <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
           <CardHeader>
             <CardTitle className="text-xl text-midnight font-heading">Rapport</CardTitle>
           </CardHeader>
@@ -106,7 +106,7 @@ export default async function ClientStudyDetail({
           </CardContent>
         </Card>
 
-        <Card className="shadow-sm border-gray-200">
+        <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
           <CardHeader>
             <CardTitle className="text-xl text-midnight font-heading">Discussion</CardTitle>
           </CardHeader>

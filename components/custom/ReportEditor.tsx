@@ -520,22 +520,23 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
         )
       })}
 
-      <div className="space-y-3 rounded-lg border border-gray-200 p-4">
+      <div className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
         <p className="font-heading text-midnight">Extraction auto (copier-coller brut)</p>
         <Textarea
           placeholder="Collez ici un résumé brut (ex: AHI: 22, SpO2 min: 84, Efficiency: 68...)"
           value={rawInput}
           onChange={(e) => setRawInput(e.target.value)}
-          className="min-h-[110px] rounded-lg border-gray-200 focus-visible:border-teal"
+          className="min-h-[110px] bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
         />
         <Button type="button" variant="outline" onClick={applyParsedRawText} className="border-gray-200">
           Extraire automatiquement les métriques
         </Button>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-gray-100 pt-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-xs text-gray-500">
-          {lastSavedAt ? `Sauvegardé à ${lastSavedAt}` : 'Pas encore sauvegardé'}
+      <div className="sticky bottom-0 z-20 -mx-6 mt-6 flex flex-col gap-3 border-t border-gray-100 bg-white px-6 py-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs text-emerald-600 font-body inline-flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          {lastSavedAt ? `Sauvegardé à ${lastSavedAt}` : 'Autosave actif'}
         </p>
 
         <div className="flex items-center gap-2">
@@ -559,7 +560,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
             type="button"
             onClick={() => void saveReport()}
             disabled={saving || !reportId}
-            className="bg-teal text-white hover:bg-teal/90"
+            className="border-2 border-teal text-teal bg-transparent hover:bg-teal/5"
           >
             {saving ? (
               <>
@@ -575,7 +576,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
             type="button"
             onClick={() => void generatePdf()}
             disabled={generatingPdf || !reportId}
-            className="bg-gold text-white hover:bg-gold/90 disabled:opacity-50"
+            className="bg-gradient-to-br from-[#c8a45a] to-[#b8913f] text-white hover:shadow-md hover:-translate-y-px transition-all disabled:opacity-50"
           >
             {generatingPdf ? (
               <>

@@ -21,7 +21,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </div>
           <div />
         </header>
-        <main className="bg-slate-50 flex-1 p-6 overflow-auto">{children}</main>
+        <main className="bg-[#f0f4f8] flex-1 p-6 overflow-auto">{children}</main>
       </div>
     </div>
   )

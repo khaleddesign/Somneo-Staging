@@ -22,7 +22,7 @@ export default function ClientDashboard() {
 
   return (
     <AppLayout>
-      <div className="p-5 md:p-8 space-y-8">
+      <div className="p-5 md:p-8 space-y-8 bg-[#f0f4f8]">
         <div>
           <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Mon espace client</h1>
           <p className="text-gray-500 mt-2 font-body">Suivez et soumettez vos études du sommeil</p>
@@ -30,56 +30,56 @@ export default function ClientDashboard() {
         
         {/* Stats Section */}
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
-          <Card className="shadow-sm border-gray-200">
+          <Card className="shadow-sm border-gray-100 rounded-2xl bg-white transition-all hover:shadow-md hover:-translate-y-px">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1 font-body">Total études</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Total études</p>
                   <p className="text-3xl text-midnight font-display">{stats.total}</p>
                 </div>
-                <div className="p-3 rounded-full bg-teal/10">
+                <div className="p-3 rounded-xl bg-teal/8">
                   <BarChart3 className="h-6 w-6 text-teal" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-gray-200">
+          <Card className="shadow-sm border-gray-100 rounded-2xl bg-white transition-all hover:shadow-md hover:-translate-y-px">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1 font-body">En attente</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">En attente</p>
                   <p className="text-3xl text-midnight font-display">{stats.enAttente}</p>
                 </div>
-                <div className="p-3 rounded-full bg-gold/10">
+                <div className="p-3 rounded-xl bg-teal/8">
                   <AlertCircle className="h-6 w-6 text-gold" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-gray-200">
+          <Card className="shadow-sm border-gray-100 rounded-2xl bg-white transition-all hover:shadow-md hover:-translate-y-px">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1 font-body">En cours</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">En cours</p>
                   <p className="text-3xl text-midnight font-display">{stats.enCours}</p>
                 </div>
-                <div className="p-3 rounded-full bg-teal/10">
+                <div className="p-3 rounded-xl bg-teal/8">
                   <Clock className="h-6 w-6 text-teal" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="shadow-sm border-gray-200">
+          <Card className="shadow-sm border-gray-100 rounded-2xl bg-white transition-all hover:shadow-md hover:-translate-y-px">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-500 mb-1 font-body">Terminées</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Terminées</p>
                   <p className="text-3xl text-midnight font-display">{stats.termine}</p>
                 </div>
-                <div className="p-3 rounded-full bg-gold/10">
+                <div className="p-3 rounded-xl bg-teal/8">
                   <CheckCircle2 className="h-6 w-6 text-gold" />
                 </div>
               </div>

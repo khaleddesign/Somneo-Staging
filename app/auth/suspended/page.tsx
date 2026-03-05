@@ -10,8 +10,8 @@ export default function SuspendedPage() {
     <div className="min-h-screen flex flex-col lg:flex-row">
       <AuthLeftPanel />
 
-      <div className="w-full lg:basis-3/5 flex items-center justify-center bg-sand p-8 lg:p-12">
-        <div className="w-full max-w-xl text-center bg-white/80 border border-gold/30 rounded-2xl p-8 lg:p-10">
+      <div className="w-full lg:basis-[55%] flex items-center justify-center bg-white p-8 lg:p-12">
+        <div className="w-full max-w-xl text-center bg-white border border-gray-100 rounded-2xl shadow-sm p-8 lg:p-10">
           <div className="mb-6 inline-flex p-4 bg-gold/10 rounded-full">
             <ShieldOff className="h-16 w-16 text-gold" />
           </div>

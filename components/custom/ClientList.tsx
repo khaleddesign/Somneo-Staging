@@ -93,19 +93,19 @@ export default function ClientList() {
   }
 
   return (
-    <Table>
+    <Table className="rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">
       <TableHeader>
-        <TableRow>
-          <TableHead>Nom</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Inscription</TableHead>
-          <TableHead>Statut</TableHead>
-          <TableHead className="text-right">Actions</TableHead>
+        <TableRow className="bg-[#fafbfc] border-b border-gray-100">
+          <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Nom</TableHead>
+          <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Email</TableHead>
+          <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Inscription</TableHead>
+          <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Statut</TableHead>
+          <TableHead className="text-right text-xs uppercase tracking-wider text-gray-400 font-heading">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {clients.map((client) => (
-          <TableRow key={client.id}>
+          <TableRow key={client.id} className="hover:bg-teal/3 transition-colors">
             <TableCell className="font-medium">{client.full_name}</TableCell>
             <TableCell className="text-gray-600">{client.email}</TableCell>
             <TableCell>{new Date(client.created_at).toLocaleDateString('fr-FR')}</TableCell>

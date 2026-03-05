@@ -30,7 +30,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         <div className="hidden lg:block">
           <HeaderWrapper />
         </div>
-        <main className="bg-slate-50 flex-1 p-6 overflow-auto ml-0 lg:ml-60">
+        <main className="bg-[#f0f4f8] flex-1 p-6 overflow-auto ml-0 lg:ml-60">
       {children}
     </main>
       </div>

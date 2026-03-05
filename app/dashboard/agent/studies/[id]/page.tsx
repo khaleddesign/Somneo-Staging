@@ -58,15 +58,17 @@ export default async function AgentStudyDetail({
 
   return (
     <AppLayout>
-      <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
+      <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6 bg-[#f0f4f8]">
         <a href="/dashboard/agent" className="text-teal hover:underline font-body text-sm">
           &larr; Retour au dashboard
         </a>
 
-        <div>
-          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
-          <p className="text-gray-500 font-body mt-1">Suivi clinique de l&apos;étude du sommeil</p>
-        </div>
+        <Card className="bg-gradient-to-r from-midnight to-[#0d2137] border-t-4 border-t-teal text-white rounded-2xl shadow-sm">
+          <CardContent className="p-6">
+            <h1 className="text-4xl lg:text-5xl font-display leading-tight text-sand">Dossier Patient</h1>
+            <p className="text-sand/70 font-body mt-1">Suivi clinique de l&apos;étude du sommeil</p>
+          </CardContent>
+        </Card>
 
         <Tabs defaultValue="informations">
           <TabsList>
@@ -76,9 +78,12 @@ export default async function AgentStudyDetail({
           </TabsList>
 
           <TabsContent value="informations" className="space-y-6">
-            <Card className="shadow-sm border-gray-200">
+            <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
               <CardHeader>
-                <CardTitle className="text-2xl text-midnight font-heading">Informations</CardTitle>
+                <CardTitle className="text-2xl text-midnight font-heading inline-flex items-center gap-3">
+                  <span className="text-3xl font-display text-teal/30">01</span>
+                  Informations
+                </CardTitle>
               </CardHeader>
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -123,7 +128,7 @@ export default async function AgentStudyDetail({
             />
 
             {study.assigned_agent_id === null && (
-              <Card className="shadow-sm border-teal/30 bg-teal/5">
+              <Card className="shadow-sm border-teal/30 bg-teal/5 rounded-2xl">
                 <CardHeader>
                   <CardTitle className="text-xl text-midnight font-heading">Assignation</CardTitle>
                 </CardHeader>
@@ -134,9 +139,12 @@ export default async function AgentStudyDetail({
             )}
 
             {study.assigned_agent_id === user.id && (
-              <Card className="shadow-sm border-gray-200">
+              <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
                 <CardHeader>
-                  <CardTitle className="text-xl text-midnight font-heading">Actions</CardTitle>
+                  <CardTitle className="text-xl text-midnight font-heading inline-flex items-center gap-3">
+                    <span className="text-3xl font-display text-teal/30">02</span>
+                    Actions
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
@@ -154,7 +162,7 @@ export default async function AgentStudyDetail({
                 agentName={profile.full_name || 'Agent'}
               />
             ) : (
-              <Card className="shadow-sm border-gray-200">
+              <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
                 <CardContent className="p-6 text-sm text-gray-600">
                   Étude non assignée ou déjà terminée
                 </CardContent>
@@ -163,9 +171,12 @@ export default async function AgentStudyDetail({
           </TabsContent>
 
           <TabsContent value="discussion">
-            <Card className="shadow-sm border-gray-200">
+            <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
               <CardHeader>
-                <CardTitle className="text-xl text-midnight font-heading">Discussion</CardTitle>
+                <CardTitle className="text-xl text-midnight font-heading inline-flex items-center gap-3">
+                  <span className="text-3xl font-display text-teal/30">03</span>
+                  Discussion
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <StudyComments

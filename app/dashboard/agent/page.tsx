@@ -55,10 +55,10 @@ export default function AgentDashboardPage() {
 
   return (
     <AppLayout>
-      <div className="p-8">
+      <div className="p-8 bg-[#f0f4f8]">
         {/* Greeting */}
         <div className="mb-10">
-          <h1 className="text-4xl text-midnight">
+            <h1 className="text-4xl text-midnight font-display">
             Bonjour, {agentName} 👋
           </h1>
           <p className="text-gray-500 mt-2 font-body">Bienvenue sur votre dashboard SomnoConnect</p>
@@ -113,16 +113,16 @@ export default function AgentDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Studies Card */}
           <Link href="/dashboard/agent/studies">
-            <Card className="p-6 hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 rounded-xl">
+            <Card className="p-6 hover:shadow-md hover:-translate-y-px transition-all duration-200 cursor-pointer border border-gray-100 rounded-2xl bg-white">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-teal/10 rounded-full">
+                <div className="p-3 bg-teal/8 rounded-xl">
                   <FileText className="h-6 w-6 text-teal" />
                 </div>
               </div>
-              <h3 className="text-lg text-gray-900 mb-1 font-heading">Études</h3>
+              <h3 className="text-lg text-midnight mb-1 font-heading">Études</h3>
               <p className="text-gray-600 text-sm font-body">Gérez vos études et consultez les détails</p>
               <div className="mt-4">
-                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-lg">
+                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-xl font-heading">
                   Accéder
                 </Button>
               </div>
@@ -131,16 +131,16 @@ export default function AgentDashboardPage() {
 
           {/* Clients Card */}
           <Link href="/dashboard/agent/clients">
-            <Card className="p-6 hover:shadow-md transition-all duration-200 cursor-pointer border border-gray-100 rounded-xl">
+            <Card className="p-6 hover:shadow-md hover:-translate-y-px transition-all duration-200 cursor-pointer border border-gray-100 rounded-2xl bg-white">
               <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-gold/10 rounded-full">
+                <div className="p-3 bg-teal/8 rounded-xl">
                   <Users className="h-6 w-6 text-gold" />
                 </div>
               </div>
-              <h3 className="text-lg text-gray-900 mb-1 font-heading">Clients</h3>
+              <h3 className="text-lg text-midnight mb-1 font-heading">Clients</h3>
               <p className="text-gray-600 text-sm font-body">Gérez vos clients et invitez-en de nouveaux</p>
               <div className="mt-4">
-                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-lg">
+                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-xl font-heading">
                   Accéder
                 </Button>
               </div>
@@ -150,16 +150,16 @@ export default function AgentDashboardPage() {
           {/* Admin Panel Card - Only for admins */}
           {isAdmin && (
             <Link href="/dashboard/agent/settings">
-              <Card className="p-6 hover:shadow-md transition-all duration-200 cursor-pointer border border-purple-100 bg-purple-50 rounded-xl">
+              <Card className="p-6 hover:shadow-md hover:-translate-y-px transition-all duration-200 cursor-pointer border border-gray-100 bg-white rounded-2xl">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-purple-100 rounded-full">
-                    <Settings className="h-6 w-6 text-purple-600" />
+                  <div className="p-3 bg-teal/8 rounded-xl">
+                    <Settings className="h-6 w-6 text-teal" />
                   </div>
                 </div>
-                <h3 className="text-lg text-purple-900 mb-1 font-heading">Panel Admin</h3>
-                <p className="text-purple-700 text-sm font-body">Gérez les paramètres et configurations</p>
+                <h3 className="text-lg text-midnight mb-1 font-heading">Panel Admin</h3>
+                <p className="text-gray-600 text-sm font-body">Gérez les paramètres et configurations</p>
                 <div className="mt-4">
-                  <Button className="bg-purple-600 hover:bg-purple-700 text-white w-full rounded-lg">
+                  <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-xl font-heading">
                     Accéder
                   </Button>
                 </div>

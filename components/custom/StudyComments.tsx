@@ -44,7 +44,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
     new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
 
   return (
-    <Card className="w-full border border-gray-100 rounded-xl shadow-sm">
+    <Card className="w-full border border-gray-100 rounded-2xl shadow-sm">
       <CardHeader>
         <CardTitle className="font-heading text-midnight">Discussion</CardTitle>
       </CardHeader>
@@ -100,7 +100,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
             onChange={(e) => setText(e.target.value)}
             placeholder="Écrivez votre message..."
             disabled={sending}
-            className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20 rounded-xl"
+            className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
           />
           <Button
             type="submit"

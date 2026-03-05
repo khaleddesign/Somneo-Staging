@@ -126,18 +126,18 @@ export default function AgentStats() {
         return (
           <div
             key={card.label}
-            className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm"
+            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-px"
           >
             <div className="flex items-start justify-between">
               <div>
-                <p className="text-sm text-gray-500 mb-1 font-body">
+                <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">
                   {card.label}
                 </p>
-                <p className="text-3xl text-midnight font-display leading-none">
+                <p className="text-4xl text-midnight font-display leading-none">
                   {card.value}
                 </p>
               </div>
-              <div className={`${card.bgColor} p-3 rounded-full`}>
+              <div className={`${card.bgColor} p-3 rounded-xl`}>
                 <Icon className={`h-6 w-6 ${card.iconColor}`} />
               </div>
             </div>

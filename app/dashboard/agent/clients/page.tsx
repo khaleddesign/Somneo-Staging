@@ -25,18 +25,18 @@ export default function ClientsPage() {
 
   return (
     <AppLayout>
-    <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8 bg-[#f0f4f8]">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-4xl text-midnight">
+          <h1 className="text-4xl text-midnight font-display">
             Gestion des Clients
           </h1>
           <p className="text-gray-500 mt-2 font-body">Gérez vos clients et envoyez des invitations</p>
         </div>
         <Button
           onClick={() => setIsDialogOpen(true)}
-          className="bg-teal hover:bg-teal/90 text-white rounded-lg"
+          className="bg-teal hover:bg-teal/90 text-white rounded-xl font-heading"
         >
           <UserPlus className="h-4 w-4 mr-2" />
           Inviter un nouveau client
@@ -44,7 +44,7 @@ export default function ClientsPage() {
       </div>
 
       {/* Client List Table */}
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm">
         <ClientList key={`client-list-${refreshTrigger}`} />
       </div>
 

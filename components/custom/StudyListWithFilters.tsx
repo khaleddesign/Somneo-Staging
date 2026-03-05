@@ -75,7 +75,7 @@ export default function StudyListWithFilters({
     <div className="space-y-4">
       <div className="flex gap-4 flex-wrap">
         <div className="w-full">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Recherche patient</label>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Recherche patient</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -85,18 +85,18 @@ export default function StudyListWithFilters({
                 setCurrentPage(1)
               }}
               placeholder="Rechercher par référence patient"
-              className="pl-9"
+              className="pl-9 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
             />
           </div>
         </div>
 
         <div className="flex-1 min-w-48">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Statut</label>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Statut</label>
           <Select value={statusFilter} onValueChange={(value) => {
             setStatusFilter(value)
             setCurrentPage(1)
           }}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -110,12 +110,12 @@ export default function StudyListWithFilters({
         </div>
 
         <div className="flex-1 min-w-48">
-          <label className="block text-sm font-medium text-gray-700 mb-2">Priorité</label>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Priorité</label>
           <Select value={priorityFilter} onValueChange={(value) => {
             setPriorityFilter(value)
             setCurrentPage(1)
           }}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

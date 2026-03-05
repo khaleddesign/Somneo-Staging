@@ -120,22 +120,22 @@ export default function AdminAgentsPage() {
 
   return (
     <AdminLayout>
-      <div className="p-2 md:p-4 space-y-6">
+      <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-4xl text-midnight">Gestion des agents</h1>
+            <h1 className="text-4xl text-midnight font-display">Gestion des agents</h1>
             <p className="text-gray-500 font-body">Administration complète des comptes techniciens</p>
           </div>
-          <Button className="bg-teal text-white hover:bg-teal/90" onClick={() => setInviteOpen(true)}>
+          <Button className="bg-teal text-white hover:bg-teal/90 rounded-xl font-heading" onClick={() => setInviteOpen(true)}>
             <Plus className="h-4 w-4 mr-2" /> Ajouter un agent
           </Button>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
           <div className="relative mb-4 max-w-md">
             <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
-              className="pl-9 border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
+              className="pl-9 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
               placeholder="Rechercher un agent"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -144,7 +144,7 @@ export default function AdminAgentsPage() {
 
           <div className="overflow-x-auto">
             <table className="min-w-full text-sm">
-              <thead className="bg-gray-50">
+              <thead className="bg-[#fafbfc] border-b border-gray-100">
                 <tr>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Nom</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Email</th>
@@ -156,7 +156,7 @@ export default function AdminAgentsPage() {
               </thead>
               <tbody>
                 {filtered.map((agent) => (
-                  <tr key={agent.id} className="border-t border-gray-100">
+                  <tr key={agent.id} className="border-t border-gray-100 hover:bg-teal/3 transition-colors">
                     <td className="px-3 py-3 font-body text-midnight">{agent.full_name || '—'}</td>
                     <td className="px-3 py-3 font-body">{agent.email}</td>
                     <td className="px-3 py-3 font-body">{agent.en_cours}</td>

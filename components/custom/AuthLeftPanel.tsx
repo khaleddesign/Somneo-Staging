@@ -73,7 +73,7 @@ export default function AuthLeftPanel() {
   }, [])
 
   return (
-    <div className="flex w-full lg:basis-2/5 bg-midnight flex-col justify-between p-8 lg:p-12 text-white relative overflow-hidden min-h-[40vh] lg:min-h-screen">
+    <div className="flex w-full lg:basis-[45%] bg-[#06111f] flex-col justify-between p-8 lg:p-12 text-white relative overflow-hidden min-h-[40vh] lg:min-h-screen">
       {/* Canvas for stars */}
       <canvas
         ref={canvasRef}
@@ -86,23 +86,23 @@ export default function AuthLeftPanel() {
           <h1 className="text-4xl lg:text-5xl text-teal mb-2 font-display leading-tight">
             SomnoConnect
           </h1>
-          <p className="text-sand/60 text-sm tracking-widest uppercase font-heading">by SOMNOVENTIS</p>
+          <p className="text-sand/40 text-[9px] tracking-[3px] uppercase font-heading">BY SOMNOVENTIS</p>
         </div>
 
         <div className="max-w-md">
-          <h2 className="text-lg lg:text-xl mb-3 text-sand font-heading font-medium">
+          <h2 className="text-lg lg:text-xl mb-3 text-sand/90 font-heading font-medium">
             Plateforme sécurisée d&apos;analyse du sommeil
           </h2>
-          <p className="text-sand/70 text-sm leading-relaxed font-body max-w-sm">
+          <p className="text-sand/60 italic text-sm leading-relaxed font-body max-w-sm">
             Infrastructure médicale sécurisée pour centraliser vos études, échanges cliniques et rapports en toute confidentialité.
           </p>
         </div>
       </div>
 
       {/* Security Badge */}
-      <div className="relative z-10 flex items-center gap-2 text-xs text-sand/80 bg-white/5 backdrop-blur-sm px-4 py-3 rounded-lg border border-white/10 w-fit font-body">
+      <div className="relative z-10 flex items-center gap-2 text-xs text-sand/80 bg-white/5 backdrop-blur-sm px-4 py-3 rounded-xl border border-white/10 w-fit font-body">
         <span>🔒</span>
-        <span>Données médicales chiffrées · RGPD compliant</span>
+        <span>Badge RGPD · Données médicales chiffrées</span>
       </div>
     </div>
   )

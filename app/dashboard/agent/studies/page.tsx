@@ -46,8 +46,8 @@ export default function StudiesPage() {
 
   return (
     <AppLayout>
-      <div className="p-8">
-        <h1 className="text-4xl text-midnight mb-8">
+      <div className="p-8 bg-[#f0f4f8]">
+        <h1 className="text-4xl text-midnight font-display mb-8">
           Études
         </h1>
 

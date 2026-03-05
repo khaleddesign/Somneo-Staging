@@ -102,13 +102,13 @@ export default function SettingsPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 max-w-2xl">
-        <h1 className="text-4xl text-midnight mb-8">
+      <div className="p-8 max-w-2xl bg-[#f0f4f8]">
+        <h1 className="text-4xl text-midnight font-display mb-8">
           Paramètres
         </h1>
 
         {/* Account Information */}
-        <Card className="mb-8 rounded-xl border border-gray-100 shadow-sm">
+        <Card className="mb-8 rounded-2xl border border-gray-100 shadow-sm bg-white">
           <CardHeader>
             <CardTitle className="font-heading">Informations du compte</CardTitle>
           </CardHeader>
@@ -132,7 +132,7 @@ export default function SettingsPage() {
           <CardContent>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current-password" className="font-heading text-sm text-gray-700">Mot de passe actuel</Label>
+                <Label htmlFor="current-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Mot de passe actuel</Label>
                 <Input
                   id="current-password"
                   type="password"
@@ -140,12 +140,12 @@ export default function SettingsPage() {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
                   disabled={passwordLoading}
-                  className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
+                  className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="font-heading text-sm text-gray-700">Nouveau mot de passe</Label>
+                <Label htmlFor="new-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Nouveau mot de passe</Label>
                 <Input
                   id="new-password"
                   type="password"
@@ -154,12 +154,12 @@ export default function SettingsPage() {
                   placeholder="••••••••"
                   disabled={passwordLoading}
                   required
-                  className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
+                  className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="font-heading text-sm text-gray-700">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirm-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Confirmer le mot de passe</Label>
                 <Input
                   id="confirm-password"
                   type="password"
@@ -168,14 +168,14 @@ export default function SettingsPage() {
                   placeholder="••••••••"
                   disabled={passwordLoading}
                   required
-                  className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
+                  className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
                 />
               </div>
 
               <Button
                 type="submit"
                 disabled={passwordLoading}
-                className="bg-teal hover:bg-teal/90 text-white w-full rounded-lg"
+                className="bg-teal hover:bg-teal/90 text-white w-full rounded-xl font-heading"
               >
                 {passwordLoading ? (
                   <>

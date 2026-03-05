@@ -9,9 +9,9 @@ const priorityColors = {
   high: 'bg-red-200 text-red-700',
 }
 const statusColors = {
-  en_attente: 'bg-yellow-200 text-yellow-800',
-  en_cours: 'bg-blue-200 text-blue-800',
-  termine: 'bg-green-200 text-green-800',
+  en_attente: 'bg-yellow-50 text-yellow-700 border border-yellow-100',
+  en_cours: 'bg-blue-50 text-blue-700 border border-blue-100',
+  termine: 'bg-green-50 text-green-700 border border-green-100',
   annule: 'bg-red-200 text-red-800',
 }
 
@@ -74,23 +74,23 @@ export const StudyList: FC<StudyListProps> = ({
   }
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-100 text-sm bg-white rounded-xl overflow-hidden">
+      <table className="min-w-full border border-gray-100 text-sm bg-white rounded-2xl overflow-hidden shadow-sm">
         <thead>
-          <tr className="bg-gray-50">
-            <th className="px-3 py-3 border-b border-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider font-heading">ID Patient</th>
-            <th className="px-3 py-3 border-b border-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider font-heading">Type</th>
-            <th className="px-3 py-3 border-b border-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider font-heading">Priorité</th>
-            <th className="px-3 py-3 border-b border-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider font-heading">Statut</th>
-            <th className="px-3 py-3 border-b border-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</th>
-            <th className="px-3 py-3 border-b border-gray-100 text-center text-xs text-gray-500 uppercase tracking-wider font-heading">Archive</th>
-            <th className="px-3 py-3 border-b border-gray-100 text-left text-xs text-gray-500 uppercase tracking-wider font-heading">Actions</th>
+          <tr className="bg-[#fafbfc] border-b border-gray-100">
+            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">ID Patient</th>
+            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Type</th>
+            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Priorité</th>
+            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Statut</th>
+            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date de soumission</th>
+            <th className="px-3 py-3 text-center text-xs text-gray-400 uppercase tracking-wider font-heading">Archive</th>
+            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Actions</th>
           </tr>
         </thead>
         <tbody>
           {studies.map((study) => (
-            <tr key={study.id} className="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
-              <td className="px-3 py-3">{study.patient_reference}</td>
-              <td className="px-3 py-3">{study.study_type}</td>
+            <tr key={study.id} className="border-b border-gray-100 hover:bg-teal/3 transition-colors">
+              <td className="px-3 py-3 font-body text-sm text-midnight">{study.patient_reference}</td>
+              <td className="px-3 py-3 font-body text-sm text-midnight">{study.study_type}</td>
               <td className="px-3 py-3">
                 <div className="flex items-center gap-2">
                   <span className={`px-2 py-1 rounded text-xs font-semibold ${priorityColors[study.priority]}`}>{study.priority}</span>
@@ -108,7 +108,7 @@ export const StudyList: FC<StudyListProps> = ({
               <td className="px-3 py-3">
                 <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
               </td>
-              <td className="px-3 py-3">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
+              <td className="px-3 py-3 font-body text-sm text-midnight">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
               <td className="px-3 py-3 text-center">
                 {study.archived_at ? (
                   <span title={`Archivé le ${new Date(study.archived_at).toLocaleDateString('fr-FR')}`}>
