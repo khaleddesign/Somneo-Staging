@@ -161,10 +161,6 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const [template, setTemplate] = useState<ReportTemplate | null>(null)
   const [content, setContent] = useState<ReportContent>({ values: {} })
 
-  // Ref qui pointe toujours vers le content le plus récent
-  // Évite la stale closure dans saveReport (useCallback ne recapture pas content à chaque frappe)
-  const contentRef = useRef<ReportContent>({ values: {} })
-
   // Flag : autosave et generate interdits tant que loadData() n'a pas terminé
   // Empêche l'autosave de sauvegarder values:{} avant que le contenu soit chargé
   const isLoaded = useRef(false)
@@ -180,11 +176,6 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const [showPdfModal, setShowPdfModal] = useState(false)
   const [rawInput, setRawInput] = useState('')
 
-  // Toujours synchroniser la ref avec le state courant
-  useEffect(() => {
-    contentRef.current = content
-  }, [content])
-
   const sectionsToRender = useMemo(() => {
     if (template?.sections?.length) return template.sections
     if (content.sections?.length) return content.sections
@@ -194,10 +185,8 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   const saveReport = useCallback(async () => {
     if (!reportId) return
 
-    // Lire depuis la ref pour toujours avoir le content le plus récent
-    // (évite la stale closure : useCallback n'a plus content dans ses deps)
-    const currentContent = contentRef.current
-    console.log('[saveReport] saving content:', JSON.stringify(currentContent))
+    // content est en closure directe — toujours la valeur courante du state
+    console.log('[saveReport] saving content:', JSON.stringify(content))
 
     setSaving(true)
     setError(null)
@@ -206,7 +195,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       const res = await fetch(`/api/reports/${reportId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content: currentContent }),
+        body: JSON.stringify({ content }),
       })
 
       const payload: unknown = await res.json()
@@ -225,7 +214,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     } finally {
       setSaving(false)
     }
-  }, [reportId]) // content retiré des deps — on lit depuis contentRef à la place
+  }, [reportId, content]) // content dans les deps — closure toujours fraîche
 
   const generatePdf = useCallback(async () => {
     if (!reportId || !isLoaded.current) return
@@ -372,18 +361,20 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     }
   }, [studyId, studyType])
 
+  // Autosave : setTimeout recréé à chaque changement de content (debounce 30s)
+  // Garantit que saveReport capture toujours le content courant au moment du fire
+  // Le cleanup annule le timer si content change avant 30s (évite les sauvegardes intermédiaires)
   useEffect(() => {
-    if (!reportId) return
+    if (!isLoaded.current || !reportId) return
 
-    const intervalId = window.setInterval(() => {
-      if (!isLoaded.current) return // attendre la fin du chargement initial
+    const timer = window.setTimeout(() => {
       void saveReport().catch(() => undefined)
     }, 30000)
 
     return () => {
-      window.clearInterval(intervalId)
+      window.clearTimeout(timer)
     }
-  }, [reportId, saveReport])
+  }, [content, reportId, saveReport])
 
   function updateValue(sectionId: string, fieldKey: string, nextValue: string) {
     setContent((prev) => ({
