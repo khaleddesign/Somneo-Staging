@@ -1,10 +1,15 @@
 "use client"
 
 import { ReactNode, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
 import HeaderWrapper from './HeaderWrapper'
-import NotificationBell from './NotificationBell'
+
+// ssr: false — NotificationBell est purement client-side (auth Supabase, fetch).
+// Le SSR-er génère des IDs Radix (Popover) différents entre le pass SSR et le pass RSC,
+// provoquant une erreur de hydration en cascade sur Tabs/Select. Sans SSR, pas de mismatch.
+const NotificationBell = dynamic(() => import('./NotificationBell'), { ssr: false })
 
 interface AppLayoutProps {
   children: ReactNode

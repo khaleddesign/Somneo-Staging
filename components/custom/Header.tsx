@@ -1,11 +1,14 @@
 "use client"
 
 import { useEffect, useState } from 'react'
+import dynamic from 'next/dynamic'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
-import NotificationBell from '@/components/custom/NotificationBell'
+
+// ssr: false — même raison que dans AppLayout : évite le mismatch d'IDs Radix (Popover)
+const NotificationBell = dynamic(() => import('@/components/custom/NotificationBell'), { ssr: false })
 
 export default function Header() {
   const [email, setEmail] = useState<string | null>(null)
