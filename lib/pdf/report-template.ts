@@ -177,7 +177,7 @@ function tableRow(param: string, value: string, norm: string, bdg: string): stri
   return `
         <tr>
           <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;font-family:'DM Sans',Arial,sans-serif;font-size:12px;color:#334155">${param}</td>
-          <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;font-family:'DM Sans',Arial,sans-serif;font-size:12px;font-weight:600;color:#0f172a;text-align:center">${value}</td>
+          <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;font-family:'Syne',Arial,sans-serif;font-size:12px;font-weight:600;color:#0f172a;text-align:center">${value}</td>
           <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;font-family:'DM Sans',Arial,sans-serif;font-size:11px;color:#94a3b8;text-align:center">${norm}</td>
           <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;text-align:center">${bdg}</td>
         </tr>`
@@ -401,7 +401,7 @@ export function buildReportHtml(data: ReportTemplateData): string {
           Index Apnées-Hypopnées (IAH)
         </div>
         <div style="display:flex;align-items:baseline;gap:6px">
-          <span style="font-family:'Cormorant Garamond',Georgia,serif;font-size:56px;font-weight:700;color:#f0e8d6;line-height:1">
+          <span style="font-family:'Syne',Arial,sans-serif;font-size:56px;font-weight:700;color:#f0e8d6;line-height:1">
             ${esc(iahDisplay)}
           </span>
           <span style="font-family:'DM Sans',Arial,sans-serif;font-size:14px;color:#64748b;padding-bottom:8px">
