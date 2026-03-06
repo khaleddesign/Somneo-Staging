@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import chromium from '@sparticuz/chromium-min'
+import chromium from '@sparticuz/chromium'
 import puppeteer from 'puppeteer-core'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
@@ -34,18 +34,11 @@ function toValues(raw: unknown): Record<string, Record<string, string>> {
 // ─── puppeteer PDF ─────────────────────────────────────────────────────────────
 
 async function renderHtmlToPdf(html: string): Promise<Buffer> {
-  // En local : PUPPETEER_EXECUTABLE_PATH=/Applications/Google Chrome.app/Contents/MacOS/Google Chrome
-  // En prod Vercel : laisser vide → chromium-min télécharge depuis GitHub
-  const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH
-    ?? await chromium.executablePath(
-        'https://github.com/Sparticuz/chromium/releases/download/v131.0.1/chromium-v131.0.1-pack.tar',
-      )
-
   const browser = await puppeteer.launch({
     args: chromium.args,
-    defaultViewport: chromium.defaultViewport,
-    executablePath,
-    headless: chromium.headless,
+    defaultViewport: { width: 1280, height: 720 },
+    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || await chromium.executablePath(),
+    headless: true,
   })
 
   try {
