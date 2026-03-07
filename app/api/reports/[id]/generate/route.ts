@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import chromium from '@sparticuz/chromium'
-import puppeteer from 'puppeteer-core'
+import React from 'react'
+import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { buildReportHtml, type ReportTemplateData } from '@/lib/pdf/report-template'
+import { ReportPDF } from '@/lib/pdf/ReportPDF'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60 // Vercel Pro — génération PDF ~10-20s
@@ -29,31 +29,6 @@ function toValues(raw: unknown): Record<string, Record<string, string>> {
   })
 
   return result
-}
-
-// ─── puppeteer PDF ─────────────────────────────────────────────────────────────
-
-async function renderHtmlToPdf(html: string): Promise<Buffer> {
-  const browser = await puppeteer.launch({
-    args: chromium.args,
-    defaultViewport: { width: 1280, height: 720 },
-    executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || await chromium.executablePath(),
-    headless: true,
-  })
-
-  try {
-    const page = await browser.newPage()
-    // waitUntil:'networkidle0' permet aux Google Fonts de se charger
-    await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 })
-    const pdfUint8 = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: { top: '0', right: '0', bottom: '0', left: '0' },
-    })
-    return Buffer.from(pdfUint8)
-  } finally {
-    await browser.close()
-  }
 }
 
 // ─── POST /api/reports/[id]/generate ─────────────────────────────────────────
@@ -85,7 +60,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     // Rapport
     const { data: report, error: reportError } = await admin
       .from('study_reports')
-      .select('id, study_id, content')
+      .select('id, study_id, content, created_at')
       .eq('id', id)
       .maybeSingle()
 
@@ -111,16 +86,22 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     const nowIso  = new Date().toISOString()
     const nowDate = new Date().toLocaleDateString('fr-FR')
 
-    // Construire l'HTML puis générer le PDF via puppeteer
-    const html = buildReportHtml({
-      studyType:        study.study_type as ReportTemplateData['studyType'],
-      patientReference: study.patient_reference,
-      agentName:        profile.full_name || 'Agent',
-      generatedAt:      nowDate,
-      values,
-    })
+    const reportForPdf = {
+      ...report,
+      content: {
+        ...(isObject(report.content) ? report.content : {}),
+        values,
+      },
+    }
 
-    const pdfBuffer = await renderHtmlToPdf(html)
+    const document = React.createElement(ReportPDF, {
+      report: reportForPdf,
+      study,
+      agentName: profile.full_name || 'Agent',
+      generatedAt: nowDate,
+    }) as unknown as Parameters<typeof renderToBuffer>[0]
+
+    const pdfBuffer = await renderToBuffer(document)
 
     // Upload Supabase Storage
     const timestamp   = Date.now()
@@ -134,6 +115,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       })
 
     if (uploadError) {
+      console.error('[api/reports/[id]/generate] Storage upload error:', uploadError)
       return NextResponse.json({ error: uploadError.message }, { status: 500 })
     }
 
@@ -146,6 +128,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .eq('id', report.id)
 
     if (reportUpdateError) {
+      console.error('[api/reports/[id]/generate] study_reports update error:', reportUpdateError)
       return NextResponse.json({ error: reportUpdateError.message }, { status: 500 })
     }
 
@@ -156,6 +139,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .eq('id', study.id)
 
     if (studyUpdateError) {
+      console.error('[api/reports/[id]/generate] studies update error:', studyUpdateError)
       return NextResponse.json({ error: studyUpdateError.message }, { status: 500 })
     }
 
@@ -201,6 +185,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .createSignedUrl(signedPath, 60 * 60)
 
     if (signedError || !signed?.signedUrl) {
+      console.error('[api/reports/[id]/generate] Signed URL error:', signedError)
       return NextResponse.json(
         { error: signedError?.message || 'PDF généré mais URL signée indisponible' },
         { status: 500 },
@@ -209,6 +194,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     return NextResponse.json({ success: true, pdf_url: signed.signedUrl })
   } catch (err: unknown) {
+    console.error('[api/reports/[id]/generate] Unhandled error:', err)
     const message = err instanceof Error ? err.message : 'Erreur interne'
     return NextResponse.json({ error: message }, { status: 500 })
   }

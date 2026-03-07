@@ -1,4 +1,5 @@
 import React from 'react'
+import fs from 'fs'
 import path from 'path'
 import { Document, Font, Page, StyleSheet, Text, View } from '@react-pdf/renderer'
 
@@ -6,12 +7,14 @@ type ReportRowStatus = 'ok' | 'warn' | 'bad' | 'mod'
 
 interface ReportRecord {
   id?: string
+  created_at?: string
   content?: unknown
   template_data?: unknown
 }
 
 interface StudyRecord {
   id?: string
+  patient_id?: string
   study_type?: string
   patient_reference?: string
   prescription_doctor?: string | null
@@ -35,55 +38,75 @@ interface ReportMetric {
 const colors = {
   midnight: '#06111f',
   teal: '#1ec8d4',
-  slate: '#7a8a99',
+  slate: '#64748b',
   light: '#f0f4f8',
   border: '#dbe4ec',
   text: '#1f2a37',
   white: '#ffffff',
-  okBg: '#dcfce7',
-  okText: '#166534',
-  warnBg: '#fef3c7',
+  okBg: '#ecfdf5',
+  okText: '#065f46',
+  warnBg: '#fffbeb',
   warnText: '#92400e',
-  badBg: '#fee2e2',
-  badText: '#991b1b',
-  modBg: '#e0e7ff',
-  modText: '#3730a3',
+  badBg: '#fff1f2',
+  badText: '#9f1239',
+  modBg: '#fff7ed',
+  modText: '#9a3412',
+}
+
+const syneRegularPath = path.join(process.cwd(), 'public/fonts/Syne-Regular.ttf')
+const syneSemiBoldPath = path.join(process.cwd(), 'public/fonts/Syne-SemiBold.ttf')
+const syneBoldPath = path.join(process.cwd(), 'public/fonts/Syne-Bold.ttf')
+const dmSansRegularPath = path.join(process.cwd(), 'public/fonts/DMSans-Regular.ttf')
+const dmSansMediumPath = path.join(process.cwd(), 'public/fonts/DMSans-Medium.ttf')
+
+const requiredFontPaths = [
+  syneRegularPath,
+  syneSemiBoldPath,
+  syneBoldPath,
+  dmSansRegularPath,
+  dmSansMediumPath,
+]
+
+for (const fontPath of requiredFontPaths) {
+  if (!fs.existsSync(fontPath)) {
+    throw new Error(`[ReportPDF] Missing font file: ${fontPath}`)
+  }
 }
 
 Font.register({
   family: 'Syne',
   fonts: [
-    { src: path.join(process.cwd(), 'public/fonts/Syne-Regular.ttf'), fontWeight: 400 },
-    { src: path.join(process.cwd(), 'public/fonts/Syne-SemiBold.ttf'), fontWeight: 600 },
-    { src: path.join(process.cwd(), 'public/fonts/Syne-Bold.ttf'), fontWeight: 700 },
+    { src: syneRegularPath, fontWeight: 400 },
+    { src: syneSemiBoldPath, fontWeight: 600 },
+    { src: syneBoldPath, fontWeight: 700 },
   ],
 })
 
 Font.register({
   family: 'DMSans',
   fonts: [
-    { src: path.join(process.cwd(), 'public/fonts/DMSans-Regular.ttf'), fontWeight: 400 },
-    { src: path.join(process.cwd(), 'public/fonts/DMSans-Medium.ttf'), fontWeight: 500 },
+    { src: dmSansRegularPath, fontWeight: 400 },
+    { src: dmSansMediumPath, fontWeight: 500 },
   ],
 })
 
 const styles = StyleSheet.create({
   page: {
     paddingTop: 0,
-    paddingBottom: 42,
-    paddingHorizontal: 28,
+    paddingBottom: 34,
+    paddingHorizontal: 24,
     fontFamily: 'DMSans',
-    fontSize: 10,
+    fontSize: 9,
     color: colors.text,
   },
   header: {
     backgroundColor: colors.midnight,
     borderTopWidth: 4,
     borderTopColor: colors.teal,
-    marginHorizontal: -28,
-    paddingHorizontal: 28,
-    paddingVertical: 14,
-    marginBottom: 14,
+    marginHorizontal: -24,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    marginBottom: 10,
   },
   headerRow: {
     flexDirection: 'row',
@@ -91,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   logo: {
-    color: colors.white,
+    color: colors.teal,
     fontSize: 16,
     fontFamily: 'Syne',
     fontWeight: 700,
@@ -118,12 +141,12 @@ const styles = StyleSheet.create({
   chipsRow: {
     flexDirection: 'row',
     gap: 6,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   chip: {
     borderRadius: 999,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
+    paddingVertical: 3,
+    paddingHorizontal: 8,
     borderWidth: 1,
     borderColor: colors.border,
     backgroundColor: colors.white,
@@ -141,16 +164,16 @@ const styles = StyleSheet.create({
   },
   grid2: {
     flexDirection: 'row',
-    gap: 8,
-    marginBottom: 10,
+    gap: 6,
+    marginBottom: 8,
   },
   infoCard: {
     flex: 1,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
-    padding: 10,
-    backgroundColor: colors.white,
+    padding: 8,
+    backgroundColor: colors.light,
   },
   cardTitle: {
     fontSize: 8,
@@ -162,7 +185,7 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   rowKey: {
     fontSize: 9,
@@ -177,9 +200,9 @@ const styles = StyleSheet.create({
   severityBlock: {
     backgroundColor: colors.midnight,
     borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
-    marginBottom: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    marginBottom: 8,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -198,16 +221,16 @@ const styles = StyleSheet.create({
   },
   iahValue: {
     fontFamily: 'Syne',
-    fontSize: 48,
+    fontSize: 36,
     fontWeight: 700,
-    color: colors.teal,
+    color: '#f87171',
     lineHeight: 1,
   },
   tableSection: {
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 8,
-    marginBottom: 10,
+    marginBottom: 8,
     overflow: 'hidden',
   },
   tableTitle: {
@@ -224,7 +247,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8fafc',
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
-    paddingVertical: 6,
+    paddingVertical: 5,
     paddingHorizontal: 10,
   },
   th: {
@@ -239,7 +262,7 @@ const styles = StyleSheet.create({
   colBadge: { width: '17%', textAlign: 'right' },
   tableRow: {
     flexDirection: 'row',
-    paddingVertical: 7,
+    paddingVertical: 6,
     paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#eef2f6',
@@ -267,7 +290,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
   },
   badge: {
-    borderRadius: 999,
+    borderRadius: 10,
     paddingVertical: 2,
     paddingHorizontal: 8,
     fontSize: 8,
@@ -275,15 +298,14 @@ const styles = StyleSheet.create({
     fontWeight: 600,
   },
   conclusion: {
-    borderLeftWidth: 4,
+    borderLeftWidth: 3,
     borderLeftColor: colors.teal,
-    backgroundColor: colors.light,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
+    backgroundColor: '#f0f8ff',
+    padding: 12,
     borderTopRightRadius: 8,
     borderBottomRightRadius: 8,
     marginTop: 2,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   conclusionTitle: {
     color: colors.midnight,
@@ -300,7 +322,7 @@ const styles = StyleSheet.create({
   signatures: {
     flexDirection: 'row',
     gap: 16,
-    marginTop: 6,
+    marginTop: 4,
   },
   signatureCol: {
     flex: 1,
@@ -310,7 +332,7 @@ const styles = StyleSheet.create({
     color: colors.slate,
     textTransform: 'uppercase',
     letterSpacing: 0.4,
-    marginBottom: 22,
+    marginBottom: 14,
   },
   signatureLine: {
     borderTopWidth: 1,
@@ -321,9 +343,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     position: 'absolute',
-    left: 28,
-    right: 28,
-    bottom: 14,
+    left: 24,
+    right: 24,
+    bottom: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     borderTopWidth: 1,
@@ -355,6 +377,21 @@ function normalizeValues(raw: unknown): Record<string, Record<string, string>> {
   })
 
   return output
+}
+
+function getSection(values: Record<string, Record<string, string>>, section: string): Record<string, string> {
+  return values[section] || {}
+}
+
+function getMetric(
+  values: Record<string, Record<string, string>>,
+  section: string,
+  key: string,
+  fallback = '-',
+): string {
+  const sectionValues = getSection(values, section)
+  const value = sectionValues[key]
+  return typeof value === 'string' && value.trim() ? value : fallback
 }
 
 function parseNumber(value: string): number | null {
@@ -416,7 +453,13 @@ function MetricTable({ title, rows }: { title: string; rows: ReportMetric[] }) {
       {rows.map((row, index) => {
         const badge = badgeStyle(row.status)
         return (
-          <View key={`${title}-${index}`} style={styles.tableRow}>
+          <View
+            key={`${title}-${index}`}
+            style={[
+              styles.tableRow,
+              index % 2 === 1 ? { backgroundColor: '#f8fafc' } : {},
+            ]}
+          >
             <Text style={styles.tdParam}>{row.label}</Text>
             <Text style={styles.tdValue}>{row.value}</Text>
             <Text style={styles.tdNorm}>{row.norm}</Text>
@@ -433,28 +476,35 @@ function MetricTable({ title, rows }: { title: string; rows: ReportMetric[] }) {
 export function ReportPDF({ report, study, agentName, generatedAt }: ReportPDFProps) {
   const values = normalizeValues(report.content)
 
-  const iahRaw = readMetric(values, ['iah', 'ia_h', 'index_apnee_hypopnee'])
+  const iahRaw = getMetric(values, 'respiratoire', 'iah')
   const iah = parseNumber(iahRaw)
   const severity = severityFromIah(iah)
 
+  const sommeilEfficacite = getMetric(values, 'sommeil', 'efficacite')
+  const sommeilTst = getMetric(values, 'sommeil', 'temps_sommeil')
+  const sommeilTib = getMetric(values, 'sommeil', 'temps_lit')
+  const spo2Moyenne = getMetric(values, 'oximetrie', 'spo2_moyenne')
+  const spo2Min = getMetric(values, 'oximetrie', 'spo2_min')
+  const ct90 = getMetric(values, 'oximetrie', 'ct90')
+
   const architectureRows: ReportMetric[] = [
     {
-      label: 'Efficacité du sommeil',
-      value: readMetric(values, ['sleep_efficiency', 'efficacite_sommeil']),
+      label: 'Efficacité',
+      value: sommeilEfficacite,
       norm: '> 85 %',
-      status: statusByRange(readMetric(values, ['sleep_efficiency', 'efficacite_sommeil']), 85, 100),
+      status: statusByRange(sommeilEfficacite, 85, 100),
     },
     {
-      label: 'Latence d’endormissement',
-      value: readMetric(values, ['sleep_latency', 'latence_endormissement']),
-      norm: '10–30 min',
-      status: statusByRange(readMetric(values, ['sleep_latency', 'latence_endormissement']), 10, 30),
+      label: 'TST',
+      value: sommeilTst,
+      norm: 'min',
+      status: statusByRange(sommeilTst, 1, 2000),
     },
     {
-      label: 'Réveils nocturnes',
-      value: readMetric(values, ['awakenings', 'reveils_nocturnes']),
-      norm: '< 10',
-      status: statusByRange(readMetric(values, ['awakenings', 'reveils_nocturnes']), 0, 10),
+      label: 'TIB',
+      value: sommeilTib,
+      norm: 'min',
+      status: statusByRange(sommeilTib, 1, 2000),
     },
   ]
 
@@ -466,47 +516,49 @@ export function ReportPDF({ report, study, agentName, generatedAt }: ReportPDFPr
       status: severity.status,
     },
     {
-      label: 'Indice désaturation',
-      value: readMetric(values, ['odi', 'indice_desaturation']),
-      norm: '< 5',
-      status: statusByRange(readMetric(values, ['odi', 'indice_desaturation']), 0, 5),
+      label: 'SpO₂ moyenne',
+      value: spo2Moyenne,
+      norm: '≥ 94 %',
+      status: statusByRange(spo2Moyenne, 94, 100),
     },
     {
-      label: 'Ronflement (%)',
-      value: readMetric(values, ['snoring_percentage', 'ronflement']),
-      norm: '< 20 %',
-      status: statusByRange(readMetric(values, ['snoring_percentage', 'ronflement']), 0, 20),
+      label: 'SpO₂ minimale',
+      value: spo2Min,
+      norm: '≥ 90 %',
+      status: statusByRange(spo2Min, 90, 100),
     },
   ]
 
   const oxymetryRows: ReportMetric[] = [
     {
       label: 'SpO₂ moyenne',
-      value: readMetric(values, ['spo2_mean', 'sao2_moyenne']),
+      value: spo2Moyenne,
       norm: '≥ 94 %',
-      status: statusByRange(readMetric(values, ['spo2_mean', 'sao2_moyenne']), 94, 100),
+      status: statusByRange(spo2Moyenne, 94, 100),
     },
     {
       label: 'SpO₂ minimale',
-      value: readMetric(values, ['spo2_min', 'sao2_min']),
+      value: spo2Min,
       norm: '≥ 90 %',
-      status: statusByRange(readMetric(values, ['spo2_min', 'sao2_min']), 90, 100),
+      status: statusByRange(spo2Min, 90, 100),
     },
     {
-      label: 'Temps < 90 %',
-      value: readMetric(values, ['t90', 'temps_sous_90']),
-      norm: '< 10 %',
-      status: statusByRange(readMetric(values, ['t90', 'temps_sous_90']), 0, 10),
+      label: 'CT90',
+      value: ct90,
+      norm: '< 5',
+      status: statusByRange(ct90, 0, 5),
     },
   ]
 
-  const conclusion = readMetric(values, ['conclusion', 'richtext', 'texte_conclusion'], 'Conclusion non renseignée.')
+  const conclusion = getMetric(values, 'conclusion', 'richtext', 'Conclusion non renseignée.')
   const studyType = study.study_type || 'Non précisé'
-  const patientRef = study.patient_reference || 'N/A'
-  const dateLabel = generatedAt || new Date().toLocaleDateString('fr-FR')
+  const patientRef = study.patient_id || study.patient_reference || 'N/A'
+  const dateLabel = report.created_at
+    ? new Date(report.created_at).toLocaleDateString('fr-FR')
+    : (generatedAt || new Date().toLocaleDateString('fr-FR'))
   const signalChip =
-    parseNumber(readMetric(values, ['spo2_min', 'sao2_min'])) !== null &&
-    (parseNumber(readMetric(values, ['spo2_min', 'sao2_min'])) ?? 100) < 90
+    parseNumber(spo2Min) !== null &&
+    (parseNumber(spo2Min) ?? 100) < 90
       ? 'Désaturation'
       : 'Stables'
 
