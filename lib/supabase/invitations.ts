@@ -16,10 +16,11 @@ export async function createInvitation(params: {
   const server = await createServerClient()
 
   const token = crypto.randomUUID()
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 
   const { data, error } = await server
     .from('invitations')
-    .insert({ email, full_name, token, role_invited, created_by, institution_id })
+    .insert({ email, full_name, token, role_invited, created_by, institution_id, expires_at: expiresAt })
     .select()
     .single()
 
@@ -38,7 +39,13 @@ export async function getInvitationByToken(token: string) {
     .maybeSingle()
 
   if (error) throw error
-  return data as InvitationRow | null
+  if (!data) return null
+
+  if (data.expires_at && new Date(data.expires_at) < new Date()) {
+    throw new Error('Invitation expirée')
+  }
+
+  return data as InvitationRow
 }
 
 export async function markInvitationUsed(id: string) {
@@ -67,6 +74,9 @@ export async function createUserAndProfileFromInvitation(token: string, password
   if (invErr) throw invErr
   if (!invitation) throw new Error('Token invalide')
   if (invitation.used_at) throw new Error('Token déjà utilisé')
+  if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
+    throw new Error('Invitation expirée')
+  }
 
   // Create user via admin
   const { data: userData, error: createErr } = await admin.auth.admin.createUser({

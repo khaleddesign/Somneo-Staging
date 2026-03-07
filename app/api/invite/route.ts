@@ -2,35 +2,23 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createInvitation } from '@/lib/supabase/invitations'
 import { Resend } from 'resend'
+import { inviteSchema } from '@/lib/validation'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-type InviteRole = 'admin' | 'agent' | 'client'
-
-interface Body {
-  email?: string
-  full_name?: string
-  role?: InviteRole
-}
-
 export async function POST(req: Request) {
   try {
-    const cookieHeader = req.headers.get('cookie')
-    console.error('[POST /api/invite] cookie debug', {
-      hasCookieHeader: Boolean(cookieHeader),
-      cookieHeaderPreview: cookieHeader ? `${cookieHeader.slice(0, 120)}...` : null,
-    })
-
-    const body: Body = await req.json()
-    console.log('Données reçues :', body)
-
-    const email = body.email?.trim().toLowerCase()
-    const fullName = body.full_name?.trim() || null
-    const role: InviteRole = body.role && ['admin', 'agent', 'client'].includes(body.role) ? body.role : 'client'
-
-    if (!email) {
-      return NextResponse.json({ error: 'Email requis' }, { status: 400 })
+    const raw = await req.json()
+    const parsed = inviteSchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Données invalides' },
+        { status: 400 },
+      )
     }
+    const email = parsed.data.email
+    const fullName = parsed.data.full_name ?? null
+    const role = parsed.data.role
 
     const supabase = await createClient()
     const {

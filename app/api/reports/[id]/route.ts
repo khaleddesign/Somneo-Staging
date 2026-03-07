@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { logAudit } from '@/lib/audit'
 
 interface UpdateReportBody {
   content?: unknown
@@ -34,6 +35,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     if (!report) {
       return NextResponse.json({ error: 'Rapport introuvable' }, { status: 404 })
     }
+
+    await logAudit(user.id, 'view_report', 'report', id)
 
     return NextResponse.json({ report })
   } catch (err: unknown) {

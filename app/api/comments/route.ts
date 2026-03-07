@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { commentSchema } from '@/lib/validation'
 
 export async function GET(req: Request) {
   try {
@@ -35,11 +36,15 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json()
-    const { study_id, message } = body
-    if (!study_id || !message) {
-      return NextResponse.json({ error: 'study_id et message requis' }, { status: 400 })
+    const raw = await req.json()
+    const parsed = commentSchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? 'Données invalides' },
+        { status: 400 },
+      )
     }
+    const { study_id, message } = parsed.data
 
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()

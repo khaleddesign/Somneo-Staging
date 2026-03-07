@@ -4,6 +4,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ReportPDF } from '@/lib/pdf/ReportPDF'
+import { logAudit } from '@/lib/audit'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60 // Vercel Pro — génération PDF ~10-20s
@@ -191,6 +192,8 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
         { status: 500 },
       )
     }
+
+    await logAudit(user.id, 'generate_pdf', 'report', id, { study_id: study.id })
 
     return NextResponse.json({ success: true, pdf_url: signed.signedUrl })
   } catch (err: unknown) {
