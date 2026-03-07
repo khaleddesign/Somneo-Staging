@@ -44,7 +44,14 @@ export async function proxy(request: NextRequest) {
     const role = profile?.role
     const path = request.nextUrl.pathname
 
+    if (!role) {
+      return NextResponse.redirect(new URL('/auth/login', request.url))
+    }
+
     if (path.startsWith('/dashboard/admin') && role !== 'admin') {
+      if (role === 'client') {
+        return NextResponse.redirect(new URL('/dashboard/client', request.url))
+      }
       return NextResponse.redirect(new URL('/dashboard/agent', request.url))
     }
 
