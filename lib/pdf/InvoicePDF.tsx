@@ -58,6 +58,7 @@ Font.register({
   fonts: [
     { src: path.join(process.cwd(), 'public/fonts/DMSans-Regular.ttf'), fontWeight: 400 },
     { src: path.join(process.cwd(), 'public/fonts/DMSans-Medium.ttf'), fontWeight: 500 },
+    { src: path.join(process.cwd(), 'public/fonts/DMSans-Regular.ttf'), fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 

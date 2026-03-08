@@ -87,6 +87,7 @@ Font.register({
   fonts: [
     { src: dmSansRegularPath, fontWeight: 400 },
     { src: dmSansMediumPath, fontWeight: 500 },
+    { src: dmSansRegularPath, fontWeight: 400, fontStyle: 'italic' },
   ],
 })
 
