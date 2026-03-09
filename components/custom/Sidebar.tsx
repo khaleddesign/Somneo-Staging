@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { logoutAndRedirect } from '@/lib/auth/logout'
 import {
   Home,
   FileText,
@@ -116,9 +117,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
           )}
           <button
             onClick={async () => {
-              const supabase = createClient()
-              await supabase.auth.signOut()
-              window.location.href = '/auth/login'
+              await logoutAndRedirect()
             }}
             className="mt-3 flex items-center gap-2 text-sm text-sand/50 hover:text-red-400 font-body"
           >

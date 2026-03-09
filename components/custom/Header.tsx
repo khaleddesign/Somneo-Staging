@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import dynamic from 'next/dynamic'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { logoutAndRedirect } from '@/lib/auth/logout'
 import { Button } from '@/components/ui/button'
 import { LogOut } from 'lucide-react'
 
@@ -13,7 +13,6 @@ const NotificationBell = dynamic(() => import('@/components/custom/NotificationB
 export default function Header() {
   const [email, setEmail] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   useEffect(() => {
     const supabase = createClient()
@@ -25,9 +24,7 @@ export default function Header() {
   const handleLogout = async () => {
     setLoading(true)
     try {
-      const supabase = createClient()
-      await supabase.auth.signOut()
-      router.push('/auth/login')
+      await logoutAndRedirect()
     } finally {
       setLoading(false)
     }
