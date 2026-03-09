@@ -26,9 +26,14 @@ export default function ForgotPasswordPage() {
     })
 
     if (resetError) {
-      setError('Impossible d’envoyer le lien de réinitialisation. Réessayez.')
-      setLoading(false)
-      return
+      const { error: fallbackError } = await supabase.auth.resetPasswordForEmail(email)
+
+      if (fallbackError) {
+        const message = fallbackError.message || resetError.message || 'Erreur inconnue'
+        setError(`Impossible d’envoyer le lien de réinitialisation. ${message}`)
+        setLoading(false)
+        return
+      }
     }
 
     setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.')
