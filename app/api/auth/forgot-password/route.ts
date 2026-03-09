@@ -4,7 +4,8 @@ import { createAdminClient } from '@/lib/supabase/admin'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-const RESET_REDIRECT_URL = 'https://app.somnoventis.com/auth/reset-password'
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000').replace(/\/$/, '')
+const RESET_REDIRECT_URL = `${APP_URL}/auth/reset-password`
 
 function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
