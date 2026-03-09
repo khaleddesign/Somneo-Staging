@@ -26,6 +26,29 @@ export default function ForgotPasswordPage() {
     })
 
     if (resetError) {
+      const shouldUseServerFallback = /captcha/i.test(resetError.message || '')
+
+      if (shouldUseServerFallback) {
+        const fallback = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        })
+
+        if (fallback.ok) {
+          setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.')
+          setLoading(false)
+          return
+        }
+
+        const fallbackData = await fallback.json().catch(() => null)
+        setError(fallbackData?.error || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
+        setLoading(false)
+        return
+      }
+
       setError(resetError.message || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
       setLoading(false)
       return
