@@ -21,14 +21,40 @@ export default function ForgotPasswordPage() {
     setError(null)
     setSuccess(null)
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://app.somnoventis.com/auth/reset-password',
-    })
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://app.somnoventis.com/auth/reset-password',
+      })
 
-    if (resetError) {
-      const shouldUseServerFallback = /captcha/i.test(resetError.message || '')
+      if (resetError) {
+        const shouldUseServerFallback = /captcha/i.test(resetError.message || '')
 
-      if (shouldUseServerFallback) {
+        if (!shouldUseServerFallback) {
+          setError(resetError.message || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
+          setLoading(false)
+          return
+        }
+
+        const fallback = await fetch('/api/auth/forgot-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email }),
+        })
+
+        if (!fallback.ok) {
+          const fallbackData = await fallback.json().catch(() => null)
+          setError(fallbackData?.error || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
+          setLoading(false)
+          return
+        }
+      }
+
+      setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.')
+      setLoading(false)
+    } catch {
+      try {
         const fallback = await fetch('/api/auth/forgot-password', {
           method: 'POST',
           headers: {
@@ -45,17 +71,12 @@ export default function ForgotPasswordPage() {
 
         const fallbackData = await fallback.json().catch(() => null)
         setError(fallbackData?.error || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
-        setLoading(false)
-        return
+      } catch {
+        setError('Impossible d’envoyer le lien de réinitialisation (erreur réseau). Réessayez.')
       }
 
-      setError(resetError.message || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
       setLoading(false)
-      return
     }
-
-    setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.')
-    setLoading(false)
   }
 
   return (
