@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -15,15 +15,59 @@ export default function ResetPasswordPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [verifying, setVerifying] = useState(true)
+  const [sessionReady, setSessionReady] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
+  useEffect(() => {
+    async function verifyRecoveryToken() {
+      setError(null)
+
+      const query = new URLSearchParams(window.location.search)
+      const tokenHash = query.get('token_hash')
+      const type = query.get('type')
+
+      if (tokenHash && type === 'recovery') {
+        const { error: verifyError } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type: 'recovery',
+        })
+
+        if (verifyError) {
+          setError('Lien de réinitialisation invalide ou expiré.')
+          setVerifying(false)
+          return
+        }
+
+        setSessionReady(true)
+        setVerifying(false)
+        return
+      }
+
+      const { data } = await supabase.auth.getSession()
+      if (data.session) {
+        setSessionReady(true)
+      } else {
+        setError('Lien de réinitialisation invalide ou expiré.')
+      }
+      setVerifying(false)
+    }
+
+    void verifyRecoveryToken()
+  }, [supabase.auth])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
     setSuccess(null)
+
+    if (!sessionReady) {
+      setError('Session de réinitialisation invalide. Demandez un nouveau lien.')
+      return
+    }
 
     if (password !== confirmPassword) {
       setError('Les mots de passe ne correspondent pas.')
@@ -117,10 +161,11 @@ export default function ResetPasswordPage() {
 
             {error && <div className="text-red-500 text-sm font-body">{error}</div>}
             {success && <div className="text-emerald-600 text-sm font-body">{success}</div>}
+            {verifying && <div className="text-gray-500 text-sm font-body">Vérification du lien de réinitialisation...</div>}
 
             <Button
               type="submit"
-              disabled={loading}
+              disabled={loading || verifying || !sessionReady}
               className="w-full bg-teal hover:bg-teal/90 text-white font-heading py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-px"
             >
               {loading ? (

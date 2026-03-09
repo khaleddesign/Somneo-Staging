@@ -32,7 +32,12 @@ export async function POST(req: Request) {
       },
     })
 
-    if (!error && data?.properties?.action_link) {
+    const tokenHash = data?.properties?.hashed_token
+    const customResetLink = tokenHash
+      ? `${RESET_REDIRECT_URL}?token_hash=${encodeURIComponent(tokenHash)}&type=recovery`
+      : data?.properties?.action_link
+
+    if (!error && customResetLink) {
       await resend.emails.send({
         from: 'SomnoConnect <no-reply@somnoventis.com>',
         to: email,
@@ -40,7 +45,7 @@ export async function POST(req: Request) {
         html: `
           <p>Bonjour,</p>
           <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
-          <p><a href="${data.properties.action_link}">Réinitialiser mon mot de passe</a></p>
+          <p><a href="${customResetLink}">Réinitialiser mon mot de passe</a></p>
           <p>Si vous n’êtes pas à l’origine de cette demande, ignorez cet email.</p>
         `,
       })
