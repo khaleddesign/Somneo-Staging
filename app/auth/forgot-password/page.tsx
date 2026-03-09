@@ -5,7 +5,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import AuthLeftPanel from '@/components/custom/AuthLeftPanel'
-import { createClient } from '@/lib/supabase/client'
 import { Mail, Loader2 } from 'lucide-react'
 
 export default function ForgotPasswordPage() {
@@ -13,7 +12,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
-  const supabase = createClient()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,19 +19,19 @@ export default function ForgotPasswordPage() {
     setError(null)
     setSuccess(null)
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://app.somnoventis.com/auth/reset-password',
+    const res = await fetch('/api/auth/forgot-password', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email }),
     })
 
-    if (resetError) {
-      const { error: fallbackError } = await supabase.auth.resetPasswordForEmail(email)
-
-      if (fallbackError) {
-        const message = fallbackError.message || resetError.message || 'Erreur inconnue'
-        setError(`Impossible d’envoyer le lien de réinitialisation. ${message}`)
-        setLoading(false)
-        return
-      }
+    if (!res.ok) {
+      const data = await res.json().catch(() => null)
+      setError(data?.error || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
+      setLoading(false)
+      return
     }
 
     setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.')
