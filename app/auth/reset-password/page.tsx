@@ -26,6 +26,7 @@ export default function ResetPasswordPage() {
     async function verifyRecoveryToken() {
       setError(null)
 
+      // Cas 1 : PKCE flow — token_hash dans les query params
       const query = new URLSearchParams(window.location.search)
       const tokenHash = query.get('token_hash')
       const type = query.get('type')
@@ -47,6 +48,29 @@ export default function ResetPasswordPage() {
         return
       }
 
+      // Cas 2 : Implicit flow — access_token + refresh_token dans le hash fragment
+      const hash = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hash.get('access_token')
+      const refreshToken = hash.get('refresh_token')
+
+      if (accessToken && refreshToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        })
+
+        if (sessionError) {
+          setError('Lien de réinitialisation invalide ou expiré.')
+          setVerifying(false)
+          return
+        }
+
+        setSessionReady(true)
+        setVerifying(false)
+        return
+      }
+
+      // Cas 3 : Session déjà active (ex: page rechargée)
       const { data } = await supabase.auth.getSession()
       if (data.session) {
         setSessionReady(true)
