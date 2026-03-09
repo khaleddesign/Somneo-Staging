@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 import { useState } from 'react'
 
 export default function AdminSettingsPage() {
@@ -41,6 +42,14 @@ export default function AdminSettingsPage() {
           <Button className="bg-teal text-white hover:bg-teal/90 w-full md:w-auto">
             Enregistrer les paramètres
           </Button>
+
+          <div className="pt-4 border-t border-gray-100">
+            <Link href="/dashboard/admin/settings/pricing">
+              <Button variant="outline" className="border-teal text-teal hover:bg-teal/5">
+                Tarification
+              </Button>
+            </Link>
+          </div>
         </Card>
       </div>
     </AdminLayout>

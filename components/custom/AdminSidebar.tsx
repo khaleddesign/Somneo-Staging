@@ -21,6 +21,7 @@ const navItems: NavItem[] = [
   { label: 'Vue globale', href: '/dashboard/admin', icon: LayoutDashboard },
   { label: 'Agents', href: '/dashboard/admin/agents', icon: Users },
   { label: 'Études', href: '/dashboard/admin/studies', icon: FileText },
+  { label: 'Facturation', href: '/dashboard/admin/invoices', icon: FileText },
   { label: 'Clients', href: '/dashboard/admin/clients', icon: Building2 },
   { label: 'Paramètres', href: '/dashboard/admin/settings', icon: Settings },
 ]
@@ -45,7 +46,7 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
         onClick={onClose}
       />
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-[#06111f] text-white z-50 transform transition-transform lg:translate-x-0 ${
+        className={`fixed top-0 left-0 h-full w-64 bg-midnight text-white z-50 transform transition-transform lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >

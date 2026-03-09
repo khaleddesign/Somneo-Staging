@@ -547,7 +547,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
                   placeholder={section.placeholder ?? ''}
                   value={sectionValues.richtext ?? ''}
                   onChange={(e) => updateValue(section.id, 'richtext', e.target.value)}
-                  className="min-h-[150px] rounded-lg border-gray-200 focus-visible:border-teal"
+                  className="min-h-37.5 rounded-lg border-gray-200 focus-visible:border-teal"
                 />
                 {section.id === 'conclusion' && (
                   <label className="flex items-center gap-2 text-sm text-midnight">
@@ -571,7 +571,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
           placeholder="Collez ici un résumé brut (ex: AHI: 22, SpO2 min: 84, Efficiency: 68...)"
           value={rawInput}
           onChange={(e) => setRawInput(e.target.value)}
-          className="min-h-[110px] bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
+          className="min-h-27.5 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
         />
         <Button type="button" variant="outline" onClick={applyParsedRawText} className="border-gray-200">
           Extraire automatiquement les métriques
@@ -633,7 +633,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
             type="button"
             onClick={() => void generatePdf()}
             disabled={generatingPdf || !reportId}
-            className="bg-gradient-to-br from-[#c8a45a] to-[#b8913f] text-white hover:shadow-md hover:-translate-y-px transition-all disabled:opacity-50"
+            className="bg-linear-to-br from-gold to-[#b8913f] text-white hover:shadow-md hover:-translate-y-px transition-all disabled:opacity-50"
           >
             {generatingPdf ? (
               <>

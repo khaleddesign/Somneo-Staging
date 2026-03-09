@@ -73,7 +73,7 @@ export default function AuthLeftPanel() {
   }, [])
 
   return (
-    <div className="flex w-full lg:basis-[45%] bg-[#06111f] flex-col justify-between p-8 lg:p-12 text-white relative overflow-hidden min-h-[40vh] lg:min-h-screen">
+    <div className="flex w-full lg:basis-[45%] bg-midnight flex-col justify-between p-8 lg:p-12 text-white relative overflow-hidden min-h-[40vh] lg:min-h-screen">
       {/* Canvas for stars */}
       <canvas
         ref={canvasRef}

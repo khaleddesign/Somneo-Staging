@@ -6,6 +6,7 @@ import AppLayout from '@/components/custom/AppLayout'
 import AssignStudyButton from '@/components/custom/AssignStudyButton'
 import ReportEditor from '@/components/custom/ReportEditor'
 import StudyFileDownloadCard from '@/components/custom/StudyFileDownloadCard'
+import ClientOnly from '@/components/custom/ClientOnly'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -63,130 +64,132 @@ export default async function AgentStudyDetail({
           &larr; Retour au dashboard
         </a>
 
-        <Card className="bg-gradient-to-r from-midnight to-[#0d2137] border-t-4 border-t-teal text-white rounded-2xl shadow-sm">
+        <Card className="bg-linear-to-r from-midnight to-[#0d2137] border-t-4 border-t-teal text-white rounded-2xl shadow-sm">
           <CardContent className="p-6">
             <h1 className="text-4xl lg:text-5xl font-display leading-tight text-sand">Dossier Patient</h1>
             <p className="text-sand/70 font-body mt-1">Suivi clinique de l&apos;étude du sommeil</p>
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="informations">
-          <TabsList>
-            <TabsTrigger value="informations">Informations</TabsTrigger>
-            {canWriteReport && <TabsTrigger value="rapport">Rédiger le rapport</TabsTrigger>}
-            <TabsTrigger value="discussion">Discussion</TabsTrigger>
-          </TabsList>
+        <ClientOnly fallback={<div className="h-12" />}>
+          <Tabs defaultValue="informations">
+            <TabsList>
+              <TabsTrigger value="informations">Informations</TabsTrigger>
+              {canWriteReport && <TabsTrigger value="rapport">Rédiger le rapport</TabsTrigger>}
+              <TabsTrigger value="discussion">Discussion</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="informations" className="space-y-6">
-            <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
-              <CardHeader>
-                <CardTitle className="text-2xl text-midnight font-heading inline-flex items-center gap-3">
-                  <span className="text-3xl font-display text-teal/30">01</span>
-                  Informations
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">ID patient</p>
-                  <p className="text-midnight font-body mt-1">{study.patient_reference}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Client</p>
-                  <p className="text-midnight font-body mt-1">{study.profiles?.full_name} ({study.profiles?.email})</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Type</p>
-                  <p className="text-midnight font-body mt-1">{study.study_type}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priorité</p>
-                  <p className="text-midnight font-body mt-1">{study.priority}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Statut</p>
-                  <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
-                    {study.status.replace('_', ' ')}
-                  </span>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
-                  <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</p>
-                </div>
-                {study.notes && (
-                  <div className="sm:col-span-2">
-                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Notes</p>
-                    <p className="text-midnight font-body mt-1">{study.notes}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <StudyFileDownloadCard
-              studyId={study.id}
-              filePath={study.file_path}
-              fileSizeBytes={study.file_size_orig}
-            />
-
-            {study.assigned_agent_id === null && (
-              <Card className="shadow-sm border-teal/30 bg-teal/5 rounded-2xl">
+            <TabsContent value="informations" className="space-y-6">
+              <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
                 <CardHeader>
-                  <CardTitle className="text-xl text-midnight font-heading">Assignation</CardTitle>
+                  <CardTitle className="text-2xl text-midnight font-heading inline-flex items-center gap-3">
+                    <span className="text-3xl font-display text-teal/30">01</span>
+                    Informations
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <AssignStudyButton studyId={study.id} />
+                <CardContent className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">ID patient</p>
+                    <p className="text-midnight font-body mt-1">{study.patient_reference}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Client</p>
+                    <p className="text-midnight font-body mt-1">{study.profiles?.full_name} ({study.profiles?.email})</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Type</p>
+                    <p className="text-midnight font-body mt-1">{study.study_type}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priorité</p>
+                    <p className="text-midnight font-body mt-1">{study.priority}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Statut</p>
+                    <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
+                      {study.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
+                    <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</p>
+                  </div>
+                  {study.notes && (
+                    <div className="sm:col-span-2">
+                      <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Notes</p>
+                      <p className="text-midnight font-body mt-1">{study.notes}</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
-            )}
 
-            {study.assigned_agent_id === user.id && (
+              <StudyFileDownloadCard
+                studyId={study.id}
+                filePath={study.file_path}
+                fileSizeBytes={study.file_size_orig}
+              />
+
+              {study.assigned_agent_id === null && (
+                <Card className="shadow-sm border-teal/30 bg-teal/5 rounded-2xl">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-midnight font-heading">Assignation</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <AssignStudyButton studyId={study.id} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {study.assigned_agent_id === user.id && (
+                <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-midnight font-heading inline-flex items-center gap-3">
+                      <span className="text-3xl font-display text-teal/30">02</span>
+                      Actions
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="rapport">
+              {canWriteReport ? (
+                <ReportEditor
+                  studyId={study.id}
+                  studyType={study.study_type}
+                  patientReference={study.patient_reference}
+                  agentName={profile.full_name || 'Agent'}
+                />
+              ) : (
+                <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
+                  <CardContent className="p-6 text-sm text-gray-600">
+                    Étude non assignée ou déjà terminée
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="discussion">
               <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
                 <CardHeader>
                   <CardTitle className="text-xl text-midnight font-heading inline-flex items-center gap-3">
-                    <span className="text-3xl font-display text-teal/30">02</span>
-                    Actions
+                    <span className="text-3xl font-display text-teal/30">03</span>
+                    Discussion
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
+                  <StudyComments
+                    studyId={study.id}
+                    currentUser={{ id: user.id, name: profile?.full_name || null }}
+                  />
                 </CardContent>
               </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="rapport">
-            {canWriteReport ? (
-              <ReportEditor
-                studyId={study.id}
-                studyType={study.study_type}
-                patientReference={study.patient_reference}
-                agentName={profile.full_name || 'Agent'}
-              />
-            ) : (
-              <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
-                <CardContent className="p-6 text-sm text-gray-600">
-                  Étude non assignée ou déjà terminée
-                </CardContent>
-              </Card>
-            )}
-          </TabsContent>
-
-          <TabsContent value="discussion">
-            <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
-              <CardHeader>
-                <CardTitle className="text-xl text-midnight font-heading inline-flex items-center gap-3">
-                  <span className="text-3xl font-display text-teal/30">03</span>
-                  Discussion
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <StudyComments
-                  studyId={study.id}
-                  currentUser={{ id: user.id, name: profile?.full_name || null }}
-                />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+            </TabsContent>
+          </Tabs>
+        </ClientOnly>
       </div>
     </AppLayout>
   )
