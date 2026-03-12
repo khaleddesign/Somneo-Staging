@@ -22,7 +22,7 @@ export interface UseFileUploadResult {
 }
 
 const TUS_ENDPOINT = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/upload/resumable`
-const BUCKET_NAME = 'studies-files'
+const BUCKET_NAME = 'study-files'
 
 export function useFileUpload(): UseFileUploadResult {
   const [state, setState] = useState<UploadState>('idle')
