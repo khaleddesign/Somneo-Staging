@@ -87,14 +87,31 @@ export function useFileUpload(): UseFileUploadResult {
           body: JSON.stringify({ objectPath }),
         })
 
+        const rawText = await urlRes.text()
+        console.log('[upload-url] status:', urlRes.status, 'body:', rawText)
+
         if (!urlRes.ok) {
-          const err = await urlRes.json()
-          setErrorMessage(err.error || "Impossible d'obtenir l'URL d'upload")
+          let errMsg = `Erreur ${urlRes.status}`
+          try { errMsg = JSON.parse(rawText)?.error || errMsg } catch {}
+          setErrorMessage(errMsg)
           setState('error')
           return
         }
 
-        const { signedUrl } = await urlRes.json()
+        let signedUrl: string
+        try {
+          signedUrl = JSON.parse(rawText)?.signedUrl
+        } catch {
+          setErrorMessage('Réponse serveur invalide: ' + rawText.slice(0, 100))
+          setState('error')
+          return
+        }
+
+        if (!signedUrl) {
+          setErrorMessage('URL signée manquante dans la réponse')
+          setState('error')
+          return
+        }
 
         // Upload direct vers Supabase via XHR (avec barre de progression)
         await new Promise<void>((resolve, reject) => {
