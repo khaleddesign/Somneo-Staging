@@ -42,12 +42,12 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Fichier archivé ou non disponible' }, { status: 404 })
     }
 
-    const storagePath = study.file_path.startsWith('studies-files/')
-      ? study.file_path.slice('studies-files/'.length)
+    const storagePath = study.file_path.startsWith('study-files/')
+      ? study.file_path.slice('study-files/'.length)
       : study.file_path
 
     const { data: signed, error: signedError } = await admin.storage
-      .from('studies-files')
+      .from('study-files')
       .createSignedUrl(storagePath, 60 * 60)
 
     if (signedError || !signed?.signedUrl) {

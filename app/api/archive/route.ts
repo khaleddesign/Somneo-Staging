@@ -45,7 +45,7 @@ export async function POST() {
         // Extraire le bucket et chemin du file_path
         if (study.file_path) {
           const parts = study.file_path.split('/')
-          const bucket = parts[0] || 'studies-files'
+          const bucket = parts[0] || 'study-files'
           const filePath = parts.slice(1).join('/')
 
           if (filePath) {
