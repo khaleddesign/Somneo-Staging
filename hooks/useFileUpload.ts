@@ -31,7 +31,7 @@ export function useFileUpload(): UseFileUploadResult {
   const [checksum, setChecksum] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const abortedRef = useRef(false)
+  const xhrRef = useRef<XMLHttpRequest | null>(null)
   const supabaseRef = useRef(createClient())
 
   const calculateMD5 = useCallback(async (file: File): Promise<string> => {
@@ -53,13 +53,13 @@ export function useFileUpload(): UseFileUploadResult {
   const uploadFile = useCallback(
     async (file: File) => {
       try {
-        abortedRef.current = false
         setState('uploading')
         setProgress(0)
         setErrorMessage(null)
         setFileName(file.name)
         setFileSize(file.size)
 
+        // Vérifier la session
         const supabase = supabaseRef.current
         const { data: { session } } = await supabase.auth.getSession()
         if (!session) {
@@ -69,35 +69,60 @@ export function useFileUpload(): UseFileUploadResult {
         }
 
         // Calculer MD5
-        setProgress(10)
+        setProgress(5)
         const md5 = await calculateMD5(file)
         setChecksum(md5)
 
-        if (abortedRef.current) return
-
-        // Préparer le chemin de stockage
+        // Préparer le chemin
         const fileExt = file.name.split('.').pop()?.toLowerCase()
         const storedFileName = `${session.user.id}-${Date.now()}.${fileExt}`
         const objectPath = `${session.user.id}/${storedFileName}`
         setFilePath(objectPath)
-        setProgress(20)
+        setProgress(10)
 
-        // Upload direct via Supabase Storage JS client
-        const { error: uploadError } = await supabase.storage
-          .from(BUCKET_NAME)
-          .upload(objectPath, file, {
-            cacheControl: '3600',
-            upsert: true,
-            contentType: file.type || 'application/octet-stream',
-          })
+        // Obtenir l'URL signée depuis le serveur (admin client, pas de RLS)
+        const urlRes = await fetch('/api/upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ objectPath }),
+        })
 
-        if (abortedRef.current) return
-
-        if (uploadError) {
-          setErrorMessage(uploadError.message || "Erreur lors de l'upload")
+        if (!urlRes.ok) {
+          const err = await urlRes.json()
+          setErrorMessage(err.error || "Impossible d'obtenir l'URL d'upload")
           setState('error')
           return
         }
+
+        const { signedUrl } = await urlRes.json()
+
+        // Upload direct vers Supabase via XHR (avec barre de progression)
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest()
+          xhrRef.current = xhr
+
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const pct = Math.round(10 + (e.loaded / e.total) * 90)
+              setProgress(pct)
+            }
+          }
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve()
+            } else {
+              reject(new Error(`Upload échoué (${xhr.status}): ${xhr.responseText}`))
+            }
+          }
+
+          xhr.onerror = () => reject(new Error('Erreur réseau lors de l\'upload'))
+          xhr.onabort = () => reject(new Error('Upload annulé'))
+
+          xhr.open('PUT', signedUrl)
+          xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
+          xhr.send(file)
+        })
 
         setState('completed')
         setProgress(100)
@@ -111,15 +136,18 @@ export function useFileUpload(): UseFileUploadResult {
   )
 
   const pause = useCallback(() => {
-    // Non supporté en upload direct
+    // Non supporté avec XHR direct
   }, [])
 
   const resume = useCallback(() => {
-    // Non supporté en upload direct
+    // Non supporté avec XHR direct
   }, [])
 
   const cancel = useCallback(() => {
-    abortedRef.current = true
+    if (xhrRef.current) {
+      xhrRef.current.abort()
+      xhrRef.current = null
+    }
     setState('idle')
     setProgress(0)
     setFileName(null)
