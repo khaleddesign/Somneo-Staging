@@ -7,6 +7,7 @@ const ALLOWED_ORIGINS = [
   'https://somnoventis.com',
   'http://localhost:3000',
   'http://localhost:3001',
+  'https://somneo.vercel.app',
 ]
 
 const RATE_LIMITS: Array<{ pattern: RegExp; limit: number; windowMs: number }> = [
