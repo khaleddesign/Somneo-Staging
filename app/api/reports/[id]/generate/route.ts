@@ -6,6 +6,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { ReportPDF } from '@/lib/pdf/ReportPDF'
 import { logAudit } from '@/lib/audit'
 import { decrypt } from '@/lib/encryption'
+import { sendEmail } from '@/lib/mail'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60 // Vercel Pro — génération PDF ~10-20s
@@ -165,19 +166,11 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (clientProfile?.email) {
-      const notifUrl = new URL(
-        '/api/notifications',
-        process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
-      ).toString()
-      await fetch(notifUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email:   clientProfile.email,
-          subject: 'SomnoConnect - Votre rapport est disponible',
-          message: '<p>Bonjour,</p><p>Le compte-rendu de votre étude du sommeil est maintenant disponible sur votre espace client.</p>',
-        }),
-      }).catch(() => undefined)
+      await sendEmail({
+        to: clientProfile.email,
+        subject: 'SomnoConnect - Votre rapport est disponible',
+        html: '<p>Bonjour,</p><p>Le compte-rendu de votre étude du sommeil est maintenant disponible sur votre espace client.</p>',
+      })
     }
 
     // URL signée (1 h)

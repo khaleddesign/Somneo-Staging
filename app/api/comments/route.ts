@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { commentSchema } from '@/lib/validation'
+import { sendEmail } from '@/lib/mail'
 
 export async function GET(req: Request) {
   try {
@@ -127,17 +128,11 @@ export async function POST(req: Request) {
       }
 
       if (recipientEmail) {
-        // fire-and-forget notification (URL absolue requise côté serveur)
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
-        fetch(`${appUrl}/api/notifications`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: recipientEmail,
-            subject,
-            message: textMessage,
-          }),
-        }).catch((e) => console.error('notif err', e))
+        await sendEmail({
+          to: recipientEmail,
+          subject,
+          html: textMessage,
+        })
       }
     } catch (e) {
       console.error('erreur envoi mail commentaire', e)

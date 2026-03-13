@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server'
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY!);
+import { sendEmail } from '@/lib/mail'
 
 interface Body {
   email?: string
@@ -18,21 +16,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'email, subject et message requis' }, { status: 400 })
     }
 
-    // envoi mail via Resend
-    const { data, error } = await resend.emails.send({
-      from: 'no-reply@somnoventis.com',
+    const { success, id, error } = await sendEmail({
       to: email,
       subject,
-      html: message,
+      html: message
     })
 
-    if (error) {
-      console.error('[notifications] erreur Resend', error)
-      console.error('[notifications] DB Error:', error)
-      return NextResponse.json({ error: 'Une erreur est survenue lors de la récupération des notifications' }, { status: 500 })
+    if (!success) {
+      return NextResponse.json({ 
+        error: 'Erreur lors de l\'envoi du mail', 
+        details: typeof error === 'object' ? (error as any).message : error 
+      }, { status: 500 })
     }
 
-    return NextResponse.json({ success: true, id: data?.id })
+    return NextResponse.json({ success: true, id })
   } catch (err: unknown) {
     console.error('[notifications] erreur', err)
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Erreur interne' }, { status: 500 })
