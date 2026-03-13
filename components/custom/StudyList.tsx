@@ -1,9 +1,11 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
 import { FC, useState } from 'react'
-import { AlertTriangle, Package, Download } from 'lucide-react'
+import { AlertTriangle, Package, Download, FileText } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
+import { jsPDF } from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 const priorityColors = {
   low: 'bg-gray-200 text-gray-700',
@@ -38,7 +40,9 @@ export const StudyList: FC<StudyListProps> = ({
   
   // États pour l'export
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
-  const [exportPeriod, setExportPeriod] = useState<"selection" | "month" | "year" | "all">("selection")
+  const [exportPeriod, setExportPeriod] = useState<"selection" | "month" | "year" | "all" | "custom">("selection")
+  // Format HTML5 month type: "YYYY-MM"
+  const [customMonth, setCustomMonth] = useState<string>("")
 
   function isSlaBreached(study: Study) {
     if (study.priority !== 'high' || study.status !== 'en_attente') return false
@@ -81,8 +85,8 @@ export const StudyList: FC<StudyListProps> = ({
     setSelectedIds(newSet)
   }
 
-  // Export CSV
-  function handleExportCSV() {
+  // Fonction utilitaire pour préparer les données d'export
+  function getExportData() {
     let toExport = studies
     const now = new Date()
     
@@ -90,12 +94,24 @@ export const StudyList: FC<StudyListProps> = ({
       toExport = studies.filter(s => selectedIds.has(s.id))
       if (toExport.length === 0) {
         alert("Veuillez sélectionner au moins une étude.")
-        return
+        return null
       }
     } else if (exportPeriod === 'month') {
       toExport = studies.filter(s => {
         const d = new Date(s.submitted_at)
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+      })
+    } else if (exportPeriod === 'custom') {
+      if (!customMonth) {
+         alert("Veuillez choisir un mois.")
+         return null
+      }
+      const [yearStr, monthStr] = customMonth.split('-')
+      const targetYear = parseInt(yearStr, 10)
+      const targetMonth = parseInt(monthStr, 10) - 1 // JS months are 0-indexed
+      toExport = studies.filter(s => {
+        const d = new Date(s.submitted_at)
+        return d.getMonth() === targetMonth && d.getFullYear() === targetYear
       })
     } else if (exportPeriod === 'year') {
       toExport = studies.filter(s => new Date(s.submitted_at).getFullYear() === now.getFullYear())
@@ -103,8 +119,15 @@ export const StudyList: FC<StudyListProps> = ({
 
     if (toExport.length === 0) {
       alert("Aucune étude à exporter pour cette période.")
-      return
+      return null
     }
+    return toExport
+  }
+
+  // Export CSV
+  function handleExportCSV() {
+    const toExport = getExportData()
+    if (!toExport) return
 
     const headers = ['ID Patient', 'Type', 'Priorite', 'Statut', 'Date Soumission']
     const csvContent = [
@@ -128,6 +151,41 @@ export const StudyList: FC<StudyListProps> = ({
     document.body.removeChild(link)
   }
 
+  // Export PDF
+  function handleExportPDF() {
+    const toExport = getExportData()
+    if (!toExport) return
+
+    const doc = new jsPDF()
+    const title = exportPeriod === 'custom' && customMonth 
+                  ? `Rapport des Études - ${customMonth}` 
+                  : `Rapport des Études (${exportPeriod})`
+    
+    doc.setFontSize(18)
+    doc.text(title, 14, 22)
+    doc.setFontSize(11)
+    doc.text(`Généré le: ${new Date().toLocaleDateString('fr-FR')}`, 14, 30)
+
+    const tableColumn = ["ID Patient", "Type", "Priorité", "Statut", "Date de Soumission"]
+    const tableRows = toExport.map(s => [
+      s.patient_reference,
+      s.study_type,
+      s.priority || 'N/A',
+      s.status.replace('_', ' '),
+      new Date(s.submitted_at).toLocaleDateString('fr-FR')
+    ])
+
+    autoTable(doc, {
+      startY: 40,
+      head: [tableColumn],
+      body: tableRows,
+      theme: 'striped',
+      headStyles: { fillColor: [4, 153, 150] } // Teal color from SomnoConnect theme
+    })
+
+    doc.save(`export_etudes_${exportPeriod}_${new Date().toISOString().split('T')[0]}.pdf`)
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -145,22 +203,39 @@ export const StudyList: FC<StudyListProps> = ({
   return (
     <div className="space-y-4">
       {/* Barre d'outils d'export */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <div className="flex items-center gap-3">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex flex-wrap items-center gap-3">
           <select 
             className="text-sm border-gray-300 rounded-lg font-body focus:ring-teal focus:border-teal p-2 border"
             value={exportPeriod}
             onChange={(e) => setExportPeriod(e.target.value as any)}
           >
             <option value="selection">Exporter la sélection ({selectedIds.size})</option>
-            <option value="month">Toutes les études ce mois-ci</option>
-            <option value="year">Toutes les études cette année</option>
-            <option value="all">Toutes les études (Tout)</option>
+            <option value="month">Ce mois-ci</option>
+            <option value="custom">Un mois spécifique...</option>
+            <option value="year">Cette année</option>
+            <option value="all">Toutes les études</option>
           </select>
-          <Button variant="outline" size="sm" onClick={handleExportCSV} className="font-heading gap-2">
-            <Download className="w-4 h-4" />
-            Exporter CSV
-          </Button>
+
+          {exportPeriod === 'custom' && (
+            <input 
+              type="month" 
+              className="text-sm border-gray-300 rounded-lg font-body focus:ring-teal focus:border-teal p-1.5 border"
+              value={customMonth}
+              onChange={(e) => setCustomMonth(e.target.value)}
+            />
+          )}
+
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleExportCSV} className="font-heading gap-2">
+              <Download className="w-4 h-4" />
+              CSV
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleExportPDF} className="font-heading gap-2">
+              <FileText className="w-4 h-4 text-red-500" />
+              PDF
+            </Button>
+          </div>
         </div>
         <div className="text-sm text-gray-500 font-body">
           {studies.length} étude(s) au total
