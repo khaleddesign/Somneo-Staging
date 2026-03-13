@@ -61,6 +61,23 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: signedError?.message || 'Impossible de générer l\'URL signée' }, { status: 500 })
     }
 
+    // --- Trace d'Audit ---
+    const clientIp = _req.headers.get('x-forwarded-for')?.split(',')[0] || _req.headers.get('x-real-ip') || 'unknown'
+    const userAgent = _req.headers.get('user-agent') || 'unknown'
+
+    // fire-and-forget logging
+    admin.from('audit_logs').insert({
+      user_id: user.id,
+      action: 'download_request',
+      resource_type: 'edf_file',
+      resource_id: id,
+      ip_address: clientIp,
+      user_agent: userAgent,
+      metadata: { role }
+    }).then(({ error: auditErr }) => {
+      if (auditErr) console.error('[Audit Error]', auditErr)
+    })
+
     return NextResponse.json({ url: signed.signedUrl })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Erreur interne'
