@@ -1,13 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import AppLayout from '@/components/custom/AppLayout'
 import AgentStats from '@/components/custom/AgentStats'
-import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { FileText, Users, Settings } from 'lucide-react'
 
 interface AgentKpiRow {
   agent_id: string
@@ -55,118 +52,57 @@ export default function AgentDashboardPage() {
 
   return (
     <AppLayout>
-      <div className="p-8 bg-[#f0f4f8]">
+      <div className="p-8 bg-[#f0f4f8] min-h-screen">
         {/* Greeting */}
-        <div className="mb-10">
-            <h1 className="text-4xl text-midnight font-display">
-            Bonjour, {agentName} 👋
+        <div className="mb-8">
+          <h1 className="text-3xl text-midnight font-display">
+            Bonjour, {agentName}
           </h1>
-          <p className="text-gray-500 mt-2 font-body">Bienvenue sur votre dashboard SomnoConnect</p>
-        </div>
-        {/* KPIs Section */}
-        <div className="mb-10">
-          <AgentStats />
+          <p className="text-gray-500 mt-1 font-body text-sm">Tableau de bord SomnoConnect</p>
         </div>
 
+        {/* KPIs */}
+        <AgentStats />
+
+        {/* Admin: KPI par agent */}
         {isAdmin && (
-          <div className="mb-10">
-            <Card className="p-6">
-              <h2 className="text-xl text-midnight mb-4 font-heading">
-                KPI par agent
-              </h2>
-              {loadingAgentKpis ? (
-                <p className="text-sm text-gray-500">Chargement des indicateurs...</p>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full text-sm border">
-                    <thead>
-                      <tr className="bg-gray-50">
-                        <th className="px-4 py-2 text-left border">Nom agent</th>
-                        <th className="px-4 py-2 text-left border">Études en cours</th>
-                        <th className="px-4 py-2 text-left border">Études terminées ce mois</th>
+          <Card className="p-6">
+            <h2 className="text-base text-midnight mb-4 font-heading">
+              Activité par agent
+            </h2>
+            {loadingAgentKpis ? (
+              <p className="text-sm text-gray-400">Chargement...</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-gray-100 text-left text-gray-400 text-xs uppercase tracking-wider">
+                      <th className="pb-3 pr-4 font-heading">Agent</th>
+                      <th className="pb-3 pr-4 font-heading">En cours</th>
+                      <th className="pb-3 font-heading">Terminées ce mois</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {agentKpis.map((row) => (
+                      <tr key={row.agent_id}>
+                        <td className="py-3 pr-4 text-midnight font-medium">{row.agent_name}</td>
+                        <td className="py-3 pr-4 text-gray-600">{row.en_cours}</td>
+                        <td className="py-3 text-gray-600">{row.termine_ce_mois}</td>
                       </tr>
-                    </thead>
-                    <tbody>
-                      {agentKpis.map((row) => (
-                        <tr key={row.agent_id}>
-                          <td className="px-4 py-2 border">{row.agent_name}</td>
-                          <td className="px-4 py-2 border">{row.en_cours}</td>
-                          <td className="px-4 py-2 border">{row.termine_ce_mois}</td>
-                        </tr>
-                      ))}
-                      {agentKpis.length === 0 && (
-                        <tr>
-                          <td className="px-4 py-3 text-gray-500 border" colSpan={3}>
-                            Aucun agent trouvé.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </Card>
-          </div>
+                    ))}
+                    {agentKpis.length === 0 && (
+                      <tr>
+                        <td className="py-4 text-gray-400" colSpan={3}>
+                          Aucun agent trouvé.
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
         )}
-
-        {/* Quick Access Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* Studies Card */}
-          <Link href="/dashboard/agent/studies">
-            <Card className="p-6 hover:shadow-md hover:-translate-y-px transition-all duration-200 cursor-pointer border border-gray-100 rounded-2xl bg-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-teal/8 rounded-xl">
-                  <FileText className="h-6 w-6 text-teal" />
-                </div>
-              </div>
-              <h3 className="text-lg text-midnight mb-1 font-heading">Études</h3>
-              <p className="text-gray-600 text-sm font-body">Gérez vos études et consultez les détails</p>
-              <div className="mt-4">
-                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-xl font-heading">
-                  Accéder
-                </Button>
-              </div>
-            </Card>
-          </Link>
-
-          {/* Clients Card */}
-          <Link href="/dashboard/agent/clients">
-            <Card className="p-6 hover:shadow-md hover:-translate-y-px transition-all duration-200 cursor-pointer border border-gray-100 rounded-2xl bg-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-teal/8 rounded-xl">
-                  <Users className="h-6 w-6 text-gold" />
-                </div>
-              </div>
-              <h3 className="text-lg text-midnight mb-1 font-heading">Clients</h3>
-              <p className="text-gray-600 text-sm font-body">Gérez vos clients et invitez-en de nouveaux</p>
-              <div className="mt-4">
-                <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-xl font-heading">
-                  Accéder
-                </Button>
-              </div>
-            </Card>
-          </Link>
-
-          {/* Admin Panel Card - Only for admins */}
-          {isAdmin && (
-            <Link href="/dashboard/agent/settings">
-              <Card className="p-6 hover:shadow-md hover:-translate-y-px transition-all duration-200 cursor-pointer border border-gray-100 bg-white rounded-2xl">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-teal/8 rounded-xl">
-                    <Settings className="h-6 w-6 text-teal" />
-                  </div>
-                </div>
-                <h3 className="text-lg text-midnight mb-1 font-heading">Panel Admin</h3>
-                <p className="text-gray-600 text-sm font-body">Gérez les paramètres et configurations</p>
-                <div className="mt-4">
-                  <Button className="bg-teal hover:bg-teal/90 text-white w-full rounded-xl font-heading">
-                    Accéder
-                  </Button>
-                </div>
-              </Card>
-            </Link>
-          )}
-        </div>
       </div>
     </AppLayout>
   )

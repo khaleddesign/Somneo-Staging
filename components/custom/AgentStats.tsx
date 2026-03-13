@@ -6,9 +6,6 @@ import {
   AlertCircle,
   Clock,
   CheckCircle2,
-  TrendingUp,
-  Timer,
-  Users,
 } from 'lucide-react'
 
 interface Stats {
@@ -96,49 +93,28 @@ export default function AgentStats() {
       bgColor: 'bg-green-100',
       iconColor: 'text-green-600',
     },
-    {
-      label: 'Cette semaine',
-      value: stats.this_week,
-      icon: TrendingUp,
-      bgColor: 'bg-purple-100',
-      iconColor: 'text-purple-600',
-    },
-    {
-      label: 'Délai moyen',
-      value: `${stats.avg_turnaround}h`,
-      icon: Timer,
-      bgColor: 'bg-orange-100',
-      iconColor: 'text-orange-600',
-    },
-    {
-      label: 'Clients actifs',
-      value: stats.total_clients,
-      icon: Users,
-      bgColor: 'bg-midnight/10',
-      iconColor: 'text-midnight',
-    },
   ]
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
       {cards.map((card) => {
         const Icon = card.icon
         return (
           <div
             key={card.label}
-            className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-px"
+            className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm"
           >
             <div className="flex items-start justify-between">
               <div>
                 <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">
                   {card.label}
                 </p>
-                <p className="text-4xl text-midnight font-display leading-none">
+                <p className="text-3xl text-midnight font-display leading-none">
                   {card.value}
                 </p>
               </div>
-              <div className={`${card.bgColor} p-3 rounded-xl`}>
-                <Icon className={`h-6 w-6 ${card.iconColor}`} />
+              <div className={`${card.bgColor} p-2.5 rounded-xl`}>
+                <Icon className={`h-5 w-5 ${card.iconColor}`} />
               </div>
             </div>
           </div>

@@ -1,7 +1,9 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
 import { FC, useState } from 'react'
-import { AlertTriangle, Package } from 'lucide-react'
+import { AlertTriangle, Package, Download } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Button } from '@/components/ui/button'
 
 const priorityColors = {
   low: 'bg-gray-200 text-gray-700',
@@ -33,6 +35,10 @@ export const StudyList: FC<StudyListProps> = ({
   onAssigned,
 }) => {
   const [assigningStudyId, setAssigningStudyId] = useState<string | null>(null)
+  
+  // États pour l'export
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [exportPeriod, setExportPeriod] = useState<"selection" | "month" | "year" | "all">("selection")
 
   function isSlaBreached(study: Study) {
     if (study.priority !== 'high' || study.status !== 'en_attente') return false
@@ -59,6 +65,69 @@ export const StudyList: FC<StudyListProps> = ({
     }
   }
 
+  // Fonctions de sélection
+  function handleSelectAll(checked: boolean) {
+    if (checked) {
+      setSelectedIds(new Set(studies.map(s => s.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  function handleSelect(id: string, checked: boolean) {
+    const newSet = new Set(selectedIds)
+    if (checked) newSet.add(id)
+    else newSet.delete(id)
+    setSelectedIds(newSet)
+  }
+
+  // Export CSV
+  function handleExportCSV() {
+    let toExport = studies
+    const now = new Date()
+    
+    if (exportPeriod === 'selection') {
+      toExport = studies.filter(s => selectedIds.has(s.id))
+      if (toExport.length === 0) {
+        alert("Veuillez sélectionner au moins une étude.")
+        return
+      }
+    } else if (exportPeriod === 'month') {
+      toExport = studies.filter(s => {
+        const d = new Date(s.submitted_at)
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+      })
+    } else if (exportPeriod === 'year') {
+      toExport = studies.filter(s => new Date(s.submitted_at).getFullYear() === now.getFullYear())
+    }
+
+    if (toExport.length === 0) {
+      alert("Aucune étude à exporter pour cette période.")
+      return
+    }
+
+    const headers = ['ID Patient', 'Type', 'Priorite', 'Statut', 'Date Soumission']
+    const csvContent = [
+      headers.join(','),
+      ...toExport.map(s => [
+        s.patient_reference,
+        s.study_type,
+        s.priority,
+        s.status,
+        new Date(s.submitted_at).toLocaleDateString('fr-FR')
+      ].join(','))
+    ].join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `export_etudes_${exportPeriod}_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   if (loading) {
     return (
       <div className="flex justify-center py-8">
@@ -72,93 +141,133 @@ export const StudyList: FC<StudyListProps> = ({
   if (!studies.length) {
     return <div className="text-center text-gray-500 py-8">Aucune étude pour le moment</div>
   }
+
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border border-gray-100 text-sm bg-white rounded-2xl overflow-hidden shadow-sm">
-        <thead>
-          <tr className="bg-[#fafbfc] border-b border-gray-100">
-            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">ID Patient</th>
-            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Type</th>
-            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Priorité</th>
-            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Statut</th>
-            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date de soumission</th>
-            <th className="px-3 py-3 text-center text-xs text-gray-400 uppercase tracking-wider font-heading">Archive</th>
-            <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {studies.map((study) => (
-            <tr key={study.id} className="border-b border-gray-100 hover:bg-teal/3 transition-colors">
-              <td className="px-3 py-3 font-body text-sm text-midnight">{study.patient_reference}</td>
-              <td className="px-3 py-3 font-body text-sm text-midnight">{study.study_type}</td>
-              <td className="px-3 py-3">
-                <div className="flex items-center gap-2">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${priorityColors[study.priority]}`}>{study.priority}</span>
-                  {isSlaBreached(study) && (
-                    <span
-                      title="SLA dépassé"
-                      className="inline-flex items-center gap-1 text-xs text-red-600 font-medium animate-pulse"
-                    >
-                      <AlertTriangle className="h-3.5 w-3.5" />
-                      SLA dépassé
+    <div className="space-y-4">
+      {/* Barre d'outils d'export */}
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div className="flex items-center gap-3">
+          <select 
+            className="text-sm border-gray-300 rounded-lg font-body focus:ring-teal focus:border-teal p-2 border"
+            value={exportPeriod}
+            onChange={(e) => setExportPeriod(e.target.value as any)}
+          >
+            <option value="selection">Exporter la sélection ({selectedIds.size})</option>
+            <option value="month">Toutes les études ce mois-ci</option>
+            <option value="year">Toutes les études cette année</option>
+            <option value="all">Toutes les études (Tout)</option>
+          </select>
+          <Button variant="outline" size="sm" onClick={handleExportCSV} className="font-heading gap-2">
+            <Download className="w-4 h-4" />
+            Exporter CSV
+          </Button>
+        </div>
+        <div className="text-sm text-gray-500 font-body">
+          {studies.length} étude(s) au total
+        </div>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full border border-gray-100 text-sm bg-white rounded-2xl overflow-hidden shadow-sm">
+          <thead>
+            <tr className="bg-[#fafbfc] border-b border-gray-100">
+              <th className="px-3 py-3 text-left w-12 text-center">
+                <Checkbox 
+                  checked={studies.length > 0 && selectedIds.size === studies.length}
+                  onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
+                  aria-label="Sélectionner tout"
+                />
+              </th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">ID Patient</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Type</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Priorité</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Statut</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date de soumission</th>
+              <th className="px-3 py-3 text-center text-xs text-gray-400 uppercase tracking-wider font-heading">Archive</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {studies.map((study) => (
+              <tr key={study.id} className="border-b border-gray-100 hover:bg-teal/3 transition-colors">
+                <td className="px-3 py-3 text-center">
+                  <Checkbox 
+                    checked={selectedIds.has(study.id)}
+                    onCheckedChange={(checked) => handleSelect(study.id, checked as boolean)}
+                    aria-label={`Sélectionner étude ${study.patient_reference}`}
+                  />
+                </td>
+                <td className="px-3 py-3 font-body text-sm text-midnight">{study.patient_reference}</td>
+                <td className="px-3 py-3 font-body text-sm text-midnight">{study.study_type}</td>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${priorityColors[study.priority]}`}>{study.priority}</span>
+                    {isSlaBreached(study) && (
+                      <span
+                        title="SLA dépassé"
+                        className="inline-flex items-center gap-1 text-xs text-red-600 font-medium animate-pulse"
+                      >
+                        <AlertTriangle className="h-3.5 w-3.5" />
+                        SLA dépassé
+                      </span>
+                    )}
+                  </div>
+                </td>
+                <td className="px-3 py-3">
+                  <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
+                </td>
+                <td className="px-3 py-3 font-body text-sm text-midnight">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
+                <td className="px-3 py-3 text-center">
+                  {study.archived_at ? (
+                    <span title={`Archivé le ${new Date(study.archived_at).toLocaleDateString('fr-FR')}`}>
+                      <Package className="h-5 w-5 text-gray-500 inline" />
                     </span>
+                  ) : (
+                    ''
                   )}
-                </div>
-              </td>
-              <td className="px-3 py-3">
-                <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
-              </td>
-              <td className="px-3 py-3 font-body text-sm text-midnight">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
-              <td className="px-3 py-3 text-center">
-                {study.archived_at ? (
-                  <span title={`Archivé le ${new Date(study.archived_at).toLocaleDateString('fr-FR')}`}>
-                    <Package className="h-5 w-5 text-gray-500 inline" />
-                  </span>
-                ) : (
-                  ''
-                )}
-              </td>
-              <td className="px-3 py-3">
-                {role === 'agent' ? (
-                  !study.assigned_agent_id ? (
-                    <button
-                      type="button"
-                      onClick={() => handleAssign(study.id)}
-                      disabled={assigningStudyId === study.id}
-                      className="bg-teal text-white text-sm px-3 py-1 rounded-lg hover:bg-teal/90 disabled:opacity-60"
-                    >
-                      {assigningStudyId === study.id ? 'Assignation...' : 'Prendre en charge'}
-                    </button>
-                  ) : study.assigned_agent_id === currentUserId ? (
+                </td>
+                <td className="px-3 py-3">
+                  {role === 'agent' ? (
+                    !study.assigned_agent_id ? (
+                      <button
+                        type="button"
+                        onClick={() => handleAssign(study.id)}
+                        disabled={assigningStudyId === study.id}
+                        className="bg-teal text-white text-sm px-3 py-1 rounded-lg hover:bg-teal/90 disabled:opacity-60"
+                      >
+                        {assigningStudyId === study.id ? 'Assignation...' : 'Prendre en charge'}
+                      </button>
+                    ) : study.assigned_agent_id === currentUserId ? (
+                      <a
+                        href={`/dashboard/agent/studies/${study.id}`}
+                        className="border border-teal text-teal text-sm px-3 py-1 rounded-lg hover:bg-teal/5"
+                      >
+                        Voir
+                      </a>
+                    ) : null
+                  ) : role === 'client' ? (
                     <a
-                      href={`/dashboard/agent/studies/${study.id}`}
+                      href={`/dashboard/client/studies/${study.id}`}
+                      className="px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 hover:bg-gray-300"
+                    >
+                      Voir
+                    </a>
+                  ) : role === 'admin' ? (
+                    <a
+                      href={`/dashboard/admin/studies/${study.id}`}
                       className="border border-teal text-teal text-sm px-3 py-1 rounded-lg hover:bg-teal/5"
                     >
                       Voir
                     </a>
-                  ) : null
-                ) : role === 'client' ? (
-                  <a
-                    href={`/dashboard/client/studies/${study.id}`}
-                    className="px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 hover:bg-gray-300"
-                  >
-                    Voir
-                  </a>
-                ) : role === 'admin' ? (
-                  <a
-                    href={`/dashboard/admin/studies/${study.id}`}
-                    className="border border-teal text-teal text-sm px-3 py-1 rounded-lg hover:bg-teal/5"
-                  >
-                    Voir
-                  </a>
-                ) : (
-                  <span className="text-xs text-gray-400">—</span>
-                )}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+                  ) : (
+                    <span className="text-xs text-gray-400">—</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
