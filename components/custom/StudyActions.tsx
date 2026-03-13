@@ -80,63 +80,41 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
         return
       }
 
-      // Upload le fichier vers Supabase Storage
-      const filePath = `reports/${studyId}/rapport.pdf`
-      const { data: uploadData, error: uploadErr } = await supabase.storage
-        .from('reports-files')
-        .upload(filePath, file, { upsert: true, contentType: 'application/pdf' })
+      // 1. Upload le fichier via l'API serveur (qui utilise le client admin)
+      const formData = new FormData()
+      formData.append('file', file)
 
-      if (uploadErr) {
-        setUploadError('Erreur lors de l\'upload : ' + uploadErr.message)
-        setUploading(false)
-        return
+      const uploadRes = await fetch(`/api/studies/${studyId}/report`, {
+        method: 'POST',
+        body: formData,
+      })
+
+      const uploadData = await uploadRes.json()
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.error || 'Erreur lors de l\'upload')
       }
 
-      // Récupérer l'ancien statut pour l'historique
-      // on récupère aussi le client_id pour envoi de mail
+      // 2. Mettre à jour le statut en 'termine' via l'API de statut existante (qui gère l'historique)
+      const statusRes = await fetch(`/api/studies/${studyId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'termine' }),
+      })
+
+      if (!statusRes.ok) {
+        const statusData = await statusRes.json()
+        console.error('Erreur mise à jour statut:', statusData.error)
+        // Non-bloquant si l'upload a fonctionné
+      }
+
+      // 3. Récupérer l'email du client (si on l'a)
       const { data: studyData } = await supabase
         .from('studies')
-        .select('status, client_id')
+        .select('client_id')
         .eq('id', studyId)
         .single()
 
-      const oldStatus = studyData?.status || currentStatus
       const clientId = studyData?.client_id
-
-      // Mettre à jour l'étude : report_path et status = 'termine'
-      const reportPath = `reports-files/${filePath}`
-      const { error: updateErr } = await supabase
-        .from('studies')
-        .update({
-          report_path: reportPath,
-          status: 'termine',
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', studyId)
-
-      if (updateErr) {
-        setUploadError('Erreur lors de la mise à jour : ' + updateErr.message)
-        setUploading(false)
-        return
-      }
-
-      // Insérer dans study_history
-      const { error: historyErr } = await supabase
-        .from('study_history')
-        .insert({
-          study_id: studyId,
-          old_status: oldStatus,
-          new_status: 'termine',
-          changed_by: user.id,
-          changed_at: new Date().toISOString(),
-        })
-
-      if (historyErr) {
-        console.error('Erreur historique (non bloquante):', historyErr)
-      }
-
-      // envoi notification email au client (fire-and-forget)
       if (clientId) {
         try {
           const { data: profile } = await supabase
