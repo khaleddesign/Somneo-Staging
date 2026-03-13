@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import SparkMD5 from 'spark-md5'
+import * as tus from 'tus-js-client'
 import { createClient } from '@/lib/supabase/client'
 
 export type UploadState = 'idle' | 'uploading' | 'paused' | 'completed' | 'error'
@@ -31,7 +32,7 @@ export function useFileUpload(): UseFileUploadResult {
   const [checksum, setChecksum] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const xhrRef = useRef<XMLHttpRequest | null>(null)
+  const uploadRef = useRef<tus.Upload | null>(null)
   const supabaseRef = useRef(createClient())
 
   const calculateMD5 = useCallback(async (file: File): Promise<string> => {
@@ -50,6 +51,15 @@ export function useFileUpload(): UseFileUploadResult {
     return spark.end()
   }, [])
 
+  // Cleanup pending upload on unmount
+  useEffect(() => {
+    return () => {
+      if (uploadRef.current && state === 'uploading') {
+        uploadRef.current.abort()
+      }
+    }
+  }, [state])
+
   const uploadFile = useCallback(
     async (file: File) => {
       try {
@@ -59,7 +69,6 @@ export function useFileUpload(): UseFileUploadResult {
         setFileName(file.name)
         setFileSize(file.size)
 
-        // Vérifier la session
         const supabase = supabaseRef.current
         const { data: { session } } = await supabase.auth.getSession()
         if (!session) {
@@ -68,81 +77,59 @@ export function useFileUpload(): UseFileUploadResult {
           return
         }
 
-        // Calculer MD5
         setProgress(5)
         const md5 = await calculateMD5(file)
         setChecksum(md5)
 
-        // Préparer le chemin
         const fileExt = file.name.split('.').pop()?.toLowerCase()
         const storedFileName = `${session.user.id}-${Date.now()}.${fileExt}`
         const objectPath = `${session.user.id}/${storedFileName}`
         setFilePath(objectPath)
-        setProgress(10)
 
-        // Obtenir l'URL signée depuis le serveur (admin client, pas de RLS)
-        const urlRes = await fetch('/api/upload-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ objectPath }),
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        if (!supabaseUrl) {
+          throw new Error('Variables Supabase manquantes')
+        }
+
+        const upload = new tus.Upload(file, {
+          endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
+          retryDelays: [0, 3000, 5000, 10000, 20000],
+          headers: {
+            authorization: `Bearer ${session.access_token}`,
+            'x-upsert': 'true',
+          },
+          uploadDataDuringCreation: true,
+          metadata: {
+            bucketName: BUCKET_NAME,
+            objectName: objectPath,
+            contentType: file.type || 'application/octet-stream',
+            cacheControl: '3600',
+          },
+          chunkSize: 6 * 1024 * 1024, // Supabase recommends 6MB
+          onError: (error) => {
+            console.error('[TUS Upload Error]:', error)
+            setErrorMessage('Erreur réseau lors de l\'upload : ' + (error.message || 'Interruption inattendue'))
+            setState('error')
+          },
+          onProgress: (bytesUploaded, bytesTotal) => {
+            const pct = Math.round((bytesUploaded / bytesTotal) * 100)
+            setProgress(Math.max(10, pct)) // Start showing progress after initial checksum buffer
+          },
+          onSuccess: () => {
+            setState('completed')
+            setProgress(100)
+          },
         })
 
-        const rawText = await urlRes.text()
-        console.log('[upload-url] status:', urlRes.status, 'body:', rawText)
+        uploadRef.current = upload
 
-        if (!urlRes.ok) {
-          let errMsg = `Erreur ${urlRes.status}`
-          try { errMsg = JSON.parse(rawText)?.error || errMsg } catch {}
-          setErrorMessage(errMsg)
-          setState('error')
-          return
+        // Check if there are any previous uploads to continue.
+        const previousUploads = await upload.findPreviousUploads()
+        if (previousUploads.length > 0) {
+          upload.resumeFromPreviousUpload(previousUploads[0])
         }
 
-        let signedUrl: string
-        try {
-          signedUrl = JSON.parse(rawText)?.signedUrl
-        } catch {
-          setErrorMessage('Réponse serveur invalide: ' + rawText.slice(0, 100))
-          setState('error')
-          return
-        }
-
-        if (!signedUrl) {
-          setErrorMessage('URL signée manquante dans la réponse')
-          setState('error')
-          return
-        }
-
-        // Upload direct vers Supabase via XHR (avec barre de progression)
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest()
-          xhrRef.current = xhr
-
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-              const pct = Math.round(10 + (e.loaded / e.total) * 90)
-              setProgress(pct)
-            }
-          }
-
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) {
-              resolve()
-            } else {
-              reject(new Error(`Upload échoué (${xhr.status}): ${xhr.responseText}`))
-            }
-          }
-
-          xhr.onerror = () => reject(new Error('Erreur réseau lors de l\'upload'))
-          xhr.onabort = () => reject(new Error('Upload annulé'))
-
-          xhr.open('PUT', signedUrl)
-          xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream')
-          xhr.send(file)
-        })
-
-        setState('completed')
-        setProgress(100)
+        upload.start()
       } catch (err: unknown) {
         const message = err instanceof Error ? err.message : 'Erreur inconnue'
         setErrorMessage(message)
@@ -153,17 +140,23 @@ export function useFileUpload(): UseFileUploadResult {
   )
 
   const pause = useCallback(() => {
-    // Non supporté avec XHR direct
+    if (uploadRef.current) {
+      uploadRef.current.abort()
+      setState('paused')
+    }
   }, [])
 
   const resume = useCallback(() => {
-    // Non supporté avec XHR direct
+    if (uploadRef.current) {
+      uploadRef.current.start()
+      setState('uploading')
+    }
   }, [])
 
   const cancel = useCallback(() => {
-    if (xhrRef.current) {
-      xhrRef.current.abort()
-      xhrRef.current = null
+    if (uploadRef.current) {
+      uploadRef.current.abort()
+      uploadRef.current = null
     }
     setState('idle')
     setProgress(0)
