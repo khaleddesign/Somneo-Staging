@@ -154,7 +154,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: true, token })
   } catch (error: unknown) {
     console.error('[POST /api/invite] unhandled error', error)
-    const msg = error instanceof Error ? error.message : String(error)
-    return NextResponse.json({ error: `Erreur inattendue : ${msg}` }, { status: 500 })
+    console.error('[invite] DB Error:', error)
+    return NextResponse.json({ error: 'Une erreur est survenue lors de la création de l\'invitation' }, { status: 500 })
   }
 }

@@ -28,7 +28,8 @@ export async function POST(req: Request) {
 
     if (error) {
       console.error('[notifications] erreur Resend', error)
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[notifications] DB Error:', error)
+      return NextResponse.json({ error: 'Une erreur est survenue lors de la récupération des notifications' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true, id: data?.id })

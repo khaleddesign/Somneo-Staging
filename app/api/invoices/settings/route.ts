@@ -48,7 +48,8 @@ export async function GET() {
       .order('study_type', { ascending: true })
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[invoices/settings] DB Error:', error)
+      return NextResponse.json({ error: 'Erreur lors de la récupération des paramètres' }, { status: 500 })
     }
 
     return NextResponse.json({ settings: data ?? [] })
@@ -82,7 +83,8 @@ export async function PATCH(req: NextRequest) {
         .eq('study_type', item.study_type)
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        console.error('[invoices/settings] Refresh Error:', error)
+        return NextResponse.json({ error: 'Erreur lors du rafraîchissement des paramètres' }, { status: 500 })
       }
     }
 

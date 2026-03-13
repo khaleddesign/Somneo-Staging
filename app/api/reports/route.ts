@@ -35,7 +35,8 @@ export async function GET(req: NextRequest) {
       .maybeSingle()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[reports] DB Error:', error)
+      return NextResponse.json({ error: 'Une erreur est survenue lors de la récupération des rapports' }, { status: 500 })
     }
 
     if (!report) {

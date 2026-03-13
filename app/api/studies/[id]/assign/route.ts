@@ -52,11 +52,11 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
         updated_at: now,
       })
       .eq('id', id)
-      .is('assigned_agent_id', null)
       .select('id, assigned_agent_id, status')
       .single()
 
     if (updateError || !updated) {
+      console.error('[PATCH /api/studies/[id]/assign] update error', updateError)
       return NextResponse.json({ error: 'Impossible de prendre en charge cette étude' }, { status: 409 })
     }
 

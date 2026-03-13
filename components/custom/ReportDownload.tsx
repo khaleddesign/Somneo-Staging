@@ -2,40 +2,34 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { createClient } from '@/lib/supabase/client'
 import { Loader2, Download } from 'lucide-react'
 
 interface ReportDownloadProps {
+  studyId: string
   reportPath: string
 }
 
-export default function ReportDownload({ reportPath }: ReportDownloadProps) {
+export default function ReportDownload({ studyId, reportPath }: ReportDownloadProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const handleDownload = async () => {
+    if (!reportPath) return
     setLoading(true)
     setError(null)
 
     try {
-      const supabase = createClient()
-      // normalize path: remove bucket prefix if mistakenly stored
-      const path = reportPath.startsWith('reports-files/')
-        ? reportPath.replace(/^reports-files\//, '')
-        : reportPath
+      // Appel à la route serveur qui génère une URL signée via le client admin (bypass RLS)
+      const res = await fetch(`/api/studies/${studyId}/report`)
+      const payload = await res.json() as { url?: string; error?: string }
 
-      const { data, error } = await supabase.storage
-        .from('reports-files')
-        .createSignedUrl(path, 60)
-
-      if (error || !data?.signedUrl) {
-        throw new Error(error?.message || 'Impossible de générer l\'URL de téléchargement')
+      if (!res.ok || !payload.url) {
+        throw new Error(payload.error || 'Impossible de générer l\'URL de téléchargement')
       }
 
-      // déclenchement du téléchargement
-      window.location.href = data.signedUrl
+      window.open(payload.url, '_blank', 'noopener,noreferrer')
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Erreur lors de la préparation du téléchargement'
+      const message = e instanceof Error ? e.message : 'Erreur lors du téléchargement'
       setError(message)
     } finally {
       setLoading(false)

@@ -79,7 +79,8 @@ async function generateInvoiceNumber(admin: ReturnType<typeof createAdminClient>
     .maybeSingle()
 
   if (error) {
-    throw new Error(error.message)
+    console.error('[invoices] Insert settings Error:', error)
+    throw new Error('Erreur base de données')
   }
 
   const lastSequence = latest?.invoice_number
@@ -131,7 +132,8 @@ export async function GET() {
     const { data, error } = await query
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[invoices] Settings Fetch Error:', error)
+      return NextResponse.json({ error: 'Erreur de base de données' }, { status: 500 })
     }
 
     return NextResponse.json({ invoices: data ?? [] })
@@ -173,7 +175,8 @@ export async function POST(req: NextRequest) {
         .in('id', studyIds)
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        console.error('[invoices] Save Error:', error)
+        return NextResponse.json({ error: 'Erreur lors de l\'enregistrement' }, { status: 500 })
       }
       studies = data ?? []
     } else {
@@ -200,7 +203,8 @@ export async function POST(req: NextRequest) {
         .lt('completed_at', monthEnd.toISOString())
 
       if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
+        console.error('[invoices] Transaction Error:', error)
+        return NextResponse.json({ error: 'Erreur lors de la finalisation' }, { status: 500 })
       }
       studies = data ?? []
     }

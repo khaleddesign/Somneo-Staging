@@ -55,7 +55,8 @@ export async function POST(req: Request) {
     })
 
     if (supportEmail.error) {
-      return NextResponse.json({ error: supportEmail.error.message }, { status: 500 })
+      console.error('[support] Error sending email:', supportEmail.error)
+      return NextResponse.json({ error: 'Erreur lors de l\'envoi de l\'email support' }, { status: 500 })
     }
 
     const confirmationEmail = await resend.emails.send({
@@ -72,7 +73,8 @@ export async function POST(req: Request) {
     })
 
     if (confirmationEmail.error) {
-      return NextResponse.json({ error: confirmationEmail.error.message }, { status: 500 })
+      console.error('[support] Error sending confirmation:', confirmationEmail.error)
+      return NextResponse.json({ error: 'Erreur lors de l\'envoi de l\'email de confirmation' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })

@@ -47,7 +47,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       .maybeSingle()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[invoices/[id]] Fetch Error:', error)
+      return NextResponse.json({ error: 'Erreur lors de la récupération de la facture' }, { status: 500 })
     }
 
     if (!invoice) {
@@ -110,7 +111,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 })
+      console.error('[invoices/[id]] Update Error:', error)
+      return NextResponse.json({ error: 'Erreur lors de la mise à jour' }, { status: 500 })
     }
 
     return NextResponse.json({ invoice: updated })

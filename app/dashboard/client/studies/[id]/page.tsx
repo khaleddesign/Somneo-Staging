@@ -99,7 +99,7 @@ export default async function ClientStudyDetail({
           </CardHeader>
           <CardContent>
             {study.report_path && study.status === 'termine' ? (
-              <ReportDownload reportPath={study.report_path} />
+              <ReportDownload studyId={study.id} reportPath={study.report_path} />
             ) : (
               <p className="text-sm text-gray-500 font-body">En attente de traitement par un agent.</p>
             )}

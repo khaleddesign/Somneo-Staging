@@ -19,40 +19,59 @@ export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  function getLoginErrorMessage(message: string) {
+    const normalized = message.toLowerCase()
+    if (normalized.includes('failed to fetch') || normalized.includes('network')) {
+      return 'Problème de connexion réseau. Vérifiez Internet puis réessayez.'
+    }
+    if (normalized.includes('email not confirmed')) {
+      return 'Votre email n’est pas encore confirmé.'
+    }
+    if (normalized.includes('invalid login credentials')) {
+      return 'Email ou mot de passe incorrect.'
+    }
+    return 'Impossible de se connecter pour le moment. Réessayez.'
+  }
+
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setLoading(true)
     setError(null)
 
-    const { data, error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    })
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email: email.trim().toLowerCase(),
+        password,
+      })
 
-    if (authError) {
-      setError('Email ou mot de passe incorrect.')
+      if (authError) {
+        setError(getLoginErrorMessage(authError.message || ''))
+        setLoading(false)
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, is_suspended')
+        .eq('id', data.user.id)
+        .single()
+
+      if (profile?.is_suspended) {
+        await supabase.auth.signOut()
+        router.push('/auth/suspended')
+        return
+      }
+
+      if (profile?.role === 'admin') {
+        router.push('/dashboard/admin')
+      } else if (profile?.role === 'client') {
+        router.push('/dashboard/client')
+      } else {
+        router.push('/dashboard/agent')
+      }
+    } catch {
+      setError('Problème de connexion réseau. Vérifiez Internet puis réessayez.')
       setLoading(false)
-      return
-    }
-
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, is_suspended')
-      .eq('id', data.user.id)
-      .single()
-
-    if (profile?.is_suspended) {
-      await supabase.auth.signOut()
-      router.push('/auth/suspended')
-      return
-    }
-
-    if (profile?.role === 'admin') {
-      router.push('/dashboard/admin')
-    } else if (profile?.role === 'client') {
-      router.push('/dashboard/client')
-    } else {
-      router.push('/dashboard/agent')
     }
   }
 

@@ -18,24 +18,31 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     const admin = createAdminClient()
 
-    const { data: profile, error: profileError } = await admin
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
+    // Récupérer le profil et l'étude en une seule passe pour vérifier l'accès
+    const [profileResult, studyResult] = await Promise.all([
+      admin.from('profiles').select('role').eq('id', user.id).maybeSingle(),
+      admin.from('studies').select('file_path, client_id, assigned_agent_id').eq('id', id).maybeSingle(),
+    ])
 
-    if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+    if (profileResult.error || !profileResult.data) {
+      return NextResponse.json({ error: 'Profil introuvable' }, { status: 403 })
     }
 
-    const { data: study, error: studyError } = await admin
-      .from('studies')
-      .select('file_path')
-      .eq('id', id)
-      .maybeSingle()
-
-    if (studyError || !study) {
+    if (studyResult.error || !studyResult.data) {
       return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
+    }
+
+    const { role } = profileResult.data
+    const study = studyResult.data
+
+    // Vérifier l'accès selon le rôle
+    const hasAccess =
+      role === 'admin' ||
+      (role === 'agent' && study.assigned_agent_id === user.id) ||
+      (role === 'client' && study.client_id === user.id)
+
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
     if (!study.file_path) {
@@ -51,7 +58,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       .createSignedUrl(storagePath, 60 * 60)
 
     if (signedError || !signed?.signedUrl) {
-      return NextResponse.json({ error: signedError?.message || 'Impossible de générer l’URL signée' }, { status: 500 })
+      return NextResponse.json({ error: signedError?.message || 'Impossible de générer l\'URL signée' }, { status: 500 })
     }
 
     return NextResponse.json({ url: signed.signedUrl })
