@@ -4,6 +4,7 @@ import { renderToBuffer } from '@react-pdf/renderer'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { InvoicePDF } from '@/lib/pdf/InvoicePDF'
+import { decrypt } from '@/lib/encryption'
 
 interface CreateInvoiceBody {
   client_id?: string
@@ -288,7 +289,7 @@ export async function POST(req: NextRequest) {
     const studiesData = studies.map((study) => ({
       id: study.id,
       study_type: study.study_type,
-      patient_reference: study.patient_reference ?? null,
+      patient_reference: decrypt(study.patient_reference ?? ''),
       created_at: study.created_at ?? null,
     }))
 

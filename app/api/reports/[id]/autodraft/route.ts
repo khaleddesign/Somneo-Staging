@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { generateMedicalDraft } from '@/lib/reports/medicalDraft'
+import { decrypt } from '@/lib/encryption'
 
 interface ReportContent {
   values?: Record<string, Record<string, string>>
@@ -82,7 +83,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     const draft = generateMedicalDraft(
       {
-        patientReference: study.patient_reference,
+        patientReference: decrypt(study.patient_reference),
         studyType: study.study_type,
         agentName: profile.full_name || 'Agent',
       },

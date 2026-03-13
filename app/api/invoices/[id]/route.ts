@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { decrypt } from '@/lib/encryption'
 
 interface UpdateInvoiceStatusBody {
   status?: 'sent' | 'paid' | 'cancelled'
@@ -76,7 +77,10 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
         return NextResponse.json({ error: studiesError.message }, { status: 500 })
       }
 
-      studies = studyData ?? []
+      studies = (studyData ?? []).map(s => ({
+        ...s,
+        patient_reference: decrypt(s.patient_reference)
+      }))
     }
 
     return NextResponse.json({ invoice, studies })
