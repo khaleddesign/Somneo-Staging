@@ -4,6 +4,7 @@ import { decrypt } from '@/lib/encryption'
 import ReportDownload from '@/components/custom/ReportDownload'
 import StudyComments from '@/components/custom/StudyComments'
 import AppLayout from '@/components/custom/AppLayout'
+import DeleteStudyButton from '@/components/custom/DeleteStudyButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function getStatusBadge(status: string) {
@@ -50,9 +51,14 @@ export default async function ClientStudyDetail({
           &larr; Retour au dashboard
         </a>
 
-        <div>
-          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
-          <p className="text-gray-500 font-body mt-1">Suivi de votre étude du sommeil</p>
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div>
+            <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
+            <p className="text-gray-500 font-body mt-1">Suivi de votre étude du sommeil</p>
+          </div>
+          <div className="self-end sm:self-auto">
+             <DeleteStudyButton studyId={study.id} redirectUrl="/dashboard/client/studies" />
+          </div>
         </div>
 
         <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">

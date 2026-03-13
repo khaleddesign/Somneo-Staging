@@ -8,11 +8,11 @@ CREATE TABLE invoice_settings (
   updated_at timestamptz DEFAULT now()
 );
 
-INSERT INTO invoice_settings (study_type, price_ht) VALUES
-  ('PSG', 320.00),
-  ('PV', 180.00),
-  ('MSLT', 250.00),
-  ('MWT', 250.00);
+INSERT INTO invoice_settings (study_type, price_ht, currency) VALUES
+  ('PSG', 200.00, 'AED'),
+  ('PV', 100.00, 'AED'),
+  ('MSLT', 150.00, 'AED'),
+  ('MWT', 150.00, 'AED');
 
 -- Factures
 CREATE TABLE invoices (

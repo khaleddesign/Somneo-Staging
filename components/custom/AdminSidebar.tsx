@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { logoutAndRedirect } from '@/lib/auth/logout'
-import { LayoutDashboard, Users, FileText, Building2, Settings, LogOut, X } from 'lucide-react'
+import { LayoutDashboard, Users, FileText, Building2, Settings, LogOut, X, CreditCard } from 'lucide-react'
 
 interface SidebarProps {
   isOpen: boolean
@@ -23,6 +23,7 @@ const navItems: NavItem[] = [
   { label: 'Agents', href: '/dashboard/admin/agents', icon: Users },
   { label: 'Études', href: '/dashboard/admin/studies', icon: FileText },
   { label: 'Facturation', href: '/dashboard/admin/invoices', icon: FileText },
+  { label: 'Tarifs', href: '/dashboard/admin/settings/pricing', icon: CreditCard },
   { label: 'Clients', href: '/dashboard/admin/clients', icon: Building2 },
   { label: 'Paramètres', href: '/dashboard/admin/settings', icon: Settings },
 ]

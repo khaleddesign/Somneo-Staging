@@ -38,7 +38,7 @@ function formatDate(value?: string | null) {
 }
 
 function formatMoney(value: number) {
-  return `${value.toFixed(2)} €`
+  return `${value.toFixed(2)} AED`
 }
 
 export default function AdminNewInvoicePage() {

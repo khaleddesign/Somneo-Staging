@@ -141,7 +141,7 @@ export default function AdminInvoicesPage() {
                     {invoice.billing_month || formatDate(invoice.created_at)}
                   </td>
                   <td className="px-3 py-3 font-heading text-gold tabular-nums">
-                    {Number(invoice.total_ttc || 0).toFixed(2)} €
+                    {Number(invoice.total_ttc || 0).toFixed(2)} AED
                   </td>
                   <td className="px-3 py-3">
                     <span className={`px-2 py-1 rounded-full text-xs font-heading ${statusUi(invoice.status)}`}>

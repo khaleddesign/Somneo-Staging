@@ -6,6 +6,7 @@ import AdminLayout from '@/components/custom/AdminLayout'
 import StudyActions from '@/components/custom/StudyActions'
 import StudyComments from '@/components/custom/StudyComments'
 import AdminReassignDialog from '@/components/custom/AdminReassignDialog'
+import DeleteStudyButton from '@/components/custom/DeleteStudyButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function getStatusBadge(status: string) {
@@ -73,16 +74,19 @@ export default async function AdminStudyDetailPage({
           &larr; Retour aux études
         </a>
 
-        <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
             <p className="text-gray-500 font-body mt-1">Vue admin — accès complet</p>
           </div>
-          <AdminReassignDialog
-            studyId={study.id}
-            currentAgentId={study.assigned_agent_id}
-            agents={agents || []}
-          />
+          <div className="flex flex-wrap items-center gap-3">
+            <DeleteStudyButton studyId={study.id} redirectUrl="/dashboard/admin/studies" />
+            <AdminReassignDialog
+              studyId={study.id}
+              currentAgentId={study.assigned_agent_id}
+              agents={agents || []}
+            />
+          </div>
         </div>
 
         <Card className="shadow-sm border-gray-200">
