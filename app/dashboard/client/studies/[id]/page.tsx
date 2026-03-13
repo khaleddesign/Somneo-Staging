@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { decrypt } from '@/lib/encryption'
 import ReportDownload from '@/components/custom/ReportDownload'
 import StudyComments from '@/components/custom/StudyComments'
 import AppLayout from '@/components/custom/AppLayout'
@@ -38,6 +39,9 @@ export default async function ClientStudyDetail({
     .single()
 
   if (error || !study) return notFound()
+
+  // Déchiffrement
+  study.patient_reference = decrypt(study.patient_reference)
 
   return (
     <AppLayout>

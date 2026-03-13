@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { decrypt } from '@/lib/encryption'
 
 export async function GET() {
   try {
@@ -42,6 +43,13 @@ export async function GET() {
 
       if (error) throw error
       studies = data
+    }
+
+    if (studies) {
+      studies = studies.map(study => ({
+        ...study,
+        patient_reference: decrypt(study.patient_reference)
+      }))
     }
 
     return NextResponse.json({ studies })

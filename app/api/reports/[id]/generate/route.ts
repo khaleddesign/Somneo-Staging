@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { ReportPDF } from '@/lib/pdf/ReportPDF'
 import { logAudit } from '@/lib/audit'
+import { decrypt } from '@/lib/encryption'
 
 export const runtime = 'nodejs'
 export const maxDuration = 60 // Vercel Pro — génération PDF ~10-20s
@@ -79,6 +80,9 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     if (studyError || !study) {
       return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
     }
+
+    // Déchiffrement
+    study.patient_reference = decrypt(study.patient_reference)
 
     console.log('[generate] report.content:', JSON.stringify(report.content))
     const values = toValues(report.content)

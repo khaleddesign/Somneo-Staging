@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { decrypt } from '@/lib/encryption'
 import StudyActions from '@/components/custom/StudyActions'
 import StudyComments from '@/components/custom/StudyComments'
 import AppLayout from '@/components/custom/AppLayout'
@@ -43,6 +44,9 @@ export default async function AgentStudyDetail({
     .single()
 
   if (error || !study) return notFound()
+
+  // Déchiffrement
+  study.patient_reference = decrypt(study.patient_reference)
 
   const isAdmin = profile.role === 'admin'
 

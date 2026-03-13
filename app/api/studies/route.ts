@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { studySchema } from '@/lib/validation'
+import { encrypt } from '@/lib/encryption'
 
 export async function POST(req: Request) {
   try {
@@ -72,11 +73,12 @@ export async function POST(req: Request) {
     }
 
     // Insertion via le client admin (bypass RLS, autorisations déjà vérifiées manuellement)
+    const encryptedPatientRef = encrypt(patient_reference)
     const { data, error } = await admin
       .from('studies')
       .insert({
         client_id,
-        patient_reference,
+        patient_reference: encryptedPatientRef,
         study_type,
         notes: notes ?? '',
         priority,

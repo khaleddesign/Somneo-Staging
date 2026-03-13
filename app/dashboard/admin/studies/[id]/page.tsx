@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { decrypt } from '@/lib/encryption'
 import AdminLayout from '@/components/custom/AdminLayout'
 import StudyActions from '@/components/custom/StudyActions'
 import StudyComments from '@/components/custom/StudyComments'
@@ -42,6 +43,9 @@ export default async function AdminStudyDetailPage({
     .single()
 
   if (error || !study) return notFound()
+
+  // Déchiffrement
+  study.patient_reference = decrypt(study.patient_reference)
 
   // Récupérer l'agent assigné
   let assignedAgent: { full_name: string | null; email: string } | null = null
