@@ -16,17 +16,22 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const admin = createAdminClient()
+
+    const { data: profile, error: profileError } = await admin
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
 
-    if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+    if (profileError || !profile) {
+      console.error('[PATCH /api/studies/[id]/assign] profile error', profileError)
+      return NextResponse.json({ error: 'Profil introuvable ou erreur de lecture: ' + (profileError?.message || '') }, { status: 403 })
     }
 
-    const admin = createAdminClient()
+    if (!['agent', 'admin'].includes(profile.role)) {
+      return NextResponse.json({ error: 'Accès refusé. Rôle actuel: ' + profile.role }, { status: 403 })
+    }
 
     const { data: study, error: studyError } = await admin
       .from('studies')
