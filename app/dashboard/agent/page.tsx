@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import AppLayout from '@/components/custom/AppLayout'
 import AgentStats from '@/components/custom/AgentStats'
 import { Card } from '@/components/ui/card'
+import type { Role } from '@/types/database'
 
 interface AgentKpiRow {
   agent_id: string
@@ -18,36 +19,53 @@ export default function AgentDashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [agentKpis, setAgentKpis] = useState<AgentKpiRow[]>([])
   const [loadingAgentKpis, setLoadingAgentKpis] = useState(false)
+  const [agentKpisError, setAgentKpisError] = useState<string | null>(null)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     const fetchProfile = async () => {
       const supabase = createClient()
       const { data: { user } } = await supabase.auth.getUser()
 
-      if (user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('full_name, role')
-          .eq('id', user.id)
-          .single()
+      if (!user || controller.signal.aborted) return
 
-        const admin = profileData?.role === 'admin'
-        setAgentName(profileData?.full_name || 'Agent')
-        setIsAdmin(admin)
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('full_name, role')
+        .eq('id', user.id)
+        .single()
 
-        if (admin) {
-          setLoadingAgentKpis(true)
-          const res = await fetch('/api/stats/agents')
-          if (res.ok) {
+      if (controller.signal.aborted) return
+
+      const role = profileData?.role as Role | undefined
+      const admin = role === 'admin'
+      setAgentName(profileData?.full_name || 'Agent')
+      setIsAdmin(admin)
+
+      if (admin) {
+        setLoadingAgentKpis(true)
+        setAgentKpisError(null)
+        try {
+          const res = await fetch('/api/stats/agents', { signal: controller.signal })
+          if (!res.ok) {
             const data = await res.json()
-            setAgentKpis(data.agents || [])
+            throw new Error(data.error || 'Erreur lors du chargement')
           }
+          const data = await res.json()
+          setAgentKpis(data.agents || [])
+        } catch (e: unknown) {
+          if ((e as Error).name !== 'AbortError') {
+            setAgentKpisError(e instanceof Error ? e.message : 'Erreur lors du chargement')
+          }
+        } finally {
           setLoadingAgentKpis(false)
         }
       }
     }
 
     fetchProfile()
+    return () => controller.abort()
   }, [])
 
   return (
@@ -72,6 +90,8 @@ export default function AgentDashboardPage() {
             </h2>
             {loadingAgentKpis ? (
               <p className="text-sm text-gray-400">Chargement...</p>
+            ) : agentKpisError ? (
+              <p className="text-sm text-red-500">{agentKpisError}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">

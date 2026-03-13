@@ -1,21 +1,13 @@
 "use client"
 
 import { useEffect, useState } from 'react'
-import {
-  BarChart3,
-  AlertCircle,
-  Clock,
-  CheckCircle2,
-} from 'lucide-react'
+import { BarChart3, AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
 
 interface Stats {
   total_studies: number
   en_attente: number
   en_cours: number
   termine: number
-  this_week: number
-  avg_turnaround: number
-  total_clients: number
 }
 
 export default function AgentStats() {
@@ -24,11 +16,13 @@ export default function AgentStats() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    const controller = new AbortController()
+
     async function fetchStats() {
       setLoading(true)
       setError(null)
       try {
-        const res = await fetch('/api/stats')
+        const res = await fetch('/api/stats', { signal: controller.signal })
         if (!res.ok) {
           const data = await res.json()
           throw new Error(data.error || 'Erreur lors du chargement')
@@ -36,21 +30,23 @@ export default function AgentStats() {
         const data = await res.json()
         setStats(data)
       } catch (e: unknown) {
-        const message = e instanceof Error ? e.message : String(e)
-        setError(message)
+        if ((e as Error).name !== 'AbortError') {
+          setError(e instanceof Error ? e.message : String(e))
+        }
       } finally {
         setLoading(false)
       }
     }
 
     fetchStats()
+    return () => controller.abort()
   }, [])
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[...Array(7)].map((_, i) => (
-          <div key={i} className="bg-gray-100 animate-pulse h-28 rounded-lg" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {[...Array(4)].map((_, i) => (
+          <div key={i} className="bg-gray-100 animate-pulse h-24 rounded-2xl" />
         ))}
       </div>
     )

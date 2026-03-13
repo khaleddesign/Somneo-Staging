@@ -36,50 +36,26 @@ export async function GET() {
 
     const admin = createAdminClient()
 
-    const { data: agents, error: agentsError } = await admin
-      .from('profiles')
-      .select('id, full_name, email')
-      .eq('role', 'agent')
-      .order('full_name', { ascending: true })
-
-    if (agentsError) {
-      return NextResponse.json({ error: agentsError.message }, { status: 500 })
-    }
-
     const startOfMonth = new Date()
     startOfMonth.setDate(1)
     startOfMonth.setHours(0, 0, 0, 0)
 
-    const { data: inProgressStudies, error: inProgressError } = await admin
-      .from('studies')
-      .select('assigned_agent_id, updated_at')
-      .eq('status', 'en_cours')
-      .not('assigned_agent_id', 'is', null)
+    const [
+      { data: agents, error: agentsError },
+      { data: inProgressStudies, error: inProgressError },
+      { data: completedThisMonth, error: completedError },
+      { data: completedAll, error: completedAllError },
+    ] = await Promise.all([
+      admin.from('profiles').select('id, full_name, email').eq('role', 'agent').order('full_name', { ascending: true }),
+      admin.from('studies').select('assigned_agent_id, updated_at').eq('status', 'en_cours').not('assigned_agent_id', 'is', null),
+      admin.from('studies').select('assigned_agent_id, submitted_at, completed_at, updated_at').eq('status', 'termine').not('assigned_agent_id', 'is', null).gte('completed_at', startOfMonth.toISOString()),
+      admin.from('studies').select('assigned_agent_id, submitted_at, completed_at, updated_at').eq('status', 'termine').not('assigned_agent_id', 'is', null),
+    ])
 
-    if (inProgressError) {
-      return NextResponse.json({ error: inProgressError.message }, { status: 500 })
-    }
-
-    const { data: completedThisMonth, error: completedError } = await admin
-      .from('studies')
-      .select('assigned_agent_id, submitted_at, completed_at, updated_at')
-      .eq('status', 'termine')
-      .not('assigned_agent_id', 'is', null)
-      .gte('completed_at', startOfMonth.toISOString())
-
-    if (completedError) {
-      return NextResponse.json({ error: completedError.message }, { status: 500 })
-    }
-
-    const { data: completedAll, error: completedAllError } = await admin
-      .from('studies')
-      .select('assigned_agent_id, submitted_at, completed_at, updated_at')
-      .eq('status', 'termine')
-      .not('assigned_agent_id', 'is', null)
-
-    if (completedAllError) {
-      return NextResponse.json({ error: completedAllError.message }, { status: 500 })
-    }
+    if (agentsError) return NextResponse.json({ error: agentsError.message }, { status: 500 })
+    if (inProgressError) return NextResponse.json({ error: inProgressError.message }, { status: 500 })
+    if (completedError) return NextResponse.json({ error: completedError.message }, { status: 500 })
+    if (completedAllError) return NextResponse.json({ error: completedAllError.message }, { status: 500 })
 
     const inProgressByAgent = new Map<string, number>()
     const completedByAgent = new Map<string, number>()
@@ -139,7 +115,7 @@ export async function GET() {
       last_activity: lastActivityByAgent.get(agent.id) || null,
     }))
 
-    return NextResponse.json({ agents: perAgent })
+    return NextResponse.json({ agents: perAgent }, { headers: { 'Cache-Control': 'private, max-age=60' } })
   } catch (err: unknown) {
     console.error('[GET /api/stats/agents]', err)
     const message = err instanceof Error ? err.message : 'Erreur serveur'
