@@ -31,6 +31,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (oldError || !oldStudy) {
     return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
   }
+  // State machine: validate transition
+  const validTransitions: Record<string, string[]> = {
+    en_attente: ['en_cours', 'annule'],
+    en_cours: ['termine', 'annule'],
+    termine: [],
+    annule: [],
+  }
+  const allowed = validTransitions[oldStudy.status] ?? []
+  if (!allowed.includes(status)) {
+    return NextResponse.json(
+      { error: `Transition invalide: ${oldStudy.status} → ${status}` },
+      { status: 422 }
+    )
+  }
   // Mettre à jour l'étude
   const updateFields: { status: string; updated_at: string; completed_at?: string } = {
     status,

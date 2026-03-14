@@ -3,10 +3,10 @@ import CryptoJS from 'crypto-js'
 const SECRET_KEY = process.env.ENCRYPTION_KEY
 
 if (!SECRET_KEY) {
-  console.warn('ENCRYPTION_KEY is not defined in environment variables. Falling back to a fallback key for development.')
+  throw new Error('ENCRYPTION_KEY environment variable is not set. Server cannot start without encryption key.')
 }
 
-const getSecret = () => SECRET_KEY || 'default_fallback_secret_key_123456789'
+const getSecret = () => SECRET_KEY
 
 export function encrypt(text: string): string {
   if (!text) return text

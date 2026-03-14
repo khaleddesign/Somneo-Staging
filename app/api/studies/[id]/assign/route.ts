@@ -26,11 +26,11 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
 
     if (profileError || !profile) {
       console.error('[PATCH /api/studies/[id]/assign] profile error', profileError)
-      return NextResponse.json({ error: 'Profil introuvable ou erreur de lecture: ' + (profileError?.message || '') }, { status: 403 })
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
     if (!['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé. Rôle actuel: ' + profile.role }, { status: 403 })
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
     const { data: study, error: studyError } = await admin
@@ -49,6 +49,7 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
 
     const now = new Date().toISOString()
 
+    // Atomic check: only update if still unassigned (prevents race condition)
     const { data: updated, error: updateError } = await admin
       .from('studies')
       .update({
@@ -57,12 +58,17 @@ export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ i
         updated_at: now,
       })
       .eq('id', id)
+      .is('assigned_agent_id', null)
       .select('id, assigned_agent_id, status')
-      .single()
+      .maybeSingle()
 
-    if (updateError || !updated) {
+    if (updateError) {
       console.error('[PATCH /api/studies/[id]/assign] update error', updateError)
-      return NextResponse.json({ error: 'Impossible de prendre en charge cette étude' }, { status: 409 })
+      return NextResponse.json({ error: 'Impossible de prendre en charge cette étude' }, { status: 500 })
+    }
+
+    if (!updated) {
+      return NextResponse.json({ error: 'Cette étude vient d\'être assignée à un autre agent' }, { status: 409 })
     }
 
     const { error: historyError } = await admin.from('study_history').insert({

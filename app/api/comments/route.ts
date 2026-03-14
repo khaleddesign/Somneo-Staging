@@ -18,6 +18,25 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
+    // Verify caller has access to this study (defense-in-depth over RLS)
+    const admin = createAdminClient()
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+    const { data: study } = await admin.from('studies').select('client_id, assigned_agent_id').eq('id', study_id).maybeSingle()
+
+    if (!study) {
+      return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
+    }
+
+    const role = profile?.role
+    const hasAccess =
+      role === 'admin' ||
+      (role === 'agent' && study.assigned_agent_id === user.id) ||
+      (role === 'client' && study.client_id === user.id)
+
+    if (!hasAccess) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+    }
+
     // fetch comments with profile info
     const { data, error } = await supabase
       .from('comments')

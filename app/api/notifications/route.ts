@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { createClient } from '@/lib/supabase/server'
 import { sendEmail } from '@/lib/mail'
 
 interface Body {
@@ -9,6 +10,12 @@ interface Body {
 
 export async function POST(req: Request) {
   try {
+    const supabase = await createClient()
+    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    if (authErr || !user) {
+      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
     const body: Body = await req.json()
     const { email, subject, message } = body
 
