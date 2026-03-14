@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createAdminClient } from '@/lib/supabase/admin'
-import { rateLimit, rateLimitHeaders } from '@/lib/rateLimit'
+import { limiters } from '@/lib/rateLimit'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -12,15 +12,13 @@ function isValidEmail(email: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
-const FORGOT_LIMIT = 3
-const FORGOT_WINDOW = 15 * 60 * 1000 // 15 min
-
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
-  if (!rateLimit(`forgot:${ip}`, FORGOT_LIMIT, FORGOT_WINDOW)) {
+  const rl = await limiters.forgotPassword.check(`forgot:${ip}`)
+  if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
-      { status: 429, headers: rateLimitHeaders(FORGOT_WINDOW, FORGOT_LIMIT) }
+      { status: 429, headers: rl.headers }
     )
   }
 

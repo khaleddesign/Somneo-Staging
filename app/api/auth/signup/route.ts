@@ -1,22 +1,20 @@
 import { NextResponse } from 'next/server'
 import { createUserAndProfileFromInvitation } from '@/lib/supabase/invitations'
 import { createClient } from '@/lib/supabase/server'
-import { rateLimit, rateLimitHeaders } from '@/lib/rateLimit'
+import { limiters } from '@/lib/rateLimit'
 
 type Body = {
   token?: string
   password?: string
 }
 
-const SIGNUP_LIMIT = 5
-const SIGNUP_WINDOW = 15 * 60 * 1000 // 15 min
-
 export async function POST(req: Request) {
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? 'unknown'
-  if (!rateLimit(`signup:${ip}`, SIGNUP_LIMIT, SIGNUP_WINDOW)) {
+  const rl = await limiters.signup.check(`signup:${ip}`)
+  if (!rl.allowed) {
     return NextResponse.json(
       { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
-      { status: 429, headers: rateLimitHeaders(SIGNUP_WINDOW, SIGNUP_LIMIT) }
+      { status: 429, headers: rl.headers }
     )
   }
 

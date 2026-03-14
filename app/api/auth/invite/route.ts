@@ -1,16 +1,13 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createInvitation } from '@/lib/supabase/invitations'
-import { rateLimit, rateLimitHeaders } from '@/lib/rateLimit'
+import { limiters } from '@/lib/rateLimit'
 
 type Body = {
   email?: string
   institution_id?: string | null
   full_name?: string | null
 }
-
-const INVITE_LIMIT = 10
-const INVITE_WINDOW = 60 * 60 * 1000 // 1 heure
 
 export async function POST(req: Request) {
   try {
@@ -29,11 +26,11 @@ export async function POST(req: Request) {
 
     const userId = userData.user.id
 
-    // Rate limit par utilisateur (spam d'invitations)
-    if (!rateLimit(`invite:${userId}`, INVITE_LIMIT, INVITE_WINDOW)) {
+    const rl = await limiters.invite.check(`invite:${userId}`)
+    if (!rl.allowed) {
       return NextResponse.json(
         { error: 'Trop d\'invitations envoyées. Réessayez dans 1 heure.' },
-        { status: 429, headers: rateLimitHeaders(INVITE_WINDOW, INVITE_LIMIT) }
+        { status: 429, headers: rl.headers }
       )
     }
 
