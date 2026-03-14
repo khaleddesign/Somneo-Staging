@@ -5,6 +5,28 @@ import { commentSchema } from '@/lib/validation'
 import { sendEmail } from '@/lib/mail'
 import { limiters } from '@/lib/rateLimit'
 
+async function checkStudyAccess(
+  userId: string,
+  studyId: string,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  admin: ReturnType<typeof createAdminClient>
+): Promise<{ role: string } | null> {
+  const [{ data: profile }, { data: study }] = await Promise.all([
+    supabase.from('profiles').select('role').eq('id', userId).single(),
+    admin.from('studies').select('client_id, assigned_agent_id').eq('id', studyId).maybeSingle(),
+  ])
+
+  if (!study) return null
+
+  const role = profile?.role
+  const hasAccess =
+    role === 'admin' ||
+    (role === 'agent' && study.assigned_agent_id === userId) ||
+    (role === 'client' && study.client_id === userId)
+
+  return hasAccess && role ? { role } : null
+}
+
 export async function GET(req: Request) {
   try {
     const url = new URL(req.url)
@@ -19,22 +41,9 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
-    // Verify caller has access to this study (defense-in-depth over RLS)
     const admin = createAdminClient()
-    const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
-    const { data: study } = await admin.from('studies').select('client_id, assigned_agent_id').eq('id', study_id).maybeSingle()
-
-    if (!study) {
-      return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
-    }
-
-    const role = profile?.role
-    const hasAccess =
-      role === 'admin' ||
-      (role === 'agent' && study.assigned_agent_id === user.id) ||
-      (role === 'client' && study.client_id === user.id)
-
-    if (!hasAccess) {
+    const access = await checkStudyAccess(user.id, study_id, supabase, admin)
+    if (!access) {
       return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
     }
 
@@ -82,6 +91,13 @@ export async function POST(req: Request) {
     }
 
     const admin = createAdminClient()
+
+    // Verify access before insert (same check as GET — admin client bypasses RLS)
+    const access = await checkStudyAccess(user.id, study_id, supabase, admin)
+    if (!access) {
+      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+    }
+
     const { data: comment, error: insertErr } = await admin
       .from('comments')
       .insert({ study_id, message, user_id: user.id })
