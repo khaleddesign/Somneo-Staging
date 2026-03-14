@@ -3,7 +3,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import SparkMD5 from 'spark-md5'
 import * as tus from 'tus-js-client'
-import { createClient } from '@/lib/supabase/client'
 
 export type UploadState = 'idle' | 'uploading' | 'paused' | 'completed' | 'error'
 
@@ -33,7 +32,6 @@ export function useFileUpload(): UseFileUploadResult {
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const uploadRef = useRef<tus.Upload | null>(null)
-  const supabaseRef = useRef(createClient())
 
   const calculateMD5 = useCallback(async (file: File): Promise<string> => {
     const chunkSize = 2097152 // 2MB
@@ -69,21 +67,24 @@ export function useFileUpload(): UseFileUploadResult {
         setFileName(file.name)
         setFileSize(file.size)
 
-        const supabase = supabaseRef.current
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session) {
-          setErrorMessage('Session expirée. Veuillez vous reconnecter.')
-          setState('error')
-          return
-        }
-
         setProgress(5)
         const md5 = await calculateMD5(file)
         setChecksum(md5)
 
         const fileExt = file.name.split('.').pop()?.toLowerCase()
-        const storedFileName = `${session.user.id}-${Date.now()}.${fileExt}`
-        const objectPath = `${session.user.id}/${storedFileName}`
+        if (!fileExt) throw new Error('Extension de fichier manquante')
+
+        // Get a scoped upload token from the server — never expose the full JWT in the browser
+        const tokenRes = await fetch('/api/upload/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file_ext: fileExt }),
+        })
+        if (!tokenRes.ok) {
+          const err = await tokenRes.json()
+          throw new Error(err.error || 'Impossible d\'obtenir le token d\'upload')
+        }
+        const { token, path: objectPath } = await tokenRes.json()
         setFilePath(objectPath)
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -95,7 +96,7 @@ export function useFileUpload(): UseFileUploadResult {
           endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
           retryDelays: [0, 3000, 5000, 10000, 20000],
           headers: {
-            authorization: `Bearer ${session.access_token}`,
+            authorization: `Bearer ${token}`, // scoped upload token, not the full user JWT
             'x-upsert': 'true',
           },
           uploadDataDuringCreation: true,

@@ -37,22 +37,24 @@ export async function POST(req: Request) {
       )
     }
 
-    // Vérifie le rôle
+    // Seuls les admins peuvent inviter
     const { data: profile, error: profErr } = await server
       .from('profiles')
-      .select('role')
+      .select('role, institution_id')
       .eq('id', userId)
       .maybeSingle()
 
     if (profErr) return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
-    const role = profile?.role
-    if (!role || !['agent', 'admin'].includes(role)) {
-      return NextResponse.json({ error: 'Interdit' }, { status: 403 })
+    if (!profile || profile.role !== 'admin') {
+      return NextResponse.json({ error: 'Réservé aux administrateurs' }, { status: 403 })
+    }
+    if (!profile.institution_id) {
+      return NextResponse.json({ error: 'Compte admin sans institution' }, { status: 400 })
     }
 
     const result = await createInvitation({
       email,
-      institution_id: institution_id ?? null,
+      institution_id: institution_id ?? profile.institution_id,
       full_name: full_name ?? null,
       created_by: userId,
     })

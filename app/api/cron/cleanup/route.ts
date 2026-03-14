@@ -5,9 +5,13 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
   try {
-    // Vérification de sécurité simple via un header ou param (Vercel Cron utilise un header)
+    const cronSecret = process.env.CRON_SECRET
+    if (!cronSecret) {
+      console.error('[CRON] CRON_SECRET non configuré — route désactivée')
+      return NextResponse.json({ error: 'Configuration manquante' }, { status: 503 })
+    }
     const authHeader = req.headers.get('authorization')
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
     }
 
