@@ -3,6 +3,10 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { commentSchema } from '@/lib/validation'
 import { sendEmail } from '@/lib/mail'
+import { rateLimit, rateLimitHeaders } from '@/lib/rateLimit'
+
+const COMMENT_LIMIT = 30
+const COMMENT_WINDOW = 60 * 1000 // 1 minute
 
 export async function GET(req: Request) {
   try {
@@ -70,6 +74,13 @@ export async function POST(req: Request) {
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
       return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+    }
+
+    if (!rateLimit(`comment:${user.id}`, COMMENT_LIMIT, COMMENT_WINDOW)) {
+      return NextResponse.json(
+        { error: 'Trop de messages. Réessayez dans une minute.' },
+        { status: 429, headers: rateLimitHeaders(COMMENT_WINDOW, COMMENT_LIMIT) }
+      )
     }
 
     const admin = createAdminClient()

@@ -38,9 +38,9 @@ export function rateLimit(key: string, limit: number, windowMs: number): boolean
 }
 
 /** Retourne les headers standard 429 */
-export function rateLimitHeaders(windowMs: number): Record<string, string> {
+export function rateLimitHeaders(windowMs: number, limit: number): Record<string, string> {
   return {
     'Retry-After': String(Math.ceil(windowMs / 1000)),
-    'X-RateLimit-Limit': '5',
+    'X-RateLimit-Limit': String(limit),
   }
 }
