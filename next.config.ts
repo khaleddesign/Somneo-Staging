@@ -29,22 +29,8 @@ const securityHeaders = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
-  {
-    key: "Content-Security-Policy",
-    value: [
-      "default-src 'self'",
-      // Next.js requiert unsafe-inline/unsafe-eval pour le hot reload et les styles
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
-      "img-src 'self' data: https:",
-      "font-src 'self'",
-      // Supabase API + WebSocket realtime
-      `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://app.somnoventis.com`,
-      "frame-ancestors 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; "),
-  },
+  // CSP is set dynamically per-request with a nonce in middleware.ts
+  // unsafe-eval is removed in production; unsafe-inline replaced by nonce
 ];
 
 const nextConfig: NextConfig = {
