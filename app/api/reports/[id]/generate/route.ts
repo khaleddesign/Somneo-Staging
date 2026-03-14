@@ -85,9 +85,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     // Déchiffrement
     study.patient_reference = decrypt(study.patient_reference)
 
-    console.log('[generate] report.content:', JSON.stringify(report.content))
     const values = toValues(report.content)
-    console.log('[generate] values extracted:', JSON.stringify(values))
 
     const nowIso  = new Date().toISOString()
     const nowDate = new Date().toLocaleDateString('fr-FR')

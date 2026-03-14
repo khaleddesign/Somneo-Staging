@@ -50,12 +50,6 @@ export default async function AgentStudyDetail({
 
   const isAdmin = profile.role === 'admin'
 
-  // Debug — visible dans les logs serveur Next.js
-  console.log('[AgentStudyDetail] study.status         :', study.status)
-  console.log('[AgentStudyDetail] study.assigned_agent_id:', study.assigned_agent_id)
-  console.log('[AgentStudyDetail] user.id               :', user.id)
-  console.log('[AgentStudyDetail] profile.role          :', profile.role)
-
   // Onglet visible si statut actif ET (agent assigné OU admin)
   const canWriteReport =
     ['en_cours', 'en_attente'].includes(study.status) &&
