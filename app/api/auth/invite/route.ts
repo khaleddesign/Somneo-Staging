@@ -56,9 +56,8 @@ export async function POST(req: Request) {
       created_by: userId,
     })
 
-    // ✅ Sécurité : le token ne doit JAMAIS être retourné au client
-    // Il est utilisé uniquement côté serveur pour générer le lien d'invitation dans l'email
-    return NextResponse.json({ success: true })
+    // Retourner le token UNIQUEMENT pour que l'admin puisse l'afficher dans l'interface UI
+    return NextResponse.json({ success: true, token: result.token })
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
