@@ -7,35 +7,80 @@ interface UpdateReportBody {
   content?: unknown
 }
 
+/**
+ * Verify caller has access to a report via its associated study.
+ * Returns the report if accessible, or a NextResponse error.
+ */
+async function getReportWithAccess(
+  reportId: string,
+  userId: string,
+  admin: ReturnType<typeof createAdminClient>
+): Promise<
+  | { report: Record<string, unknown>; error: null }
+  | { report: null; error: NextResponse }
+> {
+  const [
+    { data: report, error: reportError },
+    { data: callerProfile, error: profileError },
+  ] = await Promise.all([
+    admin
+      .from('study_reports')
+      .select('id, study_id, agent_id, content, status, pdf_path, created_at, validated_at, updated_at')
+      .eq('id', reportId)
+      .maybeSingle(),
+    admin
+      .from('profiles')
+      .select('role, institution_id')
+      .eq('id', userId)
+      .maybeSingle(),
+  ])
+
+  if (reportError || profileError) {
+    return { report: null, error: NextResponse.json({ error: 'Erreur serveur' }, { status: 500 }) }
+  }
+  if (!report) {
+    return { report: null, error: NextResponse.json({ error: 'Rapport introuvable' }, { status: 404 }) }
+  }
+  if (!callerProfile) {
+    return { report: null, error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+  }
+
+  const { data: study, error: studyError } = await admin
+    .from('studies')
+    .select('client_id, assigned_agent_id, client:profiles!studies_client_id_fkey(institution_id)')
+    .eq('id', report.study_id)
+    .maybeSingle()
+
+  if (studyError || !study) {
+    return { report: null, error: NextResponse.json({ error: 'Étude associée introuvable' }, { status: 404 }) }
+  }
+
+  const institution = (study.client as { institution_id: string } | null)?.institution_id
+  const hasAccess =
+    (callerProfile.role === 'admin' && institution === callerProfile.institution_id) ||
+    (callerProfile.role === 'agent' && study.assigned_agent_id === userId) ||
+    (callerProfile.role === 'client' && study.client_id === userId)
+
+  if (!hasAccess) {
+    return { report: null, error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+  }
+
+  return { report: report as Record<string, unknown>, error: null }
+}
+
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
 
     const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
     const admin = createAdminClient()
-    const { data: report, error } = await admin
-      .from('study_reports')
-      .select('id, study_id, agent_id, content, status, pdf_path, created_at, validated_at, updated_at')
-      .eq('id', id)
-      .maybeSingle()
-
-    if (error) {
-      console.error('[reports/[id]] DB Error:', error)
-      return NextResponse.json({ error: 'Une erreur est survenue lors de la récupération du rapport' }, { status: 500 })
-    }
-
-    if (!report) {
-      return NextResponse.json({ error: 'Rapport introuvable' }, { status: 404 })
-    }
+    const { report, error } = await getReportWithAccess(id, user.id, admin)
+    if (error) return error
 
     await logAudit(user.id, 'view_report', 'report', id)
 
@@ -51,36 +96,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const { id } = await params
     const body = (await req.json()) as UpdateReportBody
 
-    console.log('[PATCH report] id:', id)
-    console.log('[PATCH report] content reçu:', JSON.stringify(body.content))
-
     if (body.content === undefined) {
       return NextResponse.json({ error: 'content requis' }, { status: 400 })
     }
 
     const supabase = await createClient()
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      console.log('[PATCH report] auth error:', authError?.message)
       return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
     }
 
-    console.log('[PATCH report] user.id:', user.id)
-
     const admin = createAdminClient()
-    const { data: profile, error: profileError } = await admin
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .maybeSingle()
+    const { report, error: accessError } = await getReportWithAccess(id, user.id, admin)
+    if (accessError) return accessError
 
-    if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
-      console.log('[PATCH report] profile error ou accès refusé:', profileError?.message, profile?.role)
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+    // Clients cannot edit reports
+    if ((report as { agent_id?: string }).agent_id !== user.id) {
+      const { data: callerProfile } = await admin
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle()
+      if (callerProfile?.role === 'client') {
+        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      }
     }
 
     const { data: updated, error: updateError } = await admin
@@ -93,11 +132,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .select('id, study_id, agent_id, content, status, pdf_path, created_at, validated_at, updated_at')
       .single()
 
-    console.log('[PATCH report] résultat DB data:', JSON.stringify(updated?.content))
-    console.log('[PATCH report] résultat DB error:', updateError?.message)
-
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      console.error('[PATCH /api/reports/[id]]', updateError)
+      return NextResponse.json({ error: 'Erreur lors de la mise à jour du rapport' }, { status: 500 })
     }
 
     return NextResponse.json({ report: updated })
