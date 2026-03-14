@@ -39,7 +39,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!patientRef || !studyType || !uploadedFile) {
-      setError('Veuillez remplir tous les champs requis et uploader un fichier')
+      setError('Please fill in all required fields and upload a file')
       return
     }
 
@@ -51,12 +51,12 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
       const { data: { user } } = await supabase.auth.getUser()
 
       if (!user) {
-        setError('Session expirée. Veuillez vous reconnecter.')
+        setError('Session expired. Please sign in again.')
         setLoading(false)
         return
       }
 
-      // Créer l'enregistrement dans la table studies
+      // Create the record in the studies table
       const { error: insertError } = await supabase
         .from('studies')
         .insert({
@@ -73,7 +73,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
         })
 
       if (insertError) {
-        setError('Erreur lors de la création de l\'étude : ' + insertError.message)
+        setError('Error creating study: ' + insertError.message)
         return
       }
 
@@ -84,13 +84,13 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
       setNotes('')
       setUploadedFile(null)
 
-      // Rafraîchir la liste des études après 2 secondes
+      // Refresh study list after 2 seconds
       setTimeout(() => {
         onSuccess?.()
         setSuccess(false)
       }, 2000)
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setError(err instanceof Error ? err.message : 'Unknown error')
     } finally {
       setLoading(false)
     }
@@ -99,18 +99,18 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
   return (
     <Card className="w-full border border-gray-100 rounded-xl shadow-sm">
       <CardHeader>
-        <CardTitle className="text-midnight font-heading">Soumettre une nouvelle étude</CardTitle>
+        <CardTitle className="text-midnight font-heading">Submit a new study</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Patient Reference */}
           <div className="space-y-2">
-            <Label htmlFor="patient-ref" className="font-heading text-sm text-gray-700">Référence patient *</Label>
+            <Label htmlFor="patient-ref" className="font-heading text-sm text-gray-700">Patient reference *</Label>
             <Input
               id="patient-ref"
               value={patientRef}
               onChange={(e) => setPatientRef(e.target.value)}
-              placeholder="Ex: PAT-2026-001"
+              placeholder="e.g. PAT-2026-001"
               required
               disabled={loading}
               aria-invalid={patientRefError}
@@ -123,13 +123,13 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
 
           {/* Study Type */}
           <div className="space-y-2">
-            <Label htmlFor="study-type" className="font-heading text-sm text-gray-700">Type d'étude *</Label>
+            <Label htmlFor="study-type" className="font-heading text-sm text-gray-700">Study type *</Label>
             <Select value={studyType} onValueChange={setStudyType} disabled={loading}>
               <SelectTrigger
                 id="study-type"
                 className={studyTypeError ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus:border-teal'}
               >
-                <SelectValue placeholder="Sélectionner un type" />
+                <SelectValue placeholder="Select a type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="PSG">PSG (Polysomnographie)</SelectItem>
@@ -143,7 +143,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
 
           {/* Priority */}
           <div className="space-y-2">
-            <Label htmlFor="priority" className="font-heading text-sm text-gray-700">Priorité</Label>
+            <Label htmlFor="priority" className="font-heading text-sm text-gray-700">Priority</Label>
             <Select value={priority} onValueChange={setPriority} disabled={loading}>
               <SelectTrigger id="priority" className="border-gray-200 focus:border-teal">
                 <SelectValue />
@@ -163,7 +163,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
               id="notes"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder="Informations supplémentaires..."
+              placeholder="Additional information..."
               disabled={loading}
               rows={3}
               className="border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
@@ -179,7 +179,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
             )}
           </div>
 
-          {/* Messages d'erreur et succès */}
+          {/* Error and success messages */}
           {error && (
             <div className="bg-red-50 p-3 rounded-md border border-red-200">
               <p className="text-sm text-red-700">{error}</p>
@@ -188,7 +188,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
 
           {success && (
             <div className="bg-green-50 p-3 rounded-md border border-green-200">
-              <p className="text-sm text-green-700">✓ Étude créée avec succès</p>
+              <p className="text-sm text-green-700">✓ Study created successfully</p>
             </div>
           )}
 

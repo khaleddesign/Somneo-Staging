@@ -50,13 +50,13 @@ export default function AgentDashboardPage() {
           const res = await fetch('/api/stats/agents', { signal: controller.signal })
           if (!res.ok) {
             const data = await res.json()
-            throw new Error(data.error || 'Erreur lors du chargement')
+            throw new Error(data.error || 'Error loading data')
           }
           const data = await res.json()
           setAgentKpis(data.agents || [])
         } catch (e: unknown) {
           if ((e as Error).name !== 'AbortError') {
-            setAgentKpisError(e instanceof Error ? e.message : 'Erreur lors du chargement')
+            setAgentKpisError(e instanceof Error ? e.message : 'Error loading data')
           }
         } finally {
           setLoadingAgentKpis(false)
@@ -74,9 +74,9 @@ export default function AgentDashboardPage() {
         {/* Greeting */}
         <div className="mb-8">
           <h1 className="text-3xl text-midnight font-display">
-            Bonjour, {agentName}
+            Hello, {agentName}
           </h1>
-          <p className="text-gray-500 mt-1 font-body text-sm">Tableau de bord SomnoConnect</p>
+          <p className="text-gray-500 mt-1 font-body text-sm">SomnoConnect Dashboard</p>
         </div>
 
         {/* KPIs */}
@@ -86,10 +86,10 @@ export default function AgentDashboardPage() {
         {isAdmin && (
           <Card className="p-6">
             <h2 className="text-base text-midnight mb-4 font-heading">
-              Activité par agent
+              Activity by agent
             </h2>
             {loadingAgentKpis ? (
-              <p className="text-sm text-gray-400">Chargement...</p>
+              <p className="text-sm text-gray-400">Loading...</p>
             ) : agentKpisError ? (
               <p className="text-sm text-red-500">{agentKpisError}</p>
             ) : (
@@ -98,8 +98,8 @@ export default function AgentDashboardPage() {
                   <thead>
                     <tr className="border-b border-gray-100 text-left text-gray-400 text-xs uppercase tracking-wider">
                       <th className="pb-3 pr-4 font-heading">Agent</th>
-                      <th className="pb-3 pr-4 font-heading">En cours</th>
-                      <th className="pb-3 font-heading">Terminées ce mois</th>
+                      <th className="pb-3 pr-4 font-heading">In progress</th>
+                      <th className="pb-3 font-heading">Completed this month</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-50">
@@ -113,7 +113,7 @@ export default function AgentDashboardPage() {
                     {agentKpis.length === 0 && (
                       <tr>
                         <td className="py-4 text-gray-400" colSpan={3}>
-                          Aucun agent trouvé.
+                          No agents found.
                         </td>
                       </tr>
                     )}

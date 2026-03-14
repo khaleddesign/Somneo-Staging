@@ -91,7 +91,7 @@ export default function StudyListWithFilters({
         </div>
 
         <div className="flex-1 min-w-48">
-          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Statut</label>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Status</label>
           <Select value={statusFilter} onValueChange={(value) => {
             setStatusFilter(value)
             setCurrentPage(1)
@@ -101,16 +101,16 @@ export default function StudyListWithFilters({
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="en_attente">En attente</SelectItem>
-              <SelectItem value="en_cours">En cours</SelectItem>
-              <SelectItem value="termine">Terminée</SelectItem>
-              <SelectItem value="annule">Annulée</SelectItem>
+              <SelectItem value="en_attente">Pending</SelectItem>
+              <SelectItem value="en_cours">In progress</SelectItem>
+              <SelectItem value="termine">Completed</SelectItem>
+              <SelectItem value="annule">Cancelled</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <div className="flex-1 min-w-48">
-          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Priorité</label>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Priority</label>
           <Select value={priorityFilter} onValueChange={(value) => {
             setPriorityFilter(value)
             setCurrentPage(1)
@@ -150,7 +150,7 @@ export default function StudyListWithFilters({
         </p>
 
         {!loading && !error && filteredStudies.length === 0 && searchQuery.trim() !== '' ? (
-          <div className="text-center text-gray-500 py-8">Aucune étude trouvée pour cette référence</div>
+          <div className="text-center text-gray-500 py-8">Aucune study found pour cette référence</div>
         ) : (
           <StudyList
             studies={paginatedStudies}

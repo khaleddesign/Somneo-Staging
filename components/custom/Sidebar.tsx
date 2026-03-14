@@ -32,36 +32,43 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const [email, setEmail] = useState<string | null>(null)
   const [role, setRole] = useState<string | null>(null)
 
+  const [loadingRole, setLoadingRole] = useState(true)
+
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    async function fetchUserRole() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         setEmail(user.email || null)
-        supabase
+        const { data } = await supabase
           .from('profiles')
           .select('role')
           .eq('id', user.id)
           .single()
-          .then(({ data }) => {
-            setRole(data?.role || null)
-          })
+        
+        setRole(data?.role || null)
       }
-    })
+      setLoadingRole(false)
+    }
+
+    fetchUserRole()
   }, [])
 
   const agentItems: NavItem[] = [
     { label: 'Dashboard', href: '/dashboard/agent', icon: Home },
-    { label: 'Études', href: '/dashboard/agent/studies', icon: FileText },
+    { label: 'Studies', href: '/dashboard/agent/studies', icon: FileText },
     { label: 'Clients', href: '/dashboard/agent/clients', icon: Users },
-    { label: 'Paramètres', href: '/dashboard/agent/settings', icon: Settings },
+    { label: 'Settings', href: '/dashboard/agent/settings', icon: Settings },
   ]
   const clientItems: NavItem[] = [
     { label: 'Dashboard', href: '/dashboard/client', icon: Home },
-    { label: 'Mes études', href: '/dashboard/client/studies', icon: FileText },
+    { label: 'My studies', href: '/dashboard/client/studies', icon: FileText },
     { label: 'Support', href: '/support', icon: LifeBuoy },
   ]
 
-  const items = role === 'agent' || role === 'admin' ? agentItems : clientItems
+  const items = loadingRole 
+    ? [] 
+    : (role === 'agent' || role === 'admin' ? agentItems : clientItems)
 
   return (
     <div>
@@ -122,7 +129,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             className="mt-3 flex items-center gap-2 text-sm text-sand/50 hover:text-red-400 font-body"
           >
             <LogOut className="h-4 w-4" />
-            Déconnexion
+            Sign out
           </button>
         </div>
       </aside>

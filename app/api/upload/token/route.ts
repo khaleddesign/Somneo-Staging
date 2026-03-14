@@ -10,14 +10,14 @@ export async function POST(req: Request) {
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const body = await req.json()
     const fileExt = String(body?.file_ext ?? '').toLowerCase().replace(/^\./, '')
 
     if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
-      return NextResponse.json({ error: 'Extension de fichier non autorisée' }, { status: 400 })
+      return NextResponse.json({ error: 'File extension not allowed' }, { status: 400 })
     }
 
     // Path scoped to the user — matches storage RLS policy
@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     if (error || !data) {
       console.error('[POST /api/upload/token]', error)
-      return NextResponse.json({ error: 'Impossible de créer le token d\'upload' }, { status: 500 })
+      return NextResponse.json({ error: 'Unable to create upload token' }, { status: 500 })
     }
 
     // Return the scoped token and path — never the full user JWT
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       path: objectPath,
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

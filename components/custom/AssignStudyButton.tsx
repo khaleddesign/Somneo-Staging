@@ -22,10 +22,10 @@ export default function AssignStudyButton({ studyId }: AssignStudyButtonProps) {
         method: 'PATCH',
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Impossible de prendre en charge cette étude')
+      if (!res.ok) throw new Error(data.error || 'Unable to take on this study')
       router.refresh()
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Erreur'
+      const message = e instanceof Error ? e.message : 'Error'
       setError(message)
     } finally {
       setLoading(false)
@@ -46,7 +46,7 @@ export default function AssignStudyButton({ studyId }: AssignStudyButtonProps) {
             Assignation en cours...
           </>
         ) : (
-          'Prendre en charge cette étude'
+          'Take on this study'
         )}
       </Button>
       {error && <p className="text-sm text-red-600 font-body">{error}</p>}

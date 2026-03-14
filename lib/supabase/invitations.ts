@@ -42,7 +42,7 @@ export async function getInvitationByToken(token: string) {
   if (!data) return null
 
   if (data.expires_at && new Date(data.expires_at) < new Date()) {
-    throw new Error('Invitation expirée')
+    throw new Error('Invitation expired')
   }
 
   return data as InvitationRow
@@ -64,7 +64,7 @@ export async function markInvitationUsed(id: string) {
 export async function createUserAndProfileFromInvitation(token: string, password: string) {
   const admin = createAdminClient()
 
-  // fetch invitation
+  // Fetch invitation
   const { data: invitation, error: invErr } = await admin
     .from('invitations')
     .select('*')
@@ -72,13 +72,13 @@ export async function createUserAndProfileFromInvitation(token: string, password
     .maybeSingle()
 
   if (invErr) throw invErr
-  if (!invitation) throw new Error('Token invalide')
-  if (invitation.used_at) throw new Error('Token déjà utilisé')
+  if (!invitation) throw new Error('Invalid token')
+  if (invitation.used_at) throw new Error('Token already used')
   if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
-    throw new Error('Invitation expirée')
+    throw new Error('Invitation expired')
   }
 
-  // Create user via admin
+  // Create user via admin client
   const { data: userData, error: createErr } = await admin.auth.admin.createUser({
     email: invitation.email,
     password,
@@ -88,10 +88,10 @@ export async function createUserAndProfileFromInvitation(token: string, password
   if (createErr) throw createErr
 
   const userId = userData.user?.id
-  if (!userId) throw new Error('Impossible de créer l\'utilisateur')
+  if (!userId) throw new Error('Unable to create user')
 
 
-  // Insert profile in public.profiles (use full_name from invitation if present)
+  // Insert profile into public.profiles
   const invitedRole = ['admin', 'agent', 'client'].includes(invitation.role_invited)
     ? invitation.role_invited
     : 'client'
@@ -111,7 +111,7 @@ export async function createUserAndProfileFromInvitation(token: string, password
 
   if (profileErr) throw profileErr
 
-  // Mark invitation used
+  // Mark invitation as used
   const { error: usedErr } = await admin
     .from('invitations')
     .update({ used_at: new Date().toISOString() })

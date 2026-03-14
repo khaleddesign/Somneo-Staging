@@ -49,12 +49,12 @@ export default function StudyFileDownloadCard({ studyId, filePath, fileSizeBytes
       const payload = (await res.json()) as DownloadResponse
 
       if (!res.ok || !payload.url) {
-        throw new Error(payload.error || 'Erreur lors de la génération de l’URL')
+        throw new Error(payload.error || 'Error generating URL')
       }
 
       window.open(payload.url, '_blank', 'noopener,noreferrer')
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur de téléchargement'
+      const message = err instanceof Error ? err.message : 'Download error'
       setError(message)
     } finally {
       setLoading(false)
@@ -64,7 +64,7 @@ export default function StudyFileDownloadCard({ studyId, filePath, fileSizeBytes
   return (
     <Card className="shadow-sm border-gray-200">
       <CardHeader>
-        <CardTitle className="text-xl text-midnight font-heading">Fichier d&apos;étude</CardTitle>
+        <CardTitle className="text-xl text-midnight font-heading">Study file</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {filePath ? (
@@ -89,18 +89,18 @@ export default function StudyFileDownloadCard({ studyId, filePath, fileSizeBytes
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Génération du lien...
+                  Generating link...
                 </>
               ) : (
                 <>
                   <Download className="h-4 w-4" />
-                  Télécharger le fichier EDF
+                  Download EDF file
                 </>
               )}
             </Button>
           </>
         ) : (
-          <p className="text-sm text-gray-600">Fichier archivé ou non disponible</p>
+          <p className="text-sm text-gray-600">File archived or unavailable</p>
         )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}

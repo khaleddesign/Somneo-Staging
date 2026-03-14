@@ -17,7 +17,7 @@ export async function POST(req: Request) {
   const rl = await limiters.forgotPassword.check(`forgot:${ip}`)
   if (!rl.allowed) {
     return NextResponse.json(
-      { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
+      { error: 'Too many attempts. Try again in 15 minutes.' },
       { status: 429, headers: rl.headers }
     )
   }
@@ -27,11 +27,11 @@ export async function POST(req: Request) {
     const email = String(body?.email ?? '').trim().toLowerCase()
 
     if (!email || !isValidEmail(email)) {
-      return NextResponse.json({ error: 'Email invalide' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid email' }, { status: 400 })
     }
 
     if (!process.env.RESEND_API_KEY) {
-      return NextResponse.json({ error: 'Service email indisponible' }, { status: 500 })
+      return NextResponse.json({ error: 'Email service unavailable' }, { status: 500 })
     }
 
     const supabaseAdmin = createAdminClient()
@@ -52,11 +52,11 @@ export async function POST(req: Request) {
       await resend.emails.send({
         from: 'SomnoConnect <no-reply@somnoventis.com>',
         to: email,
-        subject: 'Réinitialisation de votre mot de passe SomnoConnect',
+        subject: 'Reset your SomnoConnect password',
         html: `
-          <p>Bonjour,</p>
-          <p>Vous avez demandé la réinitialisation de votre mot de passe.</p>
-          <p><a href="${customResetLink}">Réinitialiser mon mot de passe</a></p>
+          <p>Hello,</p>
+          <p>You requested a password reset.</p>
+          <p><a href="${customResetLink}">Reset my password</a></p>
           <p>Si vous n’êtes pas à l’origine de cette demande, ignorez cet email.</p>
         `,
       })
@@ -64,7 +64,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

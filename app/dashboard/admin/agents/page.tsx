@@ -67,7 +67,7 @@ export default function AdminAgentsPage() {
 
     const data = await res.json().catch(() => null)
     if (!res.ok) {
-      const message = data?.error || 'Erreur lors de l\'invitation'
+      const message = data?.error || 'Error sending invitation'
       console.error('[AdminAgentsPage] invite error:', data)
       setInviteError(message)
       setSubmitting(false)
@@ -124,7 +124,7 @@ export default function AdminAgentsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-4xl text-midnight font-display">Gestion des agents</h1>
-            <p className="text-gray-500 font-body">Administration complète des comptes techniciens</p>
+            <p className="text-gray-500 font-body">Full technician account management</p>
           </div>
           <Button className="bg-teal text-white hover:bg-teal/90 rounded-xl font-heading" onClick={() => setInviteOpen(true)}>
             <Plus className="h-4 w-4 mr-2" /> Ajouter un agent
@@ -148,9 +148,9 @@ export default function AdminAgentsPage() {
                 <tr>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Nom</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Email</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Études en cours</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Études terminées</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Statut</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Studies in progress</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Completed studies</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Status</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Actions</th>
                 </tr>
               </thead>
@@ -169,13 +169,13 @@ export default function AdminAgentsPage() {
                     <td className="px-3 py-3">
                       <div className="flex flex-wrap gap-2">
                         <Link href={`/dashboard/admin/studies?agent=${agent.id}`}>
-                          <Button variant="outline" className="border-teal text-teal">Voir les études</Button>
+                          <Button variant="outline" className="border-teal text-teal">View studies</Button>
                         </Link>
                         <Button variant="outline" onClick={() => openEdit(agent)}>
                           <Pencil className="h-4 w-4 mr-1" /> Modifier
                         </Button>
                         <Button variant="outline" onClick={() => toggleSuspend(agent)}>
-                          <Ban className="h-4 w-4 mr-1" /> {agent.is_suspended ? 'Réactiver' : 'Suspendre'}
+                          <Ban className="h-4 w-4 mr-1" /> {agent.is_suspended ? 'Reactivate' : 'Suspend'}
                         </Button>
                         <Button className="bg-red-500 text-white hover:bg-red-600" onClick={() => deleteAgent(agent)}>
                           <Trash2 className="h-4 w-4 mr-1" /> Supprimer
@@ -198,22 +198,22 @@ export default function AdminAgentsPage() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-heading">Envoyer l'invitation</DialogTitle>
+            <DialogTitle className="font-heading">Send invitation</DialogTitle>
             <DialogDescription className="font-body text-gray-500">
-              Envoyez une invitation sécurisée à un agent ou administrateur.
+              Send a secure invitation to a technician or administrator.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="font-heading">Nom complet</Label>
+              <Label className="font-heading">Full name</Label>
               <Input value={inviteForm.full_name} onChange={(e) => setInviteForm((s) => ({ ...s, full_name: e.target.value }))} />
             </div>
             <div>
-              <Label className="font-heading">Email professionnel</Label>
+              <Label className="font-heading">Professional email</Label>
               <Input value={inviteForm.email} onChange={(e) => setInviteForm((s) => ({ ...s, email: e.target.value }))} />
             </div>
             <div>
-              <Label className="font-heading">Rôle</Label>
+              <Label className="font-heading">Role</Label>
               <Select value={inviteForm.role} onValueChange={(value) => setInviteForm((s) => ({ ...s, role: value }))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -225,7 +225,7 @@ export default function AdminAgentsPage() {
               </Select>
             </div>
             <Button className="w-full bg-teal text-white hover:bg-teal/90" disabled={submitting} onClick={inviteAgent}>
-              Envoyer l'invitation
+              Send invitation
             </Button>
             {inviteError && (
               <p className="text-sm text-red-600 font-body">{inviteError}</p>
@@ -239,12 +239,12 @@ export default function AdminAgentsPage() {
           <DialogHeader>
             <DialogTitle className="font-heading">Modifier l'agent</DialogTitle>
             <DialogDescription className="font-body text-gray-500">
-              Mettez à jour les informations du compte sélectionné.
+              Update the selected account's information.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="font-heading">Nom complet</Label>
+              <Label className="font-heading">Full name</Label>
               <Input value={form.full_name} onChange={(e) => setForm((s) => ({ ...s, full_name: e.target.value }))} />
             </div>
             <div>

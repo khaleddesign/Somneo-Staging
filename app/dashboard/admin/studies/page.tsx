@@ -134,26 +134,26 @@ export default function AdminStudiesPage() {
     <AdminLayout>
       <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div>
-          <h1 className="text-4xl text-midnight font-display">Toutes les études</h1>
-          <p className="text-gray-500 font-body">Vision globale et réassignation des études</p>
+          <h1 className="text-4xl text-midnight font-display">All studies</h1>
+          <p className="text-gray-500 font-body">Global overview and study reassignment</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 grid grid-cols-1 md:grid-cols-5 gap-3">
           <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Statut" /></SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Status" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous statuts</SelectItem>
-              <SelectItem value="en_attente">En attente</SelectItem>
-              <SelectItem value="en_cours">En cours</SelectItem>
-              <SelectItem value="termine">Terminée</SelectItem>
-              <SelectItem value="annule">Annulée</SelectItem>
+              <SelectItem value="all">All statuses</SelectItem>
+              <SelectItem value="en_attente">Pending</SelectItem>
+              <SelectItem value="en_cours">In progress</SelectItem>
+              <SelectItem value="termine">Completed</SelectItem>
+              <SelectItem value="annule">Cancelled</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={priority} onValueChange={setPriority}>
-            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Priorité" /></SelectTrigger>
+            <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Priority" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes priorités</SelectItem>
+              <SelectItem value="all">All priorities</SelectItem>
               <SelectItem value="low">Basse</SelectItem>
               <SelectItem value="medium">Moyenne</SelectItem>
               <SelectItem value="high">Haute</SelectItem>
@@ -164,7 +164,7 @@ export default function AdminStudiesPage() {
             <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Agent" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Tous agents</SelectItem>
-              <SelectItem value="unassigned">Non assignées</SelectItem>
+              <SelectItem value="unassigned">Unassigneds</SelectItem>
               {agents.map((a) => (
                 <SelectItem key={a.id} value={a.id}>{a.full_name || a.email}</SelectItem>
               ))}
@@ -195,15 +195,15 @@ export default function AdminStudiesPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
-          <h2 className="text-lg text-midnight font-heading mb-4">Réassignation avancée</h2>
+          <h2 className="text-lg text-midnight font-heading mb-4">Advanced reassignment</h2>
           <table className="min-w-full text-sm">
             <thead className="bg-[#fafbfc] border-b border-gray-100">
               <tr>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Patient</th>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Client</th>
-                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Statut</th>
-                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Priorité</th>
-                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Agent assigné</th>
+                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Status</th>
+                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Priority</th>
+                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Assigned agent</th>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Date</th>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Actions</th>
               </tr>
@@ -215,18 +215,18 @@ export default function AdminStudiesPage() {
                   <td className="px-3 py-3 font-body">{study.profiles?.full_name || clientMap.get(study.client_id) || '—'}</td>
                   <td className="px-3 py-3 font-body">{study.status.replace('_', ' ')}</td>
                   <td className="px-3 py-3 font-body">{study.priority}</td>
-                  <td className="px-3 py-3 font-body">{study.assigned_agent_id ? agentMap.get(study.assigned_agent_id) || '—' : 'Non assignée'}</td>
-                  <td className="px-3 py-3 font-body">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
+                  <td className="px-3 py-3 font-body">{study.assigned_agent_id ? agentMap.get(study.assigned_agent_id) || '—' : 'Unassigned'}</td>
+                  <td className="px-3 py-3 font-body">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</td>
                   <td className="px-3 py-3">
                     <Button className="bg-teal text-white hover:bg-teal/90" onClick={() => openReassign(study)}>
-                      Réassigner
+                      Reassign
                     </Button>
                   </td>
                 </tr>
               ))}
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">Aucune étude trouvée</td>
+                  <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">Aucune study found</td>
                 </tr>
               )}
             </tbody>
@@ -237,7 +237,7 @@ export default function AdminStudiesPage() {
       <Dialog open={reassignOpen} onOpenChange={setReassignOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-heading">Réassigner l'étude</DialogTitle>
+            <DialogTitle className="font-heading">Reassign study</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -247,7 +247,7 @@ export default function AdminStudiesPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Non assignée</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {agents.map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.full_name || a.email}</SelectItem>
                   ))}
@@ -255,7 +255,7 @@ export default function AdminStudiesPage() {
               </Select>
             </div>
             <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={reassignStudy}>
-              Confirmer
+              Confirm
             </Button>
           </div>
         </DialogContent>

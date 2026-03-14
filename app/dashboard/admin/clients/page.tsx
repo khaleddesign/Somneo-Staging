@@ -73,7 +73,7 @@ export default function AdminClientsPage() {
 
     const data = await res.json().catch(() => null)
     if (!res.ok) {
-      const message = data?.error || 'Erreur lors de l\'invitation client'
+      const message = data?.error || 'Error inviting client'
       setInviteError(message)
       setSubmittingInvite(false)
       return
@@ -120,7 +120,7 @@ export default function AdminClientsPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-4xl text-midnight font-display">Gestion des clients</h1>
-            <p className="text-gray-500 font-body">Gestion complète des comptes clients</p>
+            <p className="text-gray-500 font-body">Complete client account management</p>
           </div>
           <Button className="bg-teal text-white hover:bg-teal/90 rounded-xl font-heading" onClick={() => setInviteOpen(true)}>
             <Plus className="h-4 w-4 mr-2" /> Inviter un client
@@ -145,9 +145,9 @@ export default function AdminClientsPage() {
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Nom</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Email</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Institution</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Études soumises</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Dernière étude</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Statut</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Studies submitted</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Last study</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Status</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Actions</th>
                 </tr>
               </thead>
@@ -158,7 +158,7 @@ export default function AdminClientsPage() {
                     <td className="px-3 py-3 font-body">{client.email}</td>
                     <td className="px-3 py-3 font-body">{client.institution_name || '—'}</td>
                     <td className="px-3 py-3 font-body">{client.studies_count || 0}</td>
-                    <td className="px-3 py-3 font-body">{client.last_study_at ? new Date(client.last_study_at).toLocaleDateString('fr-FR') : '—'}</td>
+                    <td className="px-3 py-3 font-body">{client.last_study_at ? new Date(client.last_study_at).toLocaleDateString('en-GB') : '—'}</td>
                     <td className="px-3 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-heading ${client.is_suspended ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                         {client.is_suspended ? 'Suspendu' : 'Actif'}
@@ -170,7 +170,7 @@ export default function AdminClientsPage() {
                           <Pencil className="h-4 w-4 mr-1" /> Modifier
                         </Button>
                         <Button variant="outline" onClick={() => toggleSuspend(client)}>
-                          <Ban className="h-4 w-4 mr-1" /> {client.is_suspended ? 'Réactiver' : 'Suspendre'}
+                          <Ban className="h-4 w-4 mr-1" /> {client.is_suspended ? 'Reactivate' : 'Suspend'}
                         </Button>
                       </div>
                     </td>
@@ -190,14 +190,14 @@ export default function AdminClientsPage() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-heading">Inviter un client</DialogTitle>
+            <DialogTitle className="font-heading">Invite client</DialogTitle>
             <DialogDescription className="font-body text-gray-500">
-              Envoyez une invitation sécurisée au portail client SomnoConnect.
+              Send a secure invitation to the SomnoConnect client portal.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="font-heading">Nom complet</Label>
+              <Label className="font-heading">Full name</Label>
               <Input value={inviteForm.full_name} onChange={(e) => setInviteForm((s) => ({ ...s, full_name: e.target.value }))} />
             </div>
             <div>
@@ -205,7 +205,7 @@ export default function AdminClientsPage() {
               <Input type="email" value={inviteForm.email} onChange={(e) => setInviteForm((s) => ({ ...s, email: e.target.value }))} />
             </div>
             <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={inviteClient} disabled={submittingInvite || !inviteForm.email.trim()}>
-              {submittingInvite ? 'Envoi...' : "Envoyer l'invitation"}
+              {submittingInvite ? 'Sending...' : "Send invitation"}
             </Button>
             {inviteError && <p className="text-sm text-red-600 font-body">{inviteError}</p>}
           </div>
@@ -217,19 +217,19 @@ export default function AdminClientsPage() {
           <DialogHeader>
             <DialogTitle className="font-heading">Modifier le client</DialogTitle>
             <DialogDescription className="font-body text-gray-500">
-              Mettez à jour les informations du client sélectionné.
+              Update the selected client's information.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="font-heading">Nom complet</Label>
+              <Label className="font-heading">Full name</Label>
               <Input value={form.full_name} onChange={(e) => setForm((s) => ({ ...s, full_name: e.target.value }))} />
             </div>
             <div>
               <Label className="font-heading">Email</Label>
               <Input value={form.email} onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))} />
             </div>
-            <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={saveEdit}>Enregistrer</Button>
+            <Button className="w-full bg-teal text-white hover:bg-teal/90" onClick={saveEdit}>Save</Button>
           </div>
         </DialogContent>
       </Dialog>

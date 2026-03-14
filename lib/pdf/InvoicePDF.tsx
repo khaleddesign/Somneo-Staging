@@ -325,7 +325,7 @@ function formatMoney(value: number): string {
 
 function modeLabel(mode: string): string {
   if (mode === 'monthly') return 'Mensuelle'
-  if (mode === 'per_study') return 'Par étude'
+  if (mode === 'per_study') return 'Par study'
   return mode
 }
 

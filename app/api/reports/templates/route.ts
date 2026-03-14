@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
   try {
     const studyType = req.nextUrl.searchParams.get('study_type')?.trim()
     if (!studyType) {
-      return NextResponse.json({ error: 'Paramètre study_type requis' }, { status: 400 })
+      return NextResponse.json({ error: 'Parameter study_type is required' }, { status: 400 })
     }
 
     const supabase = await createClient()
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const admin = createAdminClient()
@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       console.error('[templates] DB Error:', error)
-      return NextResponse.json({ error: 'Une erreur est survenue lors de la récupération des templates' }, { status: 500 })
+      return NextResponse.json({ error: 'An error occurred while retrieving templates' }, { status: 500 })
     }
 
     if (!template) {
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       },
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

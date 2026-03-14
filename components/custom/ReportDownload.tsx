@@ -19,17 +19,17 @@ export default function ReportDownload({ studyId, reportPath }: ReportDownloadPr
     setError(null)
 
     try {
-      // Appel à la route serveur qui génère une URL signée via le client admin (bypass RLS)
+      // Call to server route that generates a signed URL via admin client (bypass RLS)
       const res = await fetch(`/api/studies/${studyId}/report`)
       const payload = await res.json() as { url?: string; error?: string }
 
       if (!res.ok || !payload.url) {
-        throw new Error(payload.error || 'Impossible de générer l\'URL de téléchargement')
+        throw new Error(payload.error || 'Unable to generate download URL')
       }
 
       window.open(payload.url, '_blank', 'noopener,noreferrer')
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Erreur lors du téléchargement'
+      const message = e instanceof Error ? e.message : 'Download error'
       setError(message)
     } finally {
       setLoading(false)
@@ -47,12 +47,12 @@ export default function ReportDownload({ studyId, reportPath }: ReportDownloadPr
         {loading ? (
           <>
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Téléchargement...
+            Downloading...
           </>
         ) : (
           <>
             <Download className="h-4 w-4 mr-2" />
-            Télécharger le rapport PDF
+            Download PDF report
           </>
         )}
       </Button>

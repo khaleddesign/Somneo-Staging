@@ -57,7 +57,7 @@ export function decrypt(text: string): string {
   // On next write, data will be re-encrypted with GCM.
   if (parts.length === 2) {
     try {
-      const bytes = CryptoJS.AES.decrypt(parts[1], ENCRYPTION_KEY)
+      const bytes = CryptoJS.AES.decrypt(parts[1], ENCRYPTION_KEY!)
       return bytes.toString(CryptoJS.enc.Utf8) || text
     } catch {
       console.error('[decrypt] Legacy CryptoJS decryption failed')

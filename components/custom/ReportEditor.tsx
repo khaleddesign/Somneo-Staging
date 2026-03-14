@@ -202,13 +202,13 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       if (!res.ok) {
         const message = isObject(payload) && typeof payload.error === 'string'
           ? payload.error
-          : 'Erreur de sauvegarde'
+          : 'Error de sauvegarde'
         throw new Error(message)
       }
 
       setLastSavedAt(formatSavedAt(new Date()))
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur de sauvegarde'
+      const message = err instanceof Error ? err.message : 'Error de sauvegarde'
       setError(message)
       throw err
     } finally {
@@ -237,7 +237,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       setPdfUrl(payload.pdf_url)
       setShowPdfModal(true)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur de génération PDF'
+      const message = err instanceof Error ? err.message : 'Error de génération PDF'
       setGenerateError(message)
     } finally {
       setGeneratingPdf(false)
@@ -269,7 +269,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
       }))
       setLastSavedAt(formatSavedAt(new Date()))
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur de génération du brouillon'
+      const message = err instanceof Error ? err.message : 'Error de génération du brouillon'
       setDraftError(message)
     } finally {
       setGeneratingDraft(false)
@@ -302,7 +302,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
           if (!createRes.ok) {
             const message = isObject(createPayload) && typeof createPayload.error === 'string'
               ? createPayload.error
-              : 'Impossible de créer le rapport brouillon'
+              : 'Impossible de créer le report brouillon'
             throw new Error(message)
           }
 
@@ -311,7 +311,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
           const payload: unknown = await reportRes.json()
           const message = isObject(payload) && typeof payload.error === 'string'
             ? payload.error
-            : 'Impossible de charger le rapport'
+            : 'Impossible de charger le report'
           throw new Error(message)
         }
 
@@ -340,12 +340,12 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
             values: normalized.values,
             sections: loadedTemplate.sections,
           })
-          // Autoriser autosave et generate seulement après chargement complet
+          // Autoriser autosave et generate seulement après loading complet
           isLoaded.current = true
         }
       } catch (err: unknown) {
         if (!mounted) return
-        const message = err instanceof Error ? err.message : 'Erreur de chargement'
+        const message = err instanceof Error ? err.message : 'Error de loading'
         setError(message)
       } finally {
         if (mounted) {
@@ -453,7 +453,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
   if (loading) {
     return (
       <div className="rounded-xl border border-gray-100 p-6 text-sm text-gray-500">
-        Chargement de l’éditeur de rapport...
+        Loading de l’éditeur de report...
       </div>
     )
   }
@@ -477,7 +477,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
               <div className="grid gap-3 rounded-lg border border-gray-200 p-4 text-sm sm:grid-cols-2">
                 <p><span className="font-medium">Patient :</span> {patientReference}</p>
                 <p><span className="font-medium">Type d’étude :</span> {studyType}</p>
-                <p><span className="font-medium">Date :</span> {new Date().toLocaleDateString('fr-FR')}</p>
+                <p><span className="font-medium">Date :</span> {new Date().toLocaleDateString('en-GB')}</p>
                 <p><span className="font-medium">Agent :</span> {agentName}</p>
               </div>
             )}
@@ -641,7 +641,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
                 Génération en cours...
               </>
             ) : (
-              'Générer le PDF'
+              'Generate PDF'
             )}
           </Button>
         </div>
@@ -652,7 +652,7 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
           <DialogHeader>
             <DialogTitle>PDF généré</DialogTitle>
             <DialogDescription>
-              Le rapport PDF a été généré avec succès.
+              Le report PDF a été généré avec succès.
             </DialogDescription>
           </DialogHeader>
 

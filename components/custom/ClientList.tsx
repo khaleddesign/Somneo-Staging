@@ -27,7 +27,7 @@ export default function ClientList() {
       const res = await fetch('/api/clients')
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Erreur lors du chargement')
+        throw new Error(data.error || 'Error loading data')
       }
       const data = await res.json()
       setClients(data.clients || [])
@@ -44,8 +44,8 @@ export default function ClientList() {
   }, [])
 
   async function handleToggleSuspend(clientId: string, currentSuspended: boolean) {
-    const action = currentSuspended ? 'réactiver' : 'suspendre'
-    if (!window.confirm(`Êtes-vous sûr de vouloir ${action} ce client ?`)) {
+    const action = currentSuspended ? 'reactivate' : 'suspend'
+    if (!window.confirm(`Are you sure de vouloir ${action} ce client ?`)) {
       return
     }
 
@@ -63,7 +63,7 @@ export default function ClientList() {
 
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Erreur lors de la mise à jour')
+        throw new Error(data.error || 'Error updating profile')
       }
 
       await fetchClients()
@@ -76,7 +76,7 @@ export default function ClientList() {
   }
 
   if (loading) {
-    return <div className="text-center py-8 text-gray-500">Chargement des clients...</div>
+    return <div className="text-center py-8 text-gray-500">Loading des clients...</div>
   }
 
   if (error) {
@@ -99,7 +99,7 @@ export default function ClientList() {
           <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Nom</TableHead>
           <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Email</TableHead>
           <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Inscription</TableHead>
-          <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Statut</TableHead>
+          <TableHead className="text-xs uppercase tracking-wider text-gray-400 font-heading">Status</TableHead>
           <TableHead className="text-right text-xs uppercase tracking-wider text-gray-400 font-heading">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -108,7 +108,7 @@ export default function ClientList() {
           <TableRow key={client.id} className="hover:bg-teal/3 transition-colors">
             <TableCell className="font-medium">{client.full_name}</TableCell>
             <TableCell className="text-gray-600">{client.email}</TableCell>
-            <TableCell>{new Date(client.created_at).toLocaleDateString('fr-FR')}</TableCell>
+            <TableCell>{new Date(client.created_at).toLocaleDateString('en-GB')}</TableCell>
             <TableCell>
               {client.is_suspended ? (
                 <Badge variant="destructive">Suspendu</Badge>
@@ -126,9 +126,9 @@ export default function ClientList() {
                 {actionLoading === client.id ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : client.is_suspended ? (
-                  <><CheckCircle className="h-4 w-4 mr-1" /> Réactiver</>
+                  <><CheckCircle className="h-4 w-4 mr-1" /> Reactivate</>
                 ) : (
-                  <><Ban className="h-4 w-4 mr-1" /> Suspendre</>
+                  <><Ban className="h-4 w-4 mr-1" /> Suspend</>
                 )}
               </Button>
             </TableCell>

@@ -66,15 +66,15 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-red-600 font-display">
             <AlertCircle className="h-5 w-5" />
-            Suppression Irréversible
+            Irreversible Deletion
           </DialogTitle>
           <DialogDescription className="font-body pt-2 text-gray-600">
-            Êtes-vous sûr de vouloir supprimer cette étude ?
+            Are you sure you want to delete this study?
             <br /><br />
-            Cette action entraînera la suppression définitive :
+            This action will permanently delete:
             <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
               <li>Du fichier complet (EDF / ZIP) des serveurs</li>
-              <li>Du rapport d'analyse final (s'il existe)</li>
+              <li>Du report d'analyse final (s'il existe)</li>
               <li>De l'historique complet des informations du patient</li>
             </ul>
           </DialogDescription>
@@ -82,14 +82,14 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
 
         {error && (
           <Alert variant="destructive" className="mt-2">
-            <AlertTitle>Erreur</AlertTitle>
+            <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         <DialogFooter className="mt-4 gap-2 sm:gap-0">
           <Button variant="outline" onClick={() => setOpen(false)} disabled={isDeleting} className="font-heading">
-            Annuler
+            Cancel
           </Button>
           <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="font-heading min-w-[120px]">
             {isDeleting ? (

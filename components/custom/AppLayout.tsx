@@ -6,8 +6,8 @@ import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
 import HeaderWrapper from './HeaderWrapper'
 
-// ssr: false — NotificationBell est purement client-side (auth Supabase, fetch).
-// Le SSR-er génère des IDs Radix (Popover) différents entre le pass SSR et le pass RSC,
+// ssr: false — NotificationBell is purely client-side (Supabase auth, fetch).
+// The SSR pass generates different Radix IDs (Popover) between SSR and RSC passes,
 // provoquant une erreur de hydration en cascade sur Tabs/Select. Sans SSR, pas de mismatch.
 const NotificationBell = dynamic(() => import('./NotificationBell'), { ssr: false })
 

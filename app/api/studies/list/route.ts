@@ -9,7 +9,7 @@ export async function GET() {
 
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -19,7 +19,7 @@ export async function GET() {
       .single()
 
     if (profileError || !profile) {
-      return NextResponse.json({ error: 'Profil introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
     }
 
     let studies
@@ -34,7 +34,7 @@ export async function GET() {
       if (error) throw error
       studies = data
     } else {
-      // agent/admin : bypass RLS pour voir toutes les études
+      // agent/admin : bypass RLS pour voir toutes les studys
       const admin = createAdminClient()
       const { data, error } = await admin
         .from('studies')
@@ -55,6 +55,6 @@ export async function GET() {
     return NextResponse.json({ studies })
   } catch (err) {
     console.error('[GET /api/studies/list]', err)
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

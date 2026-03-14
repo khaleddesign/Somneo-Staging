@@ -16,7 +16,7 @@ export default function AdminSettingsPage() {
     <AdminLayout>
       <div className="p-2 md:p-4 space-y-6 max-w-3xl">
         <div>
-          <h1 className="text-4xl text-midnight">Paramètres plateforme</h1>
+          <h1 className="text-4xl text-midnight">Platform settings</h1>
           <p className="text-gray-500 font-body">Configuration globale de SomnoConnect</p>
         </div>
 
@@ -40,7 +40,7 @@ export default function AdminSettingsPage() {
           </div>
 
           <Button className="bg-teal text-white hover:bg-teal/90 w-full md:w-auto">
-            Enregistrer les paramètres
+            Save settings
           </Button>
 
           <div className="pt-4 border-t border-gray-100">

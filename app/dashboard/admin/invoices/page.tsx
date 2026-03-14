@@ -26,11 +26,11 @@ interface InvoiceRow {
 }
 
 function modeLabel(mode: InvoiceRow['mode']) {
-  return mode === 'monthly' ? 'Mensuel' : 'Par étude'
+  return mode === 'monthly' ? 'Monthly' : 'Per study'
 }
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString('fr-FR')
+  return new Date(value).toLocaleDateString('en-GB')
 }
 
 function statusUi(status: InvoiceStatus) {
@@ -42,9 +42,9 @@ function statusUi(status: InvoiceStatus) {
 
 function statusLabel(status: InvoiceStatus) {
   if (status === 'draft') return 'Brouillon'
-  if (status === 'sent') return 'Envoyée'
-  if (status === 'paid') return 'Payée'
-  return 'Annulée'
+  if (status === 'sent') return 'Sent'
+  if (status === 'paid') return 'Paid'
+  return 'Cancelled'
 }
 
 export default function AdminInvoicesPage() {
@@ -105,12 +105,12 @@ export default function AdminInvoicesPage() {
       <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-4xl text-midnight font-display">Facturation</h1>
-            <p className="text-gray-500 font-body">Gestion des factures clients</p>
+            <h1 className="text-4xl text-midnight font-display">Factures</h1>
+            <p className="text-gray-500 font-body">Client invoice management</p>
           </div>
 
           <Button asChild className="bg-teal text-white hover:bg-teal/90 rounded-xl font-heading">
-            <Link href="/dashboard/admin/invoices/new">Nouvelle facture</Link>
+            <Link href="/dashboard/admin/invoices/new">New invoice</Link>
           </Button>
         </div>
 
@@ -121,9 +121,9 @@ export default function AdminInvoicesPage() {
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">N° Facture</th>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Client</th>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Mode</th>
-                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Période</th>
-                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Montant TTC</th>
-                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Statut</th>
+                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Period</th>
+                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Amount TTC</th>
+                <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Status</th>
                 <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Actions</th>
               </tr>
             </thead>
@@ -168,12 +168,12 @@ export default function AdminInvoicesPage() {
                         disabled={updatingId === invoice.id}
                       >
                         <SelectTrigger className="h-8 min-w-40 bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal">
-                          <SelectValue placeholder="Changer statut" />
+                          <SelectValue placeholder="Change status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="sent">Envoyée</SelectItem>
-                          <SelectItem value="paid">Payée</SelectItem>
-                          <SelectItem value="cancelled">Annulée</SelectItem>
+                          <SelectItem value="sent">Sent</SelectItem>
+                          <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -183,7 +183,7 @@ export default function AdminInvoicesPage() {
 
               {!loading && sortedInvoices.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">Aucune facture</td>
+                  <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">No invoices</td>
                 </tr>
               )}
             </tbody>

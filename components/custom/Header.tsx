@@ -44,7 +44,7 @@ export default function Header() {
           className="flex items-center gap-2"
         >
           <LogOut className="h-4 w-4" />
-          {loading ? 'Déconnexion...' : 'Déconnexion'}
+          {loading ? 'Sign out...' : 'Sign out'}
         </Button>
       </div>
     </header>

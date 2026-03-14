@@ -34,7 +34,7 @@ type BillingMode = 'per_study' | 'monthly'
 
 function formatDate(value?: string | null) {
   if (!value) return '—'
-  return new Date(value).toLocaleDateString('fr-FR')
+  return new Date(value).toLocaleDateString('en-GB')
 }
 
 function formatMoney(value: number) {
@@ -146,17 +146,17 @@ export default function AdminNewInvoicePage() {
 
   async function createInvoice() {
     if (!selectedClientId) {
-      setError('Sélectionnez un client.')
+      setError('Please select a client.')
       return
     }
 
     if (mode === 'per_study' && selectedStudyIds.length === 0) {
-      setError('Sélectionnez au moins une étude.')
+      setError('Please select at least one study.')
       return
     }
 
     if (mode === 'monthly' && !billingMonth) {
-      setError('Sélectionnez un mois.')
+      setError('Please select a month.')
       return
     }
 
@@ -178,7 +178,7 @@ export default function AdminNewInvoicePage() {
 
     const data = await res.json().catch(() => null)
     if (!res.ok) {
-      setError(data?.error || 'Erreur lors de la création de la facture.')
+      setError(data?.error || 'Error creating invoice.')
       setSubmitting(false)
       return
     }
@@ -190,22 +190,22 @@ export default function AdminNewInvoicePage() {
     <AdminLayout>
       <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div>
-          <h1 className="text-4xl text-midnight font-display">Nouvelle facture</h1>
-          <p className="text-gray-500 font-body">Créer une facture client en 3 étapes</p>
+          <h1 className="text-4xl text-midnight font-display">New invoice</h1>
+          <p className="text-gray-500 font-body">Create a client invoice in 3 steps</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="rounded-xl border border-teal/30 bg-white p-3">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Étape A</p>
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Step A</p>
             <p className="text-midnight font-heading">Choisir le client</p>
           </div>
           <div className="rounded-xl border border-teal/30 bg-white p-3">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Étape B</p>
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Step B</p>
             <p className="text-midnight font-heading">Choisir le mode</p>
           </div>
           <div className="rounded-xl border border-teal/30 bg-white p-3">
-            <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Étape C</p>
-            <p className="text-midnight font-heading">Sélection des études</p>
+            <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Step C</p>
+            <p className="text-midnight font-heading">Study selection</p>
           </div>
         </div>
 
@@ -238,8 +238,8 @@ export default function AdminNewInvoicePage() {
                     : 'border-gray-200 bg-white hover:border-teal/40'
                 }`}
               >
-                <p className="font-heading text-midnight">Par prélecture</p>
-                <p className="text-sm text-gray-500 font-body mt-1">Une facture pour des études sélectionnées manuellement</p>
+                <p className="font-heading text-midnight">Per reading</p>
+                <p className="text-sm text-gray-500 font-body mt-1">An invoice for manually selected studies</p>
               </button>
 
               <button
@@ -270,7 +270,7 @@ export default function AdminNewInvoicePage() {
           )}
 
           <div className="space-y-3 rounded-xl border border-gray-100 bg-[#fafbfc] p-3">
-            <p className="font-heading text-midnight">Études facturables</p>
+            <p className="font-heading text-midnight">Billable studies</p>
 
             {mode === 'per_study' ? (
               <div className="space-y-2">
@@ -295,7 +295,7 @@ export default function AdminNewInvoicePage() {
                   )
                 })}
                 {eligibleStudies.length === 0 && (
-                  <p className="text-sm text-gray-500 font-body">Aucune étude validée non facturée.</p>
+                  <p className="text-sm text-gray-500 font-body">No validated unbilled studies.</p>
                 )}
               </div>
             ) : (
@@ -313,7 +313,7 @@ export default function AdminNewInvoicePage() {
                   )
                 })}
                 {billingMonth && monthlyStudies.length === 0 && (
-                  <p className="text-sm text-gray-500 font-body">Aucune étude validée non facturée sur ce mois.</p>
+                  <p className="text-sm text-gray-500 font-body">No validated unbilled studies this month.</p>
                 )}
               </div>
             )}
@@ -321,12 +321,12 @@ export default function AdminNewInvoicePage() {
         </div>
 
         <div className="space-y-3 rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-          <p className="font-heading text-midnight">Résumé</p>
+          <p className="font-heading text-midnight">Summary</p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm font-body">
             <p><span className="text-gray-500">Client :</span> {selectedClient?.full_name || selectedClient?.email || '—'}</p>
-            <p><span className="text-gray-500">Mode :</span> {mode === 'monthly' ? 'Mensuel' : 'Par prélecture'}</p>
-            <p><span className="text-gray-500">Études :</span> {studiesForInvoice.length}</p>
-            <p><span className="text-gray-500">Période :</span> {mode === 'monthly' ? (billingMonth || '—') : 'Sur sélection'}</p>
+            <p><span className="text-gray-500">Mode:</span> {mode === 'monthly' ? 'Monthly' : 'Per reading'}</p>
+            <p><span className="text-gray-500">Studies:</span> {studiesForInvoice.length}</p>
+            <p><span className="text-gray-500">Period:</span> {mode === 'monthly' ? (billingMonth || '—') : 'Manual selection'}</p>
             <p><span className="text-gray-500">Total HT :</span> <span className="font-heading text-gold">{formatMoney(estimatedSubtotal)}</span></p>
             <p><span className="text-gray-500">Total TTC :</span> <span className="font-heading text-gold">{formatMoney(estimatedTtc)}</span></p>
           </div>
@@ -340,7 +340,7 @@ export default function AdminNewInvoicePage() {
               onClick={() => void createInvoice()}
               disabled={submitting || loading}
             >
-              {submitting ? 'Génération...' : 'Générer la facture'}
+              {submitting ? 'Generating...' : 'Generate invoice'}
             </Button>
           </div>
         </div>

@@ -58,11 +58,11 @@ export const StudyList: FC<StudyListProps> = ({
       const res = await fetch(`/api/studies/${studyId}/assign`, { method: 'PATCH' })
       if (!res.ok) {
         const data = await res.json().catch(() => null)
-        throw new Error(data?.error || 'Impossible de prendre en charge cette étude')
+        throw new Error(data?.error || 'Unable to take on this study')
       }
       onAssigned?.()
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur lors de l’assignation'
+      const message = err instanceof Error ? err.message : 'Error lors de l’assignation'
       alert(message)
     } finally {
       setAssigningStudyId(null)
@@ -129,7 +129,7 @@ export const StudyList: FC<StudyListProps> = ({
     const toExport = getExportData()
     if (!toExport) return
 
-    const headers = ['ID Patient', 'Type', 'Priorite', 'Statut', 'Date Soumission']
+    const headers = ['Patient ID', 'Type', 'Priorite', 'Status', 'Submission Date']
     const csvContent = [
       headers.join(','),
       ...toExport.map(s => [
@@ -137,7 +137,7 @@ export const StudyList: FC<StudyListProps> = ({
         s.study_type,
         s.priority,
         s.status,
-        new Date(s.submitted_at).toLocaleDateString('fr-FR')
+        new Date(s.submitted_at).toLocaleDateString('en-GB')
       ].join(','))
     ].join('\n')
 
@@ -158,21 +158,21 @@ export const StudyList: FC<StudyListProps> = ({
 
     const doc = new jsPDF()
     const title = exportPeriod === 'custom' && customMonth 
-                  ? `Rapport des Études - ${customMonth}` 
-                  : `Rapport des Études (${exportPeriod})`
+                  ? `Study Reports - ${customMonth}` 
+                  : `Study Reports (${exportPeriod})`
     
     doc.setFontSize(18)
     doc.text(title, 14, 22)
     doc.setFontSize(11)
-    doc.text(`Généré le: ${new Date().toLocaleDateString('fr-FR')}`, 14, 30)
+    doc.text(`Généré le: ${new Date().toLocaleDateString('en-GB')}`, 14, 30)
 
-    const tableColumn = ["ID Patient", "Type", "Priorité", "Statut", "Date de Soumission"]
+    const tableColumn = ["Patient ID", "Type", "Priority", "Status", "Submission Date"]
     const tableRows = toExport.map(s => [
       s.patient_reference,
       s.study_type,
       s.priority || 'N/A',
       s.status.replace('_', ' '),
-      new Date(s.submitted_at).toLocaleDateString('fr-FR')
+      new Date(s.submitted_at).toLocaleDateString('en-GB')
     ])
 
     autoTable(doc, {
@@ -194,7 +194,7 @@ export const StudyList: FC<StudyListProps> = ({
     )
   }
   if (error) {
-    return <div className="text-red-600">Erreur : {error}</div>
+    return <div className="text-red-600">Error : {error}</div>
   }
   if (!studies.length) {
     return <div className="text-center text-gray-500 py-8">Aucune étude pour le moment</div>
@@ -208,13 +208,13 @@ export const StudyList: FC<StudyListProps> = ({
           <select 
             className="text-sm border-gray-300 rounded-lg font-body focus:ring-teal focus:border-teal p-2 border"
             value={exportPeriod}
-            onChange={(e) => setExportPeriod(e.target.value as any)}
+            onChange={(e) => setExportPeriod(e.target.value as 'selection' | 'month' | 'year' | 'all' | 'custom')}
           >
             <option value="selection">Exporter la sélection ({selectedIds.size})</option>
             <option value="month">Ce mois-ci</option>
             <option value="custom">Un mois spécifique...</option>
             <option value="year">Cette année</option>
-            <option value="all">Toutes les études</option>
+            <option value="all">All studies</option>
           </select>
 
           {exportPeriod === 'custom' && (
@@ -253,10 +253,10 @@ export const StudyList: FC<StudyListProps> = ({
                   aria-label="Sélectionner tout"
                 />
               </th>
-              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">ID Patient</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Patient ID</th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Type</th>
-              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Priorité</th>
-              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Statut</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Priority</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Status</th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date de soumission</th>
               <th className="px-3 py-3 text-center text-xs text-gray-400 uppercase tracking-wider font-heading">Archive</th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Actions</th>
@@ -291,10 +291,10 @@ export const StudyList: FC<StudyListProps> = ({
                 <td className="px-3 py-3">
                   <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
                 </td>
-                <td className="px-3 py-3 font-body text-sm text-midnight">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</td>
+                <td className="px-3 py-3 font-body text-sm text-midnight">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</td>
                 <td className="px-3 py-3 text-center">
                   {study.archived_at ? (
-                    <span title={`Archivé le ${new Date(study.archived_at).toLocaleDateString('fr-FR')}`}>
+                    <span title={`Archivé le ${new Date(study.archived_at).toLocaleDateString('en-GB')}`}>
                       <Package className="h-5 w-5 text-gray-500 inline" />
                     </span>
                   ) : (

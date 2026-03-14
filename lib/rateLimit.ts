@@ -99,10 +99,26 @@ function makeLimiter(config: LimiterConfig) {
 export const limiters = {
   /** 5 signup attempts per IP per 15 minutes */
   signup:       makeLimiter({ requests: 5,  window: '15 m', windowMs: 15 * 60 * 1000 }),
+  /** 3 trial registrations per IP per hour */
+  trial:        makeLimiter({ requests: 3,  window: '1 h',  windowMs: 60 * 60 * 1000 }),
   /** 3 password-reset emails per IP per 15 minutes */
   forgotPassword: makeLimiter({ requests: 3, window: '15 m', windowMs: 15 * 60 * 1000 }),
   /** 10 invitations per authenticated user per hour */
   invite:       makeLimiter({ requests: 10, window: '1 h',  windowMs: 60 * 60 * 1000 }),
   /** 30 comments per authenticated user per minute */
   comment:      makeLimiter({ requests: 30, window: '1 m',  windowMs: 60 * 1000 }),
+  /** 10 PDF generations per authenticated user per hour (concurrency/cost control) */
+  pdfGenerate:  makeLimiter({ requests: 10, window: '1 h',  windowMs: 60 * 60 * 1000 }),
+}
+
+// ─── Legacy synchronous helpers (used by proxy.ts) ───────────────────────────
+
+/** Synchronous in-memory rate limit check. Returns true if allowed. */
+export function rateLimit(key: string, limit: number, windowMs: number): boolean {
+  return memCheck(key, limit, windowMs).allowed
+}
+
+/** Returns rate-limit headers for a 429 response. */
+export function rateLimitHeaders(windowMs: number): Record<string, string> {
+  return { 'Retry-After': String(Math.ceil(windowMs / 1000)) }
 }

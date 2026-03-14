@@ -22,15 +22,15 @@ export default function LoginPage() {
   function getLoginErrorMessage(message: string) {
     const normalized = message.toLowerCase()
     if (normalized.includes('failed to fetch') || normalized.includes('network')) {
-      return 'Problème de connexion réseau. Vérifiez Internet puis réessayez.'
+      return 'Network error. Please check your internet connection and try again.'
     }
     if (normalized.includes('email not confirmed')) {
-      return 'Votre email n’est pas encore confirmé.'
+      return 'Your email is not yet confirmed.'
     }
     if (normalized.includes('invalid login credentials')) {
-      return 'Email ou mot de passe incorrect.'
+      return 'Incorrect email or password.'
     }
-    return 'Impossible de se connecter pour le moment. Réessayez.'
+    return 'Unable to sign in right now. Please try again.'
   }
 
   async function handleLogin(e: React.FormEvent) {
@@ -70,7 +70,7 @@ export default function LoginPage() {
         router.push('/dashboard/agent')
       }
     } catch {
-      setError('Problème de connexion réseau. Vérifiez Internet puis réessayez.')
+      setError('Network error. Please check your internet connection and try again.')
       setLoading(false)
     }
   }
@@ -87,7 +87,7 @@ export default function LoginPage() {
             <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">
               Bon retour
             </h1>
-            <p className="text-gray-500 font-body">Connectez-vous à votre espace</p>
+            <p className="text-gray-500 font-body">Sign in to your account</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-5">
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Mot de passe</Label>
+              <Label htmlFor="password" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
@@ -155,23 +155,23 @@ export default function LoginPage() {
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Connexion...
+                  Signing in...
                 </>
               ) : (
-                'Se connecter'
+                'Sign in'
               )}
             </Button>
 
             <div className="text-center">
               <Link href="/auth/forgot-password" className="text-sm text-teal hover:underline font-medium">
-                Mot de passe oublié ?
+                Forgot password?
               </Link>
             </div>
           </form>
 
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-gray-600">
-            <p className="font-body">Pas encore de compte ? <a href="/auth/signup" className="text-teal hover:underline font-medium">Créer un compte</a></p>
+            <p className="font-body">Don't have an account? <a href="/auth/signup" className="text-teal hover:underline font-medium">Create an account</a></p>
           </div>
         </div>
       </div>

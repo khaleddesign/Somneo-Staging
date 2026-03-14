@@ -11,7 +11,7 @@ export default function ErrorBoundary({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log l'erreur auprès d'un service de tracking
+    // Log error to a tracking service
     console.error('[Route Error]', error)
   }, [error])
 
@@ -22,10 +22,10 @@ export default function ErrorBoundary({
           <AlertCircle className="h-8 w-8 text-red-500" />
         </div>
         
-        <h2 className="text-2xl font-display text-midnight mb-3">Erreur de chargement</h2>
+        <h2 className="text-2xl font-display text-midnight mb-3">Error de loading</h2>
         
         <p className="text-gray-600 mb-8 leading-relaxed">
-          Nous n'avons pas pu charger cette page correctement. Le problème a été signalé à notre équipe technique.
+          We could not load this page properly. The issue has been reported to our technical team.
         </p>
         
         <button
@@ -33,7 +33,7 @@ export default function ErrorBoundary({
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal px-4 py-3 font-heading text-white hover:bg-teal/90 transition-all active:scale-95 shadow-sm"
         >
           <RefreshCw className="h-4 w-4" />
-          Réessayer
+          Retry
         </button>
 
         {process.env.NODE_ENV === 'development' && (

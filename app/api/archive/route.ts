@@ -7,10 +7,10 @@ export async function POST() {
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Vérifier que l'utilisateur est agent ou admin
+    // Verify the user is agent or admin
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -18,12 +18,12 @@ export async function POST() {
       .single()
 
     if (!profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const admin = createAdminClient()
 
-    // Récupérer les études éligibles pour archivage
+    // Retrieve studies eligible for archiving
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
@@ -55,13 +55,13 @@ export async function POST() {
               .remove([filePath])
 
             if (deleteErr) {
-              console.warn(`Erreur suppression fichier ${study.id}:`, deleteErr)
+              console.warn(`Error suppression fichier ${study.id}:`, deleteErr)
               // Continue even if delete fails, mark as archived
             }
           }
         }
 
-        // Marquer comme archivé
+        // Mark as archived
         const { error: updateErr } = await admin
           .from('studies')
           .update({
@@ -71,24 +71,24 @@ export async function POST() {
           .eq('id', study.id)
 
         if (updateErr) {
-          errors.push(`Erreur archivage étude ${study.id}: ${updateErr.message}`)
+          errors.push(`Error archivage study ${study.id}: ${updateErr.message}`)
         } else {
           archived++
         }
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
-        errors.push(`Erreur étude ${study.id}: ${msg}`)
+        errors.push(`Error study ${study.id}: ${msg}`)
       }
     }
 
     return NextResponse.json({
       archived,
       errors,
-      message: `${archived} fichier${archived !== 1 ? 's' : ''} archivé${archived !== 1 ? 's' : ''}`,
+      message: `${archived} file${archived !== 1 ? 's' : ''} archived`,
     })
   } catch (err: unknown) {
     console.error('[POST /api/archive]', err)
     const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message || 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 })
   }
 }

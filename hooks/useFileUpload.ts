@@ -72,7 +72,7 @@ export function useFileUpload(): UseFileUploadResult {
         setChecksum(md5)
 
         const fileExt = file.name.split('.').pop()?.toLowerCase()
-        if (!fileExt) throw new Error('Extension de fichier manquante')
+        if (!fileExt) throw new Error('Missing file extension')
 
         // Get a scoped upload token from the server — never expose the full JWT in the browser
         const tokenRes = await fetch('/api/upload/token', {
@@ -89,7 +89,7 @@ export function useFileUpload(): UseFileUploadResult {
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
         if (!supabaseUrl) {
-          throw new Error('Variables Supabase manquantes')
+          throw new Error('Missing Supabase configuration')
         }
 
         const upload = new tus.Upload(file, {
@@ -109,7 +109,7 @@ export function useFileUpload(): UseFileUploadResult {
           chunkSize: 6 * 1024 * 1024, // Supabase recommends 6MB
           onError: (error) => {
             console.error('[TUS Upload Error]:', error)
-            setErrorMessage('Erreur réseau lors de l\'upload : ' + (error.message || 'Interruption inattendue'))
+            setErrorMessage('Erreur réseau lors de l\'upload : ' + (error.message || 'Unexpected interruption'))
             setState('error')
           },
           onProgress: (bytesUploaded, bytesTotal) => {

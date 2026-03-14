@@ -19,7 +19,7 @@ async function requireAdmin() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
   const admin = createAdminClient()
@@ -30,7 +30,7 @@ async function requireAdmin() {
     .maybeSingle()
 
   if (profileError || !profile || profile.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { admin }
@@ -49,12 +49,12 @@ export async function GET() {
 
     if (error) {
       console.error('[invoices/settings] DB Error:', error)
-      return NextResponse.json({ error: 'Erreur lors de la récupération des paramètres' }, { status: 500 })
+      return NextResponse.json({ error: 'Error retrieving settings' }, { status: 500 })
     }
 
     return NextResponse.json({ settings: data ?? [] })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -65,7 +65,7 @@ export async function PATCH(req: NextRequest) {
     const updates = Array.isArray(body.prices) ? body.prices : []
 
     if (updates.length === 0) {
-      return NextResponse.json({ error: 'Aucune mise à jour fournie' }, { status: 400 })
+      return NextResponse.json({ error: 'No update provided' }, { status: 400 })
     }
 
     const auth = await requireAdmin()
@@ -84,7 +84,7 @@ export async function PATCH(req: NextRequest) {
 
       if (error) {
         console.error('[invoices/settings] Refresh Error:', error)
-        return NextResponse.json({ error: 'Erreur lors du rafraîchissement des paramètres' }, { status: 500 })
+        return NextResponse.json({ error: 'Error refreshing settings' }, { status: 500 })
       }
     }
 
@@ -99,7 +99,7 @@ export async function PATCH(req: NextRequest) {
 
     return NextResponse.json({ settings: refreshed ?? [] })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

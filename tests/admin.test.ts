@@ -65,7 +65,7 @@ function computePerformanceByAgent(agents: AgentProfile[], studies: StudyRow[]) 
 
 function toggleSuspension(current: boolean, actorRole: 'admin' | 'agent' | 'client') {
   if (actorRole !== 'admin') {
-    throw new Error('Accès refusé')
+    throw new Error('Access denied')
   }
   return !current
 }
@@ -105,6 +105,6 @@ describe('Admin KPIs and controls', () => {
   it('applique la logique de suspension de compte', () => {
     expect(toggleSuspension(false, 'admin')).toBe(true)
     expect(toggleSuspension(true, 'admin')).toBe(false)
-    expect(() => toggleSuspension(false, 'agent')).toThrowError('Accès refusé')
+    expect(() => toggleSuspension(false, 'agent')).toThrowError('Access denied')
   })
 })

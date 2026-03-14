@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const message = body.message?.trim()
 
     if (!subject || !message) {
-      return NextResponse.json({ error: 'Sujet et message requis' }, { status: 400 })
+      return NextResponse.json({ error: 'Subject and message are required' }, { status: 400 })
     }
 
     const supabase = await createClient()
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data: profile } = await supabase
@@ -37,49 +37,49 @@ export async function POST(req: Request) {
 
     const userEmail = user.email
     if (!userEmail) {
-      return NextResponse.json({ error: 'Email utilisateur introuvable' }, { status: 400 })
+      return NextResponse.json({ error: 'User email not found' }, { status: 400 })
     }
 
-    const userName = profile?.full_name || 'Utilisateur SomnoConnect'
+    const userName = profile?.full_name || 'SomnoConnect User'
 
     const supportEmail = await resend.emails.send({
       from: 'no-reply@somnoventis.com',
       to: 'contact@somnoventis.com',
-      subject: `[Support SomnoConnect] ${subject}`,
+      subject: `[SomnoConnect Support] ${subject}`,
       html: `
-        <p><strong>Expéditeur :</strong> ${userName} (${userEmail})</p>
-        <p><strong>Sujet :</strong> ${subject}</p>
-        <p><strong>Message :</strong></p>
+        <p><strong>From:</strong> ${userName} (${userEmail})</p>
+        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>Message:</strong></p>
         <p>${message.replace(/\n/g, '<br />')}</p>
       `,
     })
 
     if (supportEmail.error) {
       console.error('[support] Error sending email:', supportEmail.error)
-      return NextResponse.json({ error: 'Erreur lors de l\'envoi de l\'email support' }, { status: 500 })
+      return NextResponse.json({ error: 'Error lors de l\'envoi de l\'email support' }, { status: 500 })
     }
 
     const confirmationEmail = await resend.emails.send({
       from: 'no-reply@somnoventis.com',
       to: userEmail,
-      subject: 'SomnoConnect - Confirmation de votre demande support',
+      subject: 'SomnoConnect - Support request received',
       html: `
-        <p>Bonjour ${userName},</p>
-        <p>Nous avons bien reçu votre demande :</p>
+        <p>Hello ${userName},</p>
+        <p>We have received your support request:</p>
         <p><strong>${subject}</strong></p>
         <p>${message.replace(/\n/g, '<br />')}</p>
-        <p>Notre équipe vous répondra rapidement.</p>
+        <p>Our team will get back to you shortly.</p>
       `,
     })
 
     if (confirmationEmail.error) {
       console.error('[support] Error sending confirmation:', confirmationEmail.error)
-      return NextResponse.json({ error: 'Erreur lors de l\'envoi de l\'email de confirmation' }, { status: 500 })
+      return NextResponse.json({ error: 'Error lors de l\'envoi de l\'email de confirmation' }, { status: 500 })
     }
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

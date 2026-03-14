@@ -25,7 +25,7 @@ async function requireAdminUser() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
   const admin = createAdminClient()
@@ -36,7 +36,7 @@ async function requireAdminUser() {
     .maybeSingle()
 
   if (profileError || !profile || profile.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { user, admin }
@@ -50,7 +50,7 @@ async function requireAuthenticatedUser() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
   const admin = createAdminClient()
@@ -61,7 +61,7 @@ async function requireAuthenticatedUser() {
     .maybeSingle()
 
   if (profileError || !profile) {
-    return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { user, role: profile.role, admin }
@@ -81,7 +81,7 @@ async function generateInvoiceNumber(admin: ReturnType<typeof createAdminClient>
 
   if (error) {
     console.error('[invoices] Insert settings Error:', error)
-    throw new Error('Erreur base de données')
+    throw new Error('Database error')
   }
 
   const lastSequence = latest?.invoice_number
@@ -100,7 +100,7 @@ export async function GET() {
     const { admin, user, role } = auth
 
     if (!['admin', 'client'].includes(role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     let query = admin
@@ -134,12 +134,12 @@ export async function GET() {
 
     if (error) {
       console.error('[invoices] Settings Fetch Error:', error)
-      return NextResponse.json({ error: 'Erreur de base de données' }, { status: 500 })
+      return NextResponse.json({ error: 'Database error' }, { status: 500 })
     }
 
     return NextResponse.json({ invoices: data ?? [] })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         console.error('[invoices] Save Error:', error)
-        return NextResponse.json({ error: 'Erreur lors de l\'enregistrement' }, { status: 500 })
+        return NextResponse.json({ error: 'Error lors de l\'enregistrement' }, { status: 500 })
       }
       studies = data ?? []
     } else {
@@ -205,13 +205,13 @@ export async function POST(req: NextRequest) {
 
       if (error) {
         console.error('[invoices] Transaction Error:', error)
-        return NextResponse.json({ error: 'Erreur lors de la finalisation' }, { status: 500 })
+        return NextResponse.json({ error: 'Error lors de la finalisation' }, { status: 500 })
       }
       studies = data ?? []
     }
 
     if (studies.length === 0) {
-      return NextResponse.json({ error: 'Aucune étude facturable trouvée' }, { status: 400 })
+      return NextResponse.json({ error: 'No billable studies found' }, { status: 400 })
     }
 
     const uniqueTypes = [...new Set(studies.map((s) => s.study_type))]
@@ -342,7 +342,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ invoice: updatedInvoice }, { status: 201 })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

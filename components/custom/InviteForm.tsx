@@ -37,7 +37,7 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
     const data = await res.json()
 
     if (!res.ok) {
-      setError(data.error || "Erreur lors de l'invitation")
+      setError(data.error || "Error sending invitation")
       setLoading(false)
       return
     }
@@ -60,22 +60,22 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Inviter un client</CardTitle>
+        <CardTitle>Invite client</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleInvite} className="space-y-4">
           <div className="space-y-2">
-            <Label>Nom complet</Label>
+            <Label>Full name</Label>
             <Input
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Dr. Martin"
+              placeholder="Dr. Smith"
               required
               disabled={loading}
             />
           </div>
           <div className="space-y-2">
-            <Label>Email professionnel</Label>
+            <Label>Professional email</Label>
             <Input
               type="email"
               value={email}
@@ -86,7 +86,7 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
             />
           </div>
           <Button type="submit" disabled={loading}>
-            {loading ? 'Envoi...' : "Envoyer l'invitation"}
+            {loading ? 'Sending...' : "Send invitation"}
           </Button>
         </form>
         {inviteLink && (

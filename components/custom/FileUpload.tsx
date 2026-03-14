@@ -55,7 +55,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
       if (isValidFile(file)) {
         await uploadFile(file)
       } else {
-        alert('Fichier non valide. Acceptés : .edf, .zip')
+        alert('Invalid file. Accepted: .edf, .zip')
       }
     }
   }
@@ -106,7 +106,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           >
             Parcourir les fichiers
           </Button>
-          <p className="text-xs text-gray-400 mt-3">EDF, ZIP jusqu&#39;à 2 Go</p>
+          <p className="text-xs text-gray-400 mt-3">EDF, ZIP up to 2 GB</p>
           <input
             ref={fileInputRef}
             type="file"
@@ -166,7 +166,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
                 size="sm"
                 onClick={cancel}
               >
-                Annuler
+                Cancel
               </Button>
             )}
           </div>
@@ -174,7 +174,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           {state === 'completed' && (
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle className="h-5 w-5" />
-              <span className="text-sm font-medium">Upload terminé</span>
+              <span className="text-sm font-medium">Upload complete</span>
             </div>
           )}
         </div>

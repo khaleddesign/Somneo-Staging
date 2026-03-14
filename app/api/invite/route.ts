@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const parsed = inviteSchema.safeParse(raw)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? 'Données invalides' },
+        { error: parsed.error.issues[0]?.message ?? 'Invalid data' },
         { status: 400 },
       )
     }
@@ -24,7 +24,7 @@ export async function POST(req: Request) {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data: caller, error: profileError } = await supabase
@@ -34,11 +34,11 @@ export async function POST(req: Request) {
       .maybeSingle()
 
     if (profileError || !caller || caller.role !== 'admin') {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     if (!caller.institution_id) {
-      return NextResponse.json({ error: 'Compte admin sans institution' }, { status: 400 })
+      return NextResponse.json({ error: 'Admin account has no institution' }, { status: 400 })
     }
 
     let token: string
@@ -54,25 +54,25 @@ export async function POST(req: Request) {
     } catch (invErr: unknown) {
       console.error('[POST /api/invite] createInvitation failed', invErr)
       const msg = invErr instanceof Error ? invErr.message : String(invErr)
-      return NextResponse.json({ error: `Échec création invitation : ${msg}` }, { status: 500 })
+      return NextResponse.json({ error: `Failed to create invitation: ${msg}` }, { status: 500 })
     }
 
     const signupUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/signup?token=${token}`
 
     const isAgentLike = role === 'agent' || role === 'admin'
     const subject = isAgentLike
-      ? 'Invitation SomnoConnect - Accès technicien SOMNOVENTIS'
-      : 'Invitation SomnoConnect - Portail patient SOMNOVENTIS'
+      ? 'SomnoConnect Invitation - SOMNOVENTIS Technician Access'
+      : 'SomnoConnect Invitation - SOMNOVENTIS Patient Portal'
 
     const html = isAgentLike
-      ? `<p>Bonjour${fullName ? ` ${fullName}` : ''},</p>
-         <p>Vous avez été invité à rejoindre SomnoConnect en tant que technicien SOMNOVENTIS.</p>
-         <p><a href="${signupUrl}">Activer mon compte</a></p>
-         <p>Ce lien est personnel et sécurisé.</p>`
-      : `<p>Bonjour${fullName ? ` ${fullName}` : ''},</p>
-         <p>Vous avez été invité à accéder au portail SOMNOVENTIS pour vos études du sommeil.</p>
-         <p><a href="${signupUrl}">Activer mon compte</a></p>
-         <p>Ce lien est personnel et sécurisé.</p>`
+      ? `<p>Hello${fullName ? ` ${fullName}` : ''},</p>
+         <p>You have been invited to join SomnoConnect as a SOMNOVENTIS technician.</p>
+         <p><a href="${signupUrl}">Activate my account</a></p>
+         <p>This link is personal and secure.</p>`
+      : `<p>Hello${fullName ? ` ${fullName}` : ''},</p>
+         <p>You have been invited to access the SOMNOVENTIS portal for your sleep studies.</p>
+         <p><a href="${signupUrl}">Activate my account</a></p>
+         <p>This link is personal and secure.</p>`
 
     if (process.env.RESEND_API_KEY) {
       const { error: emailError } = await resend.emails.send({
@@ -84,13 +84,13 @@ export async function POST(req: Request) {
 
       if (emailError) {
         console.error('[POST /api/invite] Resend error:', emailError)
-        return NextResponse.json({ error: 'Erreur lors de l\'envoi de l\'invitation' }, { status: 500 })
+        return NextResponse.json({ error: 'Error sending invitation' }, { status: 500 })
       }
     }
 
     return NextResponse.json({ success: true, token })
   } catch (error: unknown) {
     console.error('[POST /api/invite] unhandled error', error)
-    return NextResponse.json({ error: 'Une erreur est survenue lors de la création de l\'invitation' }, { status: 500 })
+    return NextResponse.json({ error: 'An error occurred while creating the invitation' }, { status: 500 })
   }
 }

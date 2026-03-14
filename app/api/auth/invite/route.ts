@@ -21,7 +21,7 @@ export async function POST(req: Request) {
     const server = await createClient()
     const { data: userData, error: userErr } = await server.auth.getUser()
     if (userErr || !userData?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const userId = userData.user.id
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     const rl = await limiters.invite.check(`invite:${userId}`)
     if (!rl.allowed) {
       return NextResponse.json(
-        { error: 'Trop d\'invitations envoyées. Réessayez dans 1 heure.' },
+        { error: 'Too many invitations sent. Try again in 1 hour.' },
         { status: 429, headers: rl.headers }
       )
     }
@@ -41,12 +41,12 @@ export async function POST(req: Request) {
       .eq('id', userId)
       .maybeSingle()
 
-    if (profErr) return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+    if (profErr) return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
     if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Réservé aux administrateurs' }, { status: 403 })
+      return NextResponse.json({ error: 'Reserved for administrators' }, { status: 403 })
     }
     if (!profile.institution_id) {
-      return NextResponse.json({ error: 'Compte admin sans institution' }, { status: 400 })
+      return NextResponse.json({ error: 'Admin account has no institution' }, { status: 400 })
     }
 
     const result = await createInvitation({
@@ -56,9 +56,11 @@ export async function POST(req: Request) {
       created_by: userId,
     })
 
-    return NextResponse.json({ success: true, token: result.token })
+    // ✅ Sécurité : le token ne doit JAMAIS être retourné au client
+    // Il est utilisé uniquement côté serveur pour générer le lien d'invitation dans l'email
+    return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

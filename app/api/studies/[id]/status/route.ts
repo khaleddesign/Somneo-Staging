@@ -6,30 +6,30 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const supabase = await createClient()
   const { data: { user }, error: userError } = await supabase.auth.getUser()
   if (userError || !user) {
-    return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
-  // Vérifier le rôle
+  // Verify the role
   const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
   if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
-    return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+    return NextResponse.json({ error: 'Access denied' }, { status: 403 })
   }
   const body = (await req.json()) as { status?: string }
   const status = body.status
   if (status !== 'en_cours' && status !== 'termine' && status !== 'annule') {
-    return NextResponse.json({ error: 'Statut invalide' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
   }
-  // Récupérer l'ancien statut
+  // Retrieve old status
   const { data: oldStudy, error: oldError } = await supabase
     .from('studies')
     .select('status')
     .eq('id', id)
     .single()
   if (oldError || !oldStudy) {
-    return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
+    return NextResponse.json({ error: 'Study not found' }, { status: 404 })
   }
   // State machine: validate transition
   const validTransitions: Record<string, string[]> = {
@@ -45,7 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       { status: 422 }
     )
   }
-  // Mettre à jour l'étude
+  // Update the study
   const updateFields: { status: string; updated_at: string; completed_at?: string } = {
     status,
     updated_at: new Date().toISOString(),

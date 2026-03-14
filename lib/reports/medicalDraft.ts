@@ -286,7 +286,7 @@ export function generateMedicalDraft(study: StudyInfo, values: ReportValues): Me
   return {
     sections: {
       technical:
-        `Informations d'étude : dossier ${study.patientReference}, type ${study.studyType}, opérateur ${study.agentName}. Ce texte est un brouillon automatisé à valider médicalement.`,
+        `Informations d'study : dossier ${study.patientReference}, type ${study.studyType}, opérateur ${study.agentName}. Ce texte est un brouillon automatisé à valider médicalement.`,
       sleep_architecture: architecture.text,
       respiratory: respiratory.text,
       movements: movements.text,

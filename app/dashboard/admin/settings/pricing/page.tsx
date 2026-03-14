@@ -15,10 +15,10 @@ interface PricingRow {
 }
 
 const descriptions: Record<StudyType, string> = {
-  PSG: 'Polysomnographie complète',
+  PSG: 'Full polysomnography',
   PV: 'Polygraphie ventilatoire',
   MSLT: 'Test de latence d\'endormissement',
-  MWT: 'Test de maintien de l\'éveil',
+  MWT: 'Maintenance of Wakefulness Test',
 }
 
 const orderedTypes: StudyType[] = ['PSG', 'PV', 'MSLT', 'MWT']
@@ -82,11 +82,11 @@ export default function AdminPricingSettingsPage() {
     setSaving(false)
     if (!res.ok) {
       const data = await res.json().catch(() => null)
-      toast.error(data?.error || 'Erreur lors de la sauvegarde')
+      toast.error(data?.error || 'Error saving')
       return
     }
 
-    toast.success('Prix mis à jour')
+    toast.success('Prices updated')
   }
 
   return (
@@ -94,7 +94,7 @@ export default function AdminPricingSettingsPage() {
       <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div>
           <h1 className="text-4xl text-midnight font-display">Tarification</h1>
-          <p className="text-gray-500 font-body">Prix HT par type d&apos;étude</p>
+          <p className="text-gray-500 font-body">Pre-tax price per study type</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 overflow-x-auto">

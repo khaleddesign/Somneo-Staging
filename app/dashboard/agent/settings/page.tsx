@@ -55,12 +55,12 @@ export default function SettingsPage() {
     setSuccess(null)
 
     if (newPassword !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
+      setError('Passwords do not match')
       return
     }
 
     if (newPassword.length < 8) {
-      setError('Le nouveau mot de passe doit contenir au moins 8 caractères')
+      setError('New password must be at least 8 characters')
       return
     }
 
@@ -79,12 +79,12 @@ export default function SettingsPage() {
         return
       }
 
-      setSuccess('Mot de passe mis à jour avec succès')
+      setSuccess('Password updated successfully')
       setCurrentPassword('')
       setNewPassword('')
       setConfirmPassword('')
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Erreur lors de la mise à jour')
+      setError(err instanceof Error ? err.message : 'Error updating profile')
     } finally {
       setPasswordLoading(false)
     }
@@ -104,7 +104,7 @@ export default function SettingsPage() {
     <AppLayout>
       <div className="p-8 max-w-2xl bg-[#f0f4f8]">
         <h1 className="text-4xl text-midnight font-display mb-8">
-          Paramètres
+          Settings
         </h1>
 
         {/* Account Information */}
@@ -145,7 +145,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Nouveau mot de passe</Label>
+                <Label htmlFor="new-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">New password</Label>
                 <Input
                   id="new-password"
                   type="password"
@@ -159,7 +159,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Confirmer le mot de passe</Label>
+                <Label htmlFor="confirm-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Confirm password</Label>
                 <Input
                   id="confirm-password"
                   type="password"
@@ -180,10 +180,10 @@ export default function SettingsPage() {
                 {passwordLoading ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Mise à jour...
+                    Updating...
                   </>
                 ) : (
-                  'Mettre à jour le mot de passe'
+                  'Update password'
                 )}
               </Button>
             </form>

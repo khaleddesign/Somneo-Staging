@@ -7,10 +7,10 @@ export async function GET() {
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Vérifier que l'utilisateur est agent ou admin
+    // Verify the user is agent or admin
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -18,12 +18,12 @@ export async function GET() {
       .single()
 
     if (!profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const isAdmin = profile.role === 'admin'
 
-    // Récupérer tous les clients
+    // Retrieve all clients
     const admin = createAdminClient()
     const { data: clients, error } = await admin
       .from('profiles')
@@ -71,7 +71,7 @@ export async function GET() {
   } catch (err: unknown) {
     console.error('[GET /api/clients]', err)
     const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message || 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -91,10 +91,10 @@ export async function PATCH(req: Request) {
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Vérifier que l'utilisateur est agent ou admin
+    // Verify the user is agent or admin
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -102,10 +102,10 @@ export async function PATCH(req: Request) {
       .single()
 
     if (!profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
-    // Mettre à jour le client
+    // Update the client
     const admin = createAdminClient()
     const payload: Record<string, unknown> = {}
 
@@ -114,7 +114,7 @@ export async function PATCH(req: Request) {
     if (typeof email === 'string') payload.email = email.trim().toLowerCase()
 
     if (Object.keys(payload).length === 0) {
-      return NextResponse.json({ error: 'Aucune mise à jour demandée' }, { status: 400 })
+      return NextResponse.json({ error: 'No update requested' }, { status: 400 })
     }
 
     const { error: updateErr } = await admin
@@ -138,6 +138,6 @@ export async function PATCH(req: Request) {
   } catch (err: unknown) {
     console.error('[PATCH /api/clients]', err)
     const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message || 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 })
   }
 }

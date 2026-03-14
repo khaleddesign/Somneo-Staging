@@ -45,10 +45,10 @@ export default async function AdminStudyDetailPage({
 
   if (error || !study) return notFound()
 
-  // Déchiffrement
+  // Decryption
   study.patient_reference = decrypt(study.patient_reference)
 
-  // Récupérer l'agent assigné
+  // Retrieve assigned agent
   let assignedAgent: { full_name: string | null; email: string } | null = null
   if (study.assigned_agent_id) {
     const { data } = await admin
@@ -59,7 +59,7 @@ export default async function AdminStudyDetailPage({
     assignedAgent = data
   }
 
-  // Liste des agents pour le dialog de réassignation
+  // List of agents for the reassignment dialog
   const { data: agents } = await admin
     .from('profiles')
     .select('id, full_name, email')
@@ -71,13 +71,13 @@ export default async function AdminStudyDetailPage({
     <AdminLayout>
       <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
         <a href="/dashboard/admin/studies" className="text-teal hover:underline font-body text-sm">
-          &larr; Retour aux études
+          &larr; Back to studies
         </a>
 
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
-            <p className="text-gray-500 font-body mt-1">Vue admin — accès complet</p>
+            <p className="text-gray-500 font-body mt-1">Admin view — full access</p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
             <DeleteStudyButton studyId={study.id} redirectUrl="/dashboard/admin/studies" />
@@ -95,7 +95,7 @@ export default async function AdminStudyDetailPage({
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">ID patient</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Patient ID</p>
               <p className="text-midnight font-body mt-1">{study.patient_reference}</p>
             </div>
             <div>
@@ -110,26 +110,26 @@ export default async function AdminStudyDetailPage({
               <p className="text-midnight font-body mt-1">{study.study_type}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priorité</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priority</p>
               <p className="text-midnight font-body mt-1">{study.priority}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Statut</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Status</p>
               <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
                 {study.status.replace('_', ' ')}
               </span>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Agent assigné</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Assigned agent</p>
               <p className="text-midnight font-body mt-1">
                 {assignedAgent
                   ? `${assignedAgent.full_name || assignedAgent.email}`
-                  : 'Non assignée'}
+                  : 'Unassigned'}
               </p>
             </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
-              <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</p>
+              <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</p>
             </div>
             {study.notes && (
               <div className="sm:col-span-2">

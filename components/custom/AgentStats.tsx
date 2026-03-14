@@ -25,7 +25,7 @@ export default function AgentStats() {
         const res = await fetch('/api/stats', { signal: controller.signal })
         if (!res.ok) {
           const data = await res.json()
-          throw new Error(data.error || 'Erreur lors du chargement')
+          throw new Error(data.error || 'Error loading data')
         }
         const data = await res.json()
         setStats(data)
@@ -55,35 +55,35 @@ export default function AgentStats() {
   if (error || !stats) {
     return (
       <div className="mb-8 bg-red-50 p-4 rounded border border-red-200 text-red-700 text-sm">
-        {error || 'Erreur lors du chargement des statistiques'}
+        {error || 'Error loading data des statistiques'}
       </div>
     )
   }
 
   const cards = [
     {
-      label: 'Total études',
+      label: 'Total studies',
       value: stats.total_studies,
       icon: BarChart3,
       bgColor: 'bg-teal/10',
       iconColor: 'text-teal',
     },
     {
-      label: 'En attente',
+      label: 'Pending',
       value: stats.en_attente,
       icon: AlertCircle,
       bgColor: 'bg-gold/10',
       iconColor: 'text-yellow-600',
     },
     {
-      label: 'En cours',
+      label: 'In progress',
       value: stats.en_cours,
       icon: Clock,
       bgColor: 'bg-blue-100',
       iconColor: 'text-blue-600',
     },
     {
-      label: 'Terminées',
+      label: 'Completed',
       value: stats.termine,
       icon: CheckCircle2,
       bgColor: 'bg-green-100',

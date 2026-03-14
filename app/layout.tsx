@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import { Cormorant_Garamond, Syne, DM_Sans } from 'next/font/google'
+import { NextIntlClientProvider } from 'next-intl'
+import { getMessages } from 'next-intl/server'
 import './globals.css'
 
 const cormorantGaramond = Cormorant_Garamond({
@@ -23,20 +25,24 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: 'SomnoConnect',
-  description: 'Portail sécurisé SOMNOVENTIS',
+  description: 'Secure SOMNOVENTIS Portal',
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const messages = await getMessages()
+
   return (
-    <html lang="fr">
+    <html lang="en">
       <body
         className={`${cormorantGaramond.variable} ${syne.variable} ${dmSans.variable} antialiased bg-sand text-midnight`}
       >
-        {children}
+        <NextIntlClientProvider messages={messages}>
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   )

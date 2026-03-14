@@ -112,7 +112,7 @@ export default function NotificationBell() {
 
   const notificationContent = useMemo(() => {
     if (loading) {
-      return <p className="text-sm text-gray-500 font-body">Chargement...</p>
+      return <p className="text-sm text-gray-500 font-body">Loading...</p>
     }
 
     if (notifications.length === 0) {
@@ -172,7 +172,7 @@ export default function NotificationBell() {
             disabled={markingRead || unreadCount === 0}
             className="text-xs text-teal hover:text-teal/90"
           >
-            {markingRead ? 'Mise à jour...' : 'Tout marquer comme lu'}
+            {markingRead ? 'Updating...' : 'Mark all as read'}
           </Button>
         </div>
         {notificationContent}

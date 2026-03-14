@@ -10,7 +10,7 @@ async function requireAdmin() {
   } = await supabase.auth.getUser()
 
   if (error || !user) {
-    return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
   const { data: profile } = await supabase
@@ -20,7 +20,7 @@ async function requireAdmin() {
     .single()
 
   if (!profile || profile.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { user }
@@ -90,7 +90,7 @@ export async function GET() {
     return NextResponse.json({ agents: mapped })
   } catch (err: unknown) {
     console.error('[GET /api/agents]', err)
-    const message = err instanceof Error ? err.message : 'Erreur serveur'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -145,7 +145,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
     console.error('[PATCH /api/agents]', err)
-    const message = err instanceof Error ? err.message : 'Erreur serveur'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -176,7 +176,7 @@ export async function DELETE(req: Request) {
 
     if ((inProgressCount || 0) > 0) {
       return NextResponse.json(
-        { error: 'Suppression impossible : des études en cours sont encore assignées' },
+        { error: 'Deletion impossible: active studies are still assigned' },
         { status: 409 },
       )
     }
@@ -205,7 +205,7 @@ export async function DELETE(req: Request) {
     if (userDeleteError) {
       console.error('[DELETE /api/agents] auth delete error', userDeleteError)
       return NextResponse.json(
-        { error: 'Agent désactivé, suppression Auth impossible (voir logs)' },
+        { error: 'Agent disabled, Auth deletion failed (see logs)' },
         { status: 500 },
       )
     }
@@ -213,7 +213,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
     console.error('[DELETE /api/agents]', err)
-    const message = err instanceof Error ? err.message : 'Erreur serveur'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

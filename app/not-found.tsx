@@ -12,14 +12,14 @@ export default function NotFound() {
         <h2 className="text-2xl font-display text-midnight mb-3">Page Introuvable</h2>
         
         <p className="text-gray-600 mb-8 leading-relaxed">
-          La page ou la ressource que vous recherchez n'existe pas ou a été déplacée. Vérifiez l'URL ou retournez à l'accueil.
+          The page or resource you are looking for does not exist or has been moved. Check the URL or return to the home page.
         </p>
         
         <Link 
           href="/"
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal px-4 py-3 font-heading text-white hover:bg-teal/90 transition-all active:scale-95 shadow-sm"
         >
-          Retour à l'accueil
+          Back to home
         </Link>
       </div>
     </div>

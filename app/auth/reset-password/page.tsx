@@ -26,7 +26,7 @@ export default function ResetPasswordPage() {
     async function verifyRecoveryToken() {
       setError(null)
 
-      // Cas 1 : PKCE flow — token_hash dans les query params
+      // Case 1: PKCE flow — token_hash in query params
       const query = new URLSearchParams(window.location.search)
       const tokenHash = query.get('token_hash')
       const type = query.get('type')
@@ -38,7 +38,7 @@ export default function ResetPasswordPage() {
         })
 
         if (verifyError) {
-          setError('Lien de réinitialisation invalide ou expiré.')
+          setError('Invalid or expired reset link.')
           setVerifying(false)
           return
         }
@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
         return
       }
 
-      // Cas 2 : Implicit flow — access_token + refresh_token dans le hash fragment
+      // Case 2: Implicit flow — access_token + refresh_token in hash fragment
       const hash = new URLSearchParams(window.location.hash.substring(1))
       const accessToken = hash.get('access_token')
       const refreshToken = hash.get('refresh_token')
@@ -60,7 +60,7 @@ export default function ResetPasswordPage() {
         })
 
         if (sessionError) {
-          setError('Lien de réinitialisation invalide ou expiré.')
+          setError('Invalid or expired reset link.')
           setVerifying(false)
           return
         }
@@ -70,12 +70,12 @@ export default function ResetPasswordPage() {
         return
       }
 
-      // Cas 3 : Session déjà active (ex: page rechargée)
+      // Case 3: Session already active (e.g. page reloaded)
       const { data } = await supabase.auth.getSession()
       if (data.session) {
         setSessionReady(true)
       } else {
-        setError('Lien de réinitialisation invalide ou expiré.')
+        setError('Invalid or expired reset link.')
       }
       setVerifying(false)
     }
@@ -89,17 +89,17 @@ export default function ResetPasswordPage() {
     setSuccess(null)
 
     if (!sessionReady) {
-      setError('Session de réinitialisation invalide. Demandez un nouveau lien.')
+      setError('Invalid reset session. Please request a new link.')
       return
     }
 
     if (password !== confirmPassword) {
-      setError('Les mots de passe ne correspondent pas.')
+      setError('Passwords do not match.')
       return
     }
 
     if (password.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères.')
+      setError('Password must be at least 8 characters.')
       return
     }
 
@@ -108,12 +108,12 @@ export default function ResetPasswordPage() {
     const { error: updateError } = await supabase.auth.updateUser({ password })
 
     if (updateError) {
-      setError('Impossible de mettre à jour le mot de passe. Réessayez.')
+      setError('Unable to update password. Please try again.')
       setLoading(false)
       return
     }
 
-    setSuccess('Mot de passe mis à jour avec succès. Redirection vers la connexion...')
+    setSuccess('Password updated successfully. Redirecting to login...')
     setLoading(false)
 
     setTimeout(() => {
@@ -128,13 +128,13 @@ export default function ResetPasswordPage() {
       <div className="w-full lg:basis-[55%] flex items-center justify-center bg-white p-8 lg:p-12">
         <div className="w-full max-w-md">
           <div className="mb-10">
-            <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">Réinitialiser le mot de passe</h1>
-            <p className="text-gray-500 font-body">Choisissez un nouveau mot de passe sécurisé.</p>
+            <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">Reset your password</h1>
+            <p className="text-gray-500 font-body">Choose a new secure password.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Nouveau mot de passe</Label>
+              <Label htmlFor="password" className="text-xs uppercase tracking-wider text-gray-500 font-heading">New password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
@@ -159,7 +159,7 @@ export default function ResetPasswordPage() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Confirmer le mot de passe</Label>
+              <Label htmlFor="confirmPassword" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Confirm password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
@@ -185,7 +185,7 @@ export default function ResetPasswordPage() {
 
             {error && <div className="text-red-500 text-sm font-body">{error}</div>}
             {success && <div className="text-emerald-600 text-sm font-body">{success}</div>}
-            {verifying && <div className="text-gray-500 text-sm font-body">Vérification du lien de réinitialisation...</div>}
+            {verifying && <div className="text-gray-500 text-sm font-body">Verifying reset link...</div>}
 
             <Button
               type="submit"
@@ -195,10 +195,10 @@ export default function ResetPasswordPage() {
               {loading ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Mise à jour...
+                  Updating...
                 </>
               ) : (
-                'Mettre à jour le mot de passe'
+                'Update password'
               )}
             </Button>
           </form>

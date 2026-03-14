@@ -40,7 +40,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const admin = createAdminClient()
@@ -52,7 +52,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const { data: report, error: reportError } = await admin
@@ -62,7 +62,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (reportError || !report) {
-      return NextResponse.json({ error: 'Rapport introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
     }
 
     const { data: study, error: studyError } = await admin
@@ -72,11 +72,11 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (studyError || !study) {
-      return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Study not found' }, { status: 404 })
     }
 
     if (profile.role !== 'admin' && study.assigned_agent_id !== user.id) {
-      return NextResponse.json({ error: 'Étude non assignée à cet agent' }, { status: 403 })
+      return NextResponse.json({ error: 'Study not assigned to this agent' }, { status: 403 })
     }
 
     const currentValues = normalizeValues(report.content)
@@ -144,10 +144,10 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({
       success: true,
       report: updated,
-      message: 'Brouillon médical généré automatiquement (validation médicale requise).',
+      message: 'Medical draft automatically generated (medical validation required).',
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

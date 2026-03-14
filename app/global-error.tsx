@@ -10,7 +10,7 @@ export default function GlobalError({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log l'erreur auprès d'un service de tracking (Sentry, LogRocket, etc.)
+    // Log error to a tracking service (Sentry, LogRocket, etc.)
     console.error('[Global Error]', error)
   }, [error])
 
@@ -19,9 +19,9 @@ export default function GlobalError({
       <body>
         <div className="flex min-h-screen flex-col items-center justify-center bg-[#f0f4f8] p-4 text-center font-body">
           <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-md w-full">
-            <h2 className="text-2xl font-display text-midnight mb-4">Erreur Critique</h2>
+            <h2 className="text-2xl font-display text-midnight mb-4">Error Critique</h2>
             <p className="text-gray-600 mb-6">
-              Une erreur inattendue de l'application s'est produite. Nous nous excusons pour la gêne occasionnée.
+              An unexpected application error occurred. We apologize for the inconvenience.
             </p>
             <button
               onClick={() => reset()}

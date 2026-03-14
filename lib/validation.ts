@@ -12,22 +12,22 @@ function safeText(max: number) {
 
 export const emailSchema = z
   .string()
-  .email('Email invalide')
+  .email('Invalid email')
   .max(254)
   .transform((s) => s.trim().toLowerCase())
 
-export const uuidSchema = z.string().uuid('Identifiant invalide')
+export const uuidSchema = z.string().uuid('Invalid identifier')
 
 // ── Schémas métier ───────────────────────────────────────────────
 
 export const commentSchema = z.object({
   study_id: uuidSchema,
-  message: safeText(2000).refine((s) => s.length > 0, { message: 'Message vide' }),
+  message: safeText(2000).refine((s) => s.length > 0, { message: 'Message cannot be empty' }),
 })
 
 export const studySchema = z.object({
   patient_reference: safeText(100).refine((s) => s.length > 0, {
-    message: 'Référence patient requise',
+    message: 'Patient reference is required',
   }),
   study_type: z.enum(['PSG', 'PV']),
   priority: z.enum(['low', 'medium', 'high']),

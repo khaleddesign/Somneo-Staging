@@ -53,11 +53,11 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
           ref={containerRef}
           className="flex-1 overflow-y-auto space-y-4 px-2 py-1"
         >
-          {loading && <p className="text-sm text-gray-500">Chargement...</p>}
+          {loading && <p className="text-sm text-gray-500">Loading...</p>}
           {error && <p className="text-sm text-red-600">{error}</p>}
           {!loading && comments.length === 0 && (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-400">Aucun message pour cette étude. Démarrez la conversation.</p>
+              <p className="text-gray-400">No messages for this study. Start the conversation.</p>
             </div>
           )}
           {comments.map((c) => {
@@ -98,7 +98,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
           <Input
             value={text}
             onChange={(e) => setText(e.target.value)}
-            placeholder="Écrivez votre message..."
+            placeholder="Write your message..."
             disabled={sending}
             className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
           />

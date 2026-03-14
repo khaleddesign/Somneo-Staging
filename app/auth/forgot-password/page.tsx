@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         const shouldUseServerFallback = /captcha/i.test(resetError.message || '')
 
         if (!shouldUseServerFallback) {
-          setError(resetError.message || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
+          setError(resetError.message || 'Unable to send reset link. Please try again.')
           setLoading(false)
           return
         }
@@ -45,13 +45,13 @@ export default function ForgotPasswordPage() {
 
         if (!fallback.ok) {
           const fallbackData = await fallback.json().catch(() => null)
-          setError(fallbackData?.error || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
+          setError(fallbackData?.error || 'Unable to send reset link. Please try again.')
           setLoading(false)
           return
         }
       }
 
-      setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.')
+      setSuccess('A reset link has been sent to your email address.')
       setLoading(false)
     } catch {
       try {
@@ -64,15 +64,15 @@ export default function ForgotPasswordPage() {
         })
 
         if (fallback.ok) {
-          setSuccess('Un lien de réinitialisation a été envoyé à votre adresse email.')
+          setSuccess('A reset link has been sent to your email address.')
           setLoading(false)
           return
         }
 
         const fallbackData = await fallback.json().catch(() => null)
-        setError(fallbackData?.error || 'Impossible d’envoyer le lien de réinitialisation. Réessayez.')
+        setError(fallbackData?.error || 'Unable to send reset link. Please try again.')
       } catch {
-        setError('Impossible d’envoyer le lien de réinitialisation (erreur réseau). Réessayez.')
+        setError('Unable to send reset link (network error). Please try again.')
       }
 
       setLoading(false)
@@ -86,8 +86,8 @@ export default function ForgotPasswordPage() {
       <div className="w-full lg:basis-[55%] flex items-center justify-center bg-white p-8 lg:p-12">
         <div className="w-full max-w-md">
           <div className="mb-10">
-            <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">Mot de passe oublié</h1>
-            <p className="text-gray-500 font-body">Saisissez votre email pour recevoir un lien de réinitialisation.</p>
+            <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">Forgot password</h1>
+            <p className="text-gray-500 font-body">Enter your email address to receive a password reset link.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -122,7 +122,7 @@ export default function ForgotPasswordPage() {
                   Envoi...
                 </>
               ) : (
-                'Envoyer le lien de réinitialisation'
+                'Send reset link'
               )}
             </Button>
           </form>

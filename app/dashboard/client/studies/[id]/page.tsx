@@ -41,7 +41,7 @@ export default async function ClientStudyDetail({
 
   if (error || !study) return notFound()
 
-  // Déchiffrement
+  // Decryption
   study.patient_reference = decrypt(study.patient_reference)
 
   return (
@@ -54,7 +54,7 @@ export default async function ClientStudyDetail({
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
             <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
-            <p className="text-gray-500 font-body mt-1">Suivi de votre étude du sommeil</p>
+            <p className="text-gray-500 font-body mt-1">Your sleep study tracking</p>
           </div>
           <div className="self-end sm:self-auto">
              <DeleteStudyButton studyId={study.id} redirectUrl="/dashboard/client/studies" />
@@ -67,7 +67,7 @@ export default async function ClientStudyDetail({
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">ID patient</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Patient ID</p>
               <p className="text-midnight font-body mt-1">{study.patient_reference}</p>
             </div>
             <div>
@@ -75,18 +75,18 @@ export default async function ClientStudyDetail({
               <p className="text-midnight font-body mt-1">{study.study_type}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priorité</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priority</p>
               <p className="text-midnight font-body mt-1">{study.priority}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Statut</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Status</p>
               <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
                 {study.status.replace('_', ' ')}
               </span>
             </div>
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
-              <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</p>
+              <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</p>
             </div>
             {study.file_size_orig && (
               <div>

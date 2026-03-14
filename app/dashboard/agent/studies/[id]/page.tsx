@@ -45,12 +45,12 @@ export default async function AgentStudyDetail({
 
   if (error || !study) return notFound()
 
-  // Déchiffrement
+  // Decryption
   study.patient_reference = decrypt(study.patient_reference)
 
   const isAdmin = profile.role === 'admin'
 
-  // Onglet visible si statut actif ET (agent assigné OU admin)
+  // Tab visible if active status AND (assigned agent OR admin)
   const canWriteReport =
     ['en_cours', 'en_attente'].includes(study.status) &&
     (study.assigned_agent_id === user.id || isAdmin)
@@ -65,7 +65,7 @@ export default async function AgentStudyDetail({
         <Card className="bg-linear-to-r from-midnight to-[#0d2137] border-t-4 border-t-teal text-white rounded-2xl shadow-sm">
           <CardContent className="p-6">
             <h1 className="text-4xl lg:text-5xl font-display leading-tight text-sand">Dossier Patient</h1>
-            <p className="text-sand/70 font-body mt-1">Suivi clinique de l&apos;étude du sommeil</p>
+            <p className="text-sand/70 font-body mt-1">Clinical sleep study monitoring</p>
           </CardContent>
         </Card>
 
@@ -73,7 +73,7 @@ export default async function AgentStudyDetail({
           <Tabs defaultValue="informations">
             <TabsList>
               <TabsTrigger value="informations">Informations</TabsTrigger>
-              {canWriteReport && <TabsTrigger value="rapport">Rédiger le rapport</TabsTrigger>}
+              {canWriteReport && <TabsTrigger value="report">Write report</TabsTrigger>}
               <TabsTrigger value="discussion">Discussion</TabsTrigger>
             </TabsList>
 
@@ -87,7 +87,7 @@ export default async function AgentStudyDetail({
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">ID patient</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Patient ID</p>
                     <p className="text-midnight font-body mt-1">{study.patient_reference}</p>
                   </div>
                   <div>
@@ -99,18 +99,18 @@ export default async function AgentStudyDetail({
                     <p className="text-midnight font-body mt-1">{study.study_type}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priorité</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priority</p>
                     <p className="text-midnight font-body mt-1">{study.priority}</p>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Statut</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Status</p>
                     <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
                       {study.status.replace('_', ' ')}
                     </span>
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
-                    <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('fr-FR')}</p>
+                    <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</p>
                   </div>
                   {study.notes && (
                     <div className="sm:col-span-2">
@@ -153,7 +153,7 @@ export default async function AgentStudyDetail({
               )}
             </TabsContent>
 
-            <TabsContent value="rapport">
+            <TabsContent value="report">
               {canWriteReport ? (
                 <ReportEditor
                   studyId={study.id}
@@ -164,7 +164,7 @@ export default async function AgentStudyDetail({
               ) : (
                 <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
                   <CardContent className="p-6 text-sm text-gray-600">
-                    Étude non assignée ou déjà terminée
+                    Study not assigned or already completed
                   </CardContent>
                 </Card>
               )}

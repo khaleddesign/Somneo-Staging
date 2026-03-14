@@ -15,10 +15,10 @@ interface StudyActionsProps {
 type StudyStatus = StudyActionsProps['currentStatus']
 
 const statusOptions = [
-  { value: 'en_attente', label: 'En attente' },
-  { value: 'en_cours', label: 'En cours' },
-  { value: 'termine', label: 'Terminé' },
-  { value: 'annule', label: 'Annulé' },
+  { value: 'en_attente', label: 'Pending' },
+  { value: 'en_cours', label: 'In progress' },
+  { value: 'termine', label: 'Completed' },
+  { value: 'annule', label: 'Cancelled' },
 ]
 
 export default function StudyActions({ studyId, currentStatus, reportPath }: StudyActionsProps) {
@@ -44,10 +44,10 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
         body: JSON.stringify({ status }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Erreur')
-      setSuccess('Statut mis à jour')
+      if (!res.ok) throw new Error(data.error || 'Error')
+      setSuccess('Status updated')
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Erreur'
+      const message = e instanceof Error ? e.message : 'Error'
       setError(message)
     } finally {
       setLoading(false)
@@ -65,17 +65,17 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
     try {
       const supabase = supabaseRef.current
       
-      // Récupérer l'utilisateur actuel (agent)
+      // Retrieve current user (agent)
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
-        setUploadError('Session expirée. Veuillez vous reconnecter.')
+        setUploadError('Session expired. Please sign in again.')
         setUploading(false)
         return
       }
 
-      // Vérifier que le fichier est un PDF
+      // Verify the file is a PDF
       if (file.type !== 'application/pdf') {
-        setUploadError('Seuls les fichiers PDF sont acceptés')
+        setUploadError('Only PDF files are accepted')
         setUploading(false)
         return
       }
@@ -91,10 +91,10 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
 
       const uploadData = await uploadRes.json()
       if (!uploadRes.ok) {
-        throw new Error(uploadData.error || 'Erreur lors de l\'upload')
+        throw new Error(uploadData.error || 'Error uploading file')
       }
 
-      // 2. Mettre à jour le statut en 'termine' via l'API de statut existante (qui gère l'historique)
+      // 2. Update status to 'termine' via existing status API (which handles history)
       const statusRes = await fetch(`/api/studies/${studyId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -103,11 +103,11 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
 
       if (!statusRes.ok) {
         const statusData = await statusRes.json()
-        console.error('Erreur mise à jour statut:', statusData.error)
-        // Non-bloquant si l'upload a fonctionné
+        console.error('Error updating status:', statusData.error)
+        // Non-blocking if upload succeeded
       }
 
-      // 3. Récupérer l'email du client (si on l'a)
+      // 3. Retrieve client email (if available)
       const { data: studyData } = await supabase
         .from('studies')
         .select('client_id')
@@ -130,30 +130,30 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 email: clientEmail,
-                subject: 'SomnoConnect - Votre rapport d\'étude du sommeil est disponible',
-                message: `<p>Bonjour,</p><p>Votre rapport d'étude du sommeil est désormais disponible sur votre tableau de bord SomnoConnect.</p><p>Merci d'utiliser notre service.</p>`,
+                subject: 'SomnoConnect - Your sleep study report is available',
+                message: `<p>Hello,</p><p>Your sleep study report is now available on your SomnoConnect dashboard.</p><p>Thank you for using our service.</p>`,
               }),
             }).catch((err) => {
-              console.error('Notification email échouée :', err)
+              console.error('Email notification failed:', err)
             })
           }
         } catch (e) {
-          console.error('Impossible de récupérer l\'email du client :', e)
+          console.error('Unable to retrieve client email:', e)
         }
       }
 
-      // Succès : réinitialiser le formulaire et mettre à jour le statut local
-      setUploadSuccess('Rapport PDF uploadé et étude marquée comme terminée')
+      // Success: reset form and update local status
+      setUploadSuccess('PDF report uploaded and study marked as completed')
       setFile(null)
       setStatus('termine')
       if (fileInputRef.current) fileInputRef.current.value = ''
 
-      // Recharger la page après 2 secondes pour refléter le nouveau statut
+      // Reload page after 2 seconds to reflect new status
       setTimeout(() => {
         window.location.reload()
       }, 2000)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur inconnue'
+      const message = err instanceof Error ? err.message : 'Unknown error'
       setUploadError(message)
     } finally {
       setUploading(false)
@@ -174,27 +174,27 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
           </SelectContent>
         </Select>
         <Button onClick={handleStatusUpdate} disabled={loading || status === currentStatus}>
-          {loading ? 'Mise à jour...' : 'Mettre à jour le statut'}
+          {loading ? 'Updating...' : 'Update status'}
         </Button>
       </div>
       {success && <div className="text-green-600 text-sm">{success}</div>}
       {error && <div className="text-red-600 text-sm">{error}</div>}
       {reportPath && (
         <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-          <p className="text-sm text-indigo-900 font-medium mb-2">Rapport actuel</p>
+          <p className="text-sm text-indigo-900 font-medium mb-2">Current report</p>
           <a
             href={`/api/studies/${studyId}/report?path=${encodeURIComponent(reportPath)}`}
             target="_blank"
             rel="noopener noreferrer"
             className="text-indigo-600 hover:underline text-sm"
           >
-            📄 Voir le rapport PDF
+            📄 Voir le report PDF
           </a>
         </div>
       )}
       {status !== 'termine' && (
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 space-y-3">
-          <p className="text-sm text-blue-900 font-medium">Uploader le rapport PDF</p>
+          <p className="text-sm text-blue-900 font-medium">Upload PDF report</p>
           <form onSubmit={handleReportUpload} className="flex items-center gap-3">
             <Input
               ref={fileInputRef}
@@ -215,7 +215,7 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
                   Upload...
                 </>
               ) : (
-                'Uploader'
+                'Upload'
               )}
             </Button>
           </form>

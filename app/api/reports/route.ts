@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   try {
     const studyId = req.nextUrl.searchParams.get('study_id')
     if (!studyId) {
-      return NextResponse.json({ error: 'Paramètre study_id requis' }, { status: 400 })
+      return NextResponse.json({ error: 'Parameter study_id is required' }, { status: 400 })
     }
 
     const supabase = await createClient()
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const admin = createAdminClient()
@@ -36,16 +36,16 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       console.error('[reports] DB Error:', error)
-      return NextResponse.json({ error: 'Une erreur est survenue lors de la récupération des rapports' }, { status: 500 })
+      return NextResponse.json({ error: 'An error occurred while retrieving reports' }, { status: 500 })
     }
 
     if (!report) {
-      return NextResponse.json({ error: 'Rapport introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
     }
 
     return NextResponse.json({ report })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     const studyId = body.study_id?.trim()
 
     if (!studyId) {
-      return NextResponse.json({ error: 'study_id requis' }, { status: 400 })
+      return NextResponse.json({ error: 'study_id is required' }, { status: 400 })
     }
 
     const supabase = await createClient()
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const admin = createAdminClient()
@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
       .maybeSingle()
 
     if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const { data: study, error: studyError } = await admin
@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!study) {
-      return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Study not found' }, { status: 404 })
     }
 
     const { data: template, error: templateError } = await admin
@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ report: created }, { status: 201 })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -12,13 +12,13 @@ export default function ClientStudiesPage() {
     <AppLayout>
       <div className="p-5 md:p-8 space-y-6">
         <div>
-          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Mes études envoyées</h1>
+          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">My submitted studies</h1>
           <p className="text-gray-500 mt-2 font-body">Retrouvez l'historique de toutes vos soumissions.</p>
         </div>
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="text-xl text-midnight font-heading">Liste des études</CardTitle>
+            <CardTitle className="text-xl text-midnight font-heading">Study list</CardTitle>
           </CardHeader>
           <CardContent>
             <StudyList studies={studies} loading={loading} error={error} role="client" />

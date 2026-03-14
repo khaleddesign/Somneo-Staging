@@ -13,7 +13,7 @@ export async function PATCH(req: Request) {
     const { study_id, assigned_agent_id } = body
 
     if (!study_id) {
-      return NextResponse.json({ error: 'study_id requis' }, { status: 400 })
+      return NextResponse.json({ error: 'study_id is required' }, { status: 400 })
     }
 
     const supabase = await createClient()
@@ -23,7 +23,7 @@ export async function PATCH(req: Request) {
     } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data: profile } = await supabase
@@ -33,7 +33,7 @@ export async function PATCH(req: Request) {
       .single()
 
     if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const admin = createAdminClient()
@@ -56,7 +56,7 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
     console.error('[PATCH /api/studies/reassign]', err)
-    const message = err instanceof Error ? err.message : 'Erreur serveur'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

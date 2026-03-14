@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button'
 
 const supportSubjects = [
   'Question technique',
-  'Problème upload',
+  'Upload issue',
   'Facturation',
   'Autre',
 ] as const
@@ -45,11 +45,11 @@ export default function SupportPage() {
         throw new Error(data.error || 'Impossible d\'envoyer votre demande')
       }
 
-      setSuccess('Votre demande a été envoyée avec succès.')
+      setSuccess('Your request has been sent successfully.')
       setMessage('')
       setSubject('Question technique')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Erreur inattendue'
+      const msg = err instanceof Error ? err.message : 'Error inattendue'
       setError(msg)
     } finally {
       setLoading(false)
@@ -61,7 +61,7 @@ export default function SupportPage() {
       <div className="p-5 md:p-8 space-y-6">
         <div>
           <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Support & Contact</h1>
-          <p className="text-gray-500 mt-2 font-body">Notre équipe SOMNOVENTIS est disponible pour vous aider.</p>
+          <p className="text-gray-500 mt-2 font-body">Our SOMNOVENTIS team is available to help you.</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -76,7 +76,7 @@ export default function SupportPage() {
 
           <Card className="shadow-sm border-gray-200">
             <CardHeader>
-              <CardTitle className="font-heading text-midnight">Téléphone / WhatsApp</CardTitle>
+              <CardTitle className="font-heading text-midnight">Phone / WhatsApp</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-midnight">+33 6 12 34 56 78</p>
@@ -91,7 +91,7 @@ export default function SupportPage() {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label className="font-heading text-midnight">Sujet</Label>
+                <Label className="font-heading text-midnight">Subject</Label>
                 <Select value={subject} onValueChange={setSubject}>
                   <SelectTrigger>
                     <SelectValue />
@@ -109,7 +109,7 @@ export default function SupportPage() {
                 <Textarea
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Décrivez votre demande..."
+                  placeholder="Describe your request..."
                   rows={6}
                   className="font-body"
                 />
@@ -119,7 +119,7 @@ export default function SupportPage() {
               {success && <p className="text-sm text-green-600 font-body">{success}</p>}
 
               <Button type="submit" disabled={loading} className="bg-teal text-white hover:bg-teal/90">
-                {loading ? 'Envoi...' : 'Envoyer'}
+                {loading ? 'Sending...' : 'Send'}
               </Button>
             </form>
           </CardContent>

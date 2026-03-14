@@ -31,7 +31,7 @@ export default async function SignUpPage({
   try {
     invitation = await getInvitationByToken(token)
   } catch (err: unknown) {
-    errorMsg = err instanceof Error ? err.message : 'Erreur inconnue'
+    errorMsg = err instanceof Error ? err.message : 'Unknown error'
   }
 
   if (errorMsg) {
@@ -41,7 +41,7 @@ export default async function SignUpPage({
         <div className="w-full lg:basis-[55%] flex items-center justify-center bg-white p-8 lg:p-12">
           <div className="w-full max-w-md">
             <h1 className="text-5xl text-red-600 mb-2 leading-tight font-display">
-              Erreur
+              Error
             </h1>
             <p className="text-gray-500 font-body">{errorMsg}</p>
           </div>
@@ -57,9 +57,9 @@ export default async function SignUpPage({
         <div className="w-full lg:basis-[55%] flex items-center justify-center bg-white p-8 lg:p-12">
           <div className="w-full max-w-md">
             <h1 className="text-5xl text-red-600 mb-2 leading-tight font-display">
-              Invitation expirée
+              Invitation expired
             </h1>
-            <p className="text-gray-500 font-body">Ce lien est invalide ou déjà utilisé.</p>
+            <p className="text-gray-500 font-body">This link is invalid or has already been used.</p>
           </div>
         </div>
       </div>
@@ -73,9 +73,9 @@ export default async function SignUpPage({
         <div className="w-full max-w-md">
           <div className="mb-10">
             <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">
-              Créer votre compte
+              Create your account
             </h1>
-            <p className="text-gray-500 font-body">Invitation requise pour accéder à la plateforme</p>
+            <p className="text-gray-500 font-body">An invitation is required to access the platform</p>
           </div>
           <SignupForm
             token={token}

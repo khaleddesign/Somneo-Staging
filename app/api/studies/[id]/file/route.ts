@@ -14,20 +14,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const supabase = await createClient()
     const { data: userData, error: userErr } = await supabase.auth.getUser()
     if (userErr || !userData?.user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Vérifie que l'utilisateur est bien le propriétaire
+    // Verify the user is the owner
     const { data: study, error: studyErr } = await supabase
       .from('studies')
       .select('client_id')
       .eq('id', id)
       .maybeSingle()
     if (studyErr || !study) {
-      return NextResponse.json({ error: 'Étude non trouvée' }, { status: 404 })
+      return NextResponse.json({ error: 'Study not found' }, { status: 404 })
     }
     if (study.client_id !== userData.user.id) {
-      return NextResponse.json({ error: 'Accès interdit' }, { status: 403 })
+      return NextResponse.json({ error: 'Access forbidden' }, { status: 403 })
     }
 
     const { error: updateErr } = await supabase
@@ -46,7 +46,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     return NextResponse.json({ success: true })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

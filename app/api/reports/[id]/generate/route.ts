@@ -44,7 +44,17 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     const supabase = await createClient()
     const { data: { user }, error: userError } = await supabase.auth.getUser()
     if (userError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Rate Limiting (10 par heure pour éviter les attaques de concurrency sur Vercel)
+    const { limiters } = await import('@/lib/rateLimit')
+    const rl = await limiters.pdfGenerate.check(`pdf:${user.id}`)
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: 'Limite de génération PDF atteinte. Réessayez dans 1 heure.' },
+        { status: 429, headers: rl.headers }
+      )
     }
 
     const admin = createAdminClient()
@@ -57,7 +67,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (profileError || !profile || !['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     // Rapport
@@ -68,10 +78,10 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (reportError || !report) {
-      return NextResponse.json({ error: 'Rapport introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
     }
 
-    // Étude
+    // Study
     const { data: study, error: studyError } = await admin
       .from('studies')
       .select('id, study_type, patient_reference, status, client_id')
@@ -79,16 +89,16 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       .maybeSingle()
 
     if (studyError || !study) {
-      return NextResponse.json({ error: 'Étude introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Study not found' }, { status: 404 })
     }
 
-    // Déchiffrement
+    // Decryption
     study.patient_reference = decrypt(study.patient_reference)
 
     const values = toValues(report.content)
 
     const nowIso  = new Date().toISOString()
-    const nowDate = new Date().toLocaleDateString('fr-FR')
+    const nowDate = new Date().toLocaleDateString('en-GB')
 
     const reportForPdf = {
       ...report,
@@ -109,7 +119,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     // Upload Supabase Storage
     const timestamp   = Date.now()
-    const storagePath = `reports/${study.id}/rapport-${timestamp}.pdf`
+    const storagePath = `reports/${study.id}/report-${timestamp}.pdf`
 
     const { error: uploadError } = await admin.storage
       .from('reports-files')
@@ -125,7 +135,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     const fullPdfPath = `reports-files/${storagePath}`
 
-    // Mise à jour study_reports
+    // Update study_reports
     const { error: reportUpdateError } = await admin
       .from('study_reports')
       .update({ pdf_path: fullPdfPath, status: 'validated', validated_at: nowIso, updated_at: nowIso })
@@ -136,7 +146,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
       return NextResponse.json({ error: reportUpdateError.message }, { status: 500 })
     }
 
-    // Mise à jour studies
+    // Update studies
     const { error: studyUpdateError } = await admin
       .from('studies')
       .update({ report_path: fullPdfPath, status: 'termine', completed_at: nowIso, updated_at: nowIso })
@@ -166,12 +176,12 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     if (clientProfile?.email) {
       await sendEmail({
         to: clientProfile.email,
-        subject: 'SomnoConnect - Votre rapport est disponible',
-        html: '<p>Bonjour,</p><p>Le compte-rendu de votre étude du sommeil est maintenant disponible sur votre espace client.</p>',
+        subject: 'SomnoConnect - Your report is available',
+        html: '<p>Hello,</p><p>Your sleep study report is now available in your client portal.</p>',
       })
     }
 
-    // URL signée (1 h)
+    // Signed URL (1 h)
     const signedPath = fullPdfPath.startsWith('reports-files/')
       ? fullPdfPath.slice('reports-files/'.length)
       : fullPdfPath
@@ -183,7 +193,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     if (signedError || !signed?.signedUrl) {
       console.error('[api/reports/[id]/generate] Signed URL error:', signedError)
       return NextResponse.json(
-        { error: signedError?.message || 'PDF généré mais URL signée indisponible' },
+        { error: signedError?.message || 'PDF generated but signed URL unavailable' },
         { status: 500 },
       )
     }
@@ -193,7 +203,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ success: true, pdf_url: signed.signedUrl })
   } catch (err: unknown) {
     console.error('[api/reports/[id]/generate] Unhandled error:', err)
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

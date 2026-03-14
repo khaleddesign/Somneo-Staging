@@ -21,20 +21,20 @@ export default function SuspendedPage() {
           </h1>
 
           <p className="text-gray-600 mb-8 leading-relaxed font-body">
-            Votre accès a été temporairement suspendu. Contactez SOMNOVENTIS pour plus d&apos;informations.
+            Your access has been temporarily suspended. Please contact SOMNOVENTIS for more information.
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-sm mx-auto mb-6">
             <a href="mailto:contact@somnoventis.com">
               <Button className="w-full bg-teal hover:bg-teal/90 text-white font-semibold py-2.5">
                 <Mail className="h-4 w-4 mr-2" />
-                Contacter le support
+                Contact support
               </Button>
             </a>
           </div>
 
           <Link href="/" className="text-teal hover:text-teal/80 font-medium transition-colors">
-            ← Retour à l&apos;accueil
+            ← Back to home
           </Link>
         </div>
       </div>

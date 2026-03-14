@@ -11,7 +11,7 @@ async function requireAdminUser() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
   const admin = createAdminClient()
@@ -22,7 +22,7 @@ async function requireAdminUser() {
     .maybeSingle()
 
   if (profileError || !profile || profile.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { admin }
@@ -36,7 +36,7 @@ async function requireInvoiceReadUser() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
   const admin = createAdminClient()
@@ -47,7 +47,7 @@ async function requireInvoiceReadUser() {
     .maybeSingle()
 
   if (profileError || !profile || !['admin', 'client'].includes(profile.role)) {
-    return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { admin, user, role: profile.role }
@@ -69,15 +69,15 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
       .maybeSingle()
 
     if (invoiceError || !invoice) {
-      return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     }
 
     if (role === 'client' && invoice.client_id !== user.id) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     if (!invoice.pdf_path) {
-      return NextResponse.json({ error: 'PDF indisponible' }, { status: 404 })
+      return NextResponse.json({ error: 'PDF unavailable' }, { status: 404 })
     }
 
     const storagePath = invoice.pdf_path.startsWith('invoices-files/')
@@ -90,7 +90,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     if (signedError || !signed?.signedUrl) {
       return NextResponse.json(
-        { error: signedError?.message || 'Impossible de générer l’URL signée' },
+        { error: signedError?.message || 'Unable to generate signed URL' },
         { status: 500 },
       )
     }
@@ -99,7 +99,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     return NextResponse.json({ url: signed.signedUrl })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -2,13 +2,15 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { rateLimit, rateLimitHeaders } from '@/lib/rateLimit'
 
-const ALLOWED_ORIGINS = [
+const isDev = process.env.NODE_ENV === 'development'
+
+const ALLOWED_ORIGINS = new Set([
   'https://app.somnoventis.com',
   'https://somnoventis.com',
   'http://localhost:3000',
   'http://localhost:3001',
   'https://somneo.vercel.app',
-]
+])
 
 const RATE_LIMITS: Array<{ pattern: RegExp; limit: number; windowMs: number }> = [
   { pattern: /^\/api\/auth\/signup$/,  limit: 5,  windowMs: 15 * 60 * 1000 },
@@ -27,12 +29,31 @@ function getClientIp(req: NextRequest): string {
 }
 
 export async function proxy(request: NextRequest) {
+  // Capture nextUrl values before any request object mutation
   const { pathname } = request.nextUrl
   const origin = request.headers.get('origin') ?? ''
 
-  // ── CORS + Rate limiting sur les routes API ──────────────────────
+  // ── CSP nonce ───────────────────────────────────────────────────────────────
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const csp = [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ''}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: https:",
+    "font-src 'self'",
+    `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://app.somnoventis.com`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join('; ')
+
+  // Build forwarded headers (with nonce) for downstream RSC access
+  const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
+
+  // ── CORS + Rate limiting on API routes ───────────────────────────
   if (pathname.startsWith('/api/')) {
-    const isAllowedOrigin = !origin || ALLOWED_ORIGINS.includes(origin)
+    const isAllowedOrigin = !origin || ALLOWED_ORIGINS.has(origin)
     if (!isAllowedOrigin) {
       return new NextResponse(null, { status: 403 })
     }
@@ -64,7 +85,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Session Supabase ─────────────────────────────────────────────
-  let supabaseResponse = NextResponse.next({ request })
+  // Pass the original NextRequest (with .cookies intact) plus the modified headers
+  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -74,9 +96,9 @@ export async function proxy(request: NextRequest) {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            request.cookies.set(name, value)
+            requestHeaders.set('cookie', `${name}=${value}`)
           )
-          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, {
               ...options,
@@ -129,7 +151,7 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  if (user && pathname === '/auth/login') {
+  if (user && (pathname === '/auth/login' || pathname === '/auth/trial' || pathname === '/')) {
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
@@ -146,6 +168,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL('/dashboard/client', request.url))
   }
 
+  supabaseResponse.headers.set('Content-Security-Policy', csp)
   return supabaseResponse
 }
 

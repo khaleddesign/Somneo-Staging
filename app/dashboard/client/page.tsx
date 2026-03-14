@@ -24,8 +24,8 @@ export default function ClientDashboard() {
     <AppLayout>
       <div className="p-5 md:p-8 space-y-8 bg-[#f0f4f8]">
         <div>
-          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Mon espace client</h1>
-          <p className="text-gray-500 mt-2 font-body">Suivez et soumettez vos études du sommeil</p>
+          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">My Client Portal</h1>
+          <p className="text-gray-500 mt-2 font-body">Track and submit your sleep studies</p>
         </div>
         
         {/* Stats Section */}
@@ -34,7 +34,7 @@ export default function ClientDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Total études</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Total studies</p>
                   <p className="text-3xl text-midnight font-display">{stats.total}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-teal/8">
@@ -48,7 +48,7 @@ export default function ClientDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">En attente</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Pending</p>
                   <p className="text-3xl text-midnight font-display">{stats.enAttente}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-teal/8">
@@ -62,7 +62,7 @@ export default function ClientDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">En cours</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">In progress</p>
                   <p className="text-3xl text-midnight font-display">{stats.enCours}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-teal/8">
@@ -76,7 +76,7 @@ export default function ClientDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Terminées</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Completed</p>
                   <p className="text-3xl text-midnight font-display">{stats.termine}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-teal/8">
@@ -89,7 +89,7 @@ export default function ClientDashboard() {
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="text-xl text-midnight font-heading">Nouvelle soumission</CardTitle>
+            <CardTitle className="text-xl text-midnight font-heading">New submission</CardTitle>
           </CardHeader>
           <CardContent>
             <StudySubmissionForm onSuccess={refresh} />
@@ -98,7 +98,7 @@ export default function ClientDashboard() {
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="text-xl text-midnight font-heading">Mes études</CardTitle>
+            <CardTitle className="text-xl text-midnight font-heading">My studies</CardTitle>
           </CardHeader>
           <CardContent>
             <StudyList studies={studies} loading={loading} error={error} role="client" />

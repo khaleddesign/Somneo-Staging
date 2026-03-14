@@ -91,10 +91,10 @@ export default function AuthLeftPanel() {
 
         <div className="max-w-md">
           <h2 className="text-lg lg:text-xl mb-3 text-sand/90 font-heading font-medium">
-            Plateforme sécurisée d&apos;analyse du sommeil
+            Secure sleep analysis platform
           </h2>
           <p className="text-sand/60 italic text-sm leading-relaxed font-body max-w-sm">
-            Infrastructure médicale sécurisée pour centraliser vos études, échanges cliniques et rapports en toute confidentialité.
+            Secure medical infrastructure to centralize your studies, clinical exchanges and reports in full confidentiality.
           </p>
         </div>
       </div>
@@ -102,7 +102,7 @@ export default function AuthLeftPanel() {
       {/* Security Badge */}
       <div className="relative z-10 flex items-center gap-2 text-xs text-sand/80 bg-white/5 backdrop-blur-sm px-4 py-3 rounded-xl border border-white/10 w-fit font-body">
         <span>🔒</span>
-        <span>Badge RGPD · Données médicales chiffrées</span>
+        <span>GDPR Badge · Encrypted medical data</span>
       </div>
     </div>
   )

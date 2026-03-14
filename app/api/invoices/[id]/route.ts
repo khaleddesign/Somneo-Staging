@@ -15,7 +15,7 @@ async function requireAdminUser() {
   } = await supabase.auth.getUser()
 
   if (authError || !user) {
-    return { error: NextResponse.json({ error: 'Non authentifié' }, { status: 401 }) }
+    return { error: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
   }
 
   const admin = createAdminClient()
@@ -26,7 +26,7 @@ async function requireAdminUser() {
     .maybeSingle()
 
   if (profileError || !profile || profile.role !== 'admin') {
-    return { error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { user, admin }
@@ -49,11 +49,11 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     if (error) {
       console.error('[invoices/[id]] Fetch Error:', error)
-      return NextResponse.json({ error: 'Erreur lors de la récupération de la facture' }, { status: 500 })
+      return NextResponse.json({ error: 'Error retrieving invoice' }, { status: 500 })
     }
 
     if (!invoice) {
-      return NextResponse.json({ error: 'Facture introuvable' }, { status: 404 })
+      return NextResponse.json({ error: 'Invoice not found' }, { status: 404 })
     }
 
     const studyIds = Array.isArray(invoice.study_ids) ? invoice.study_ids.filter(Boolean) : []
@@ -85,7 +85,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     return NextResponse.json({ invoice, studies })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -116,12 +116,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (error) {
       console.error('[invoices/[id]] Update Error:', error)
-      return NextResponse.json({ error: 'Erreur lors de la mise à jour' }, { status: 500 })
+      return NextResponse.json({ error: 'Error updating' }, { status: 500 })
     }
 
     return NextResponse.json({ invoice: updated })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

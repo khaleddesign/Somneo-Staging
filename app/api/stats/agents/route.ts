@@ -21,7 +21,7 @@ export async function GET() {
     } = await supabase.auth.getUser()
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -31,7 +31,7 @@ export async function GET() {
       .single()
 
     if (profileError || !profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const admin = createAdminClient()
@@ -118,7 +118,7 @@ export async function GET() {
     return NextResponse.json({ agents: perAgent }, { headers: { 'Cache-Control': 'private, max-age=60' } })
   } catch (err: unknown) {
     console.error('[GET /api/stats/agents]', err)
-    const message = err instanceof Error ? err.message : 'Erreur serveur'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

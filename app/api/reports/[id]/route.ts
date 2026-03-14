@@ -36,13 +36,13 @@ async function getReportWithAccess(
   ])
 
   if (reportError || profileError) {
-    return { report: null, error: NextResponse.json({ error: 'Erreur serveur' }, { status: 500 }) }
+    return { report: null, error: NextResponse.json({ error: 'Internal server error' }, { status: 500 }) }
   }
   if (!report) {
-    return { report: null, error: NextResponse.json({ error: 'Rapport introuvable' }, { status: 404 }) }
+    return { report: null, error: NextResponse.json({ error: 'Report not found' }, { status: 404 }) }
   }
   if (!callerProfile) {
-    return { report: null, error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { report: null, error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   const { data: study, error: studyError } = await admin
@@ -52,17 +52,17 @@ async function getReportWithAccess(
     .maybeSingle()
 
   if (studyError || !study) {
-    return { report: null, error: NextResponse.json({ error: 'Étude associée introuvable' }, { status: 404 }) }
+    return { report: null, error: NextResponse.json({ error: 'Associated study not found' }, { status: 404 }) }
   }
 
-  const institution = (study.client as { institution_id: string } | null)?.institution_id
+  const institution = (study.client as unknown as { institution_id: string } | null)?.institution_id
   const hasAccess =
     (callerProfile.role === 'admin' && institution === callerProfile.institution_id) ||
     (callerProfile.role === 'agent' && study.assigned_agent_id === userId) ||
     (callerProfile.role === 'client' && study.client_id === userId)
 
   if (!hasAccess) {
-    return { report: null, error: NextResponse.json({ error: 'Accès refusé' }, { status: 403 }) }
+    return { report: null, error: NextResponse.json({ error: 'Access denied' }, { status: 403 }) }
   }
 
   return { report: report as Record<string, unknown>, error: null }
@@ -75,7 +75,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const admin = createAdminClient()
@@ -86,7 +86,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     return NextResponse.json({ report })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -97,13 +97,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     const body = (await req.json()) as UpdateReportBody
 
     if (body.content === undefined) {
-      return NextResponse.json({ error: 'content requis' }, { status: 400 })
+      return NextResponse.json({ error: 'content is required' }, { status: 400 })
     }
 
     const supabase = await createClient()
     const { data: { user }, error: authError } = await supabase.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Non authentifié' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const admin = createAdminClient()
@@ -118,7 +118,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .eq('id', user.id)
         .maybeSingle()
       if (callerProfile?.role === 'client') {
-        return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+        return NextResponse.json({ error: 'Access denied' }, { status: 403 })
       }
     }
 
@@ -134,12 +134,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (updateError) {
       console.error('[PATCH /api/reports/[id]]', updateError)
-      return NextResponse.json({ error: 'Erreur lors de la mise à jour du rapport' }, { status: 500 })
+      return NextResponse.json({ error: 'Error updating report' }, { status: 500 })
     }
 
     return NextResponse.json({ report: updated })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -23,10 +23,10 @@ function getPasswordStrength(password: string): { score: number; label: string; 
   if (/\d/.test(password)) score++
   if (/[^a-zA-Z\d]/.test(password)) score++
 
-  if (score <= 1) return { score: 1, label: 'Faible', color: 'bg-red-500' }
-  if (score <= 2) return { score: 2, label: 'Moyen', color: 'bg-orange-500' }
-  if (score <= 3) return { score: 3, label: 'Bon', color: 'bg-yellow-500' }
-  return { score: 4, label: 'Fort', color: 'bg-green-500' }
+  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-red-500' }
+  if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-orange-500' }
+  if (score <= 3) return { score: 3, label: 'Good', color: 'bg-yellow-500' }
+  return { score: 4, label: 'Strong', color: 'bg-green-500' }
 }
 
 export default function SignupForm({ token, email, fullName }: SignupFormProps) {
@@ -46,10 +46,10 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
     setError(null)
     
     if (password.length < 8) {
-      return setError('Mot de passe trop court (minimum 8 caractères)')
+      return setError('Password too short (minimum 8 characters)')
     }
     if (password !== confirm) {
-      return setError('Les mots de passe ne correspondent pas')
+      return setError('Passwords do not match')
     }
 
     setLoading(true)
@@ -62,14 +62,14 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       const data = await res.json()
       if (!res.ok) {
-        setError(data?.error || 'Erreur lors de la création du compte')
+        setError(data?.error || 'Error creating account')
         setLoading(false)
         return
       }
 
       router.push(data.redirect)
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur réseau'
+      const message = err instanceof Error ? err.message : 'Network error'
       setError(message)
     } finally {
       setLoading(false)
@@ -80,14 +80,14 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Name Input */}
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-gray-700 font-medium font-heading">Nom complet</Label>
+        <Label htmlFor="name" className="text-gray-700 font-medium font-heading">Full name</Label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             id="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="Jean Dupont"
+            placeholder="John Smith"
             required
             disabled={loading}
             className="pl-10 bg-white border border-gray-200 rounded-lg focus-visible:ring-teal/20 focus-visible:border-teal"
@@ -111,7 +111,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       {/* Password Input */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-gray-700 font-medium font-heading">Mot de passe</Label>
+        <Label htmlFor="password" className="text-gray-700 font-medium font-heading">Password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
@@ -153,7 +153,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
               </span>
             </div>
             <p className="text-xs text-gray-500">
-              Utilisez au moins 8 caractères, majuscules, minuscules et chiffres
+              Use at least 8 characters, including uppercase, lowercase and numbers
             </p>
           </div>
         )}
@@ -161,7 +161,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       {/* Confirm Password Input */}
       <div className="space-y-2">
-        <Label htmlFor="confirm" className="text-gray-700 font-medium font-heading">Confirmer le mot de passe</Label>
+        <Label htmlFor="confirm" className="text-gray-700 font-medium font-heading">Confirm password</Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
@@ -208,7 +208,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
             Création...
           </>
         ) : (
-          'Créer mon compte'
+          'Create my account'
         )}
       </Button>
     </form>

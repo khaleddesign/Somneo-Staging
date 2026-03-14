@@ -22,7 +22,7 @@ export default function ArchiveButton() {
       const res = await fetch('/api/archive', { method: 'POST' })
       if (!res.ok) {
         const data = await res.json()
-        throw new Error(data.error || 'Erreur lors de l\'archivage')
+        throw new Error(data.error || 'Error lors de l\'archivage')
       }
       const data = await res.json()
       setResult(data)
@@ -59,7 +59,7 @@ export default function ArchiveButton() {
           <p className="text-green-700 text-sm font-medium">{result.message}</p>
           {result.errors && result.errors.length > 0 && (
             <div className="mt-2 text-xs text-green-600">
-              <p className="font-medium">Erreurs :</p>
+              <p className="font-medium">Errors :</p>
               <ul className="list-disc pl-4">
                 {result.errors.map((err, i) => <li key={i}>{err}</li>)}
               </ul>

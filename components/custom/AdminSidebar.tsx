@@ -21,11 +21,11 @@ interface NavItem {
 const navItems: NavItem[] = [
   { label: 'Vue globale', href: '/dashboard/admin', icon: LayoutDashboard },
   { label: 'Agents', href: '/dashboard/admin/agents', icon: Users },
-  { label: 'Études', href: '/dashboard/admin/studies', icon: FileText },
+  { label: 'Studies', href: '/dashboard/admin/studies', icon: FileText },
   { label: 'Facturation', href: '/dashboard/admin/invoices', icon: FileText },
   { label: 'Tarifs', href: '/dashboard/admin/settings/pricing', icon: CreditCard },
   { label: 'Clients', href: '/dashboard/admin/clients', icon: Building2 },
-  { label: 'Paramètres', href: '/dashboard/admin/settings', icon: Settings },
+  { label: 'Settings', href: '/dashboard/admin/settings', icon: Settings },
 ]
 
 export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
@@ -104,7 +104,7 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
             className="flex items-center gap-2 text-sm text-sand/50 hover:text-red-400 font-body"
           >
             <LogOut className="h-4 w-4" />
-            Déconnexion
+            Sign out
           </button>
         </div>
       </aside>

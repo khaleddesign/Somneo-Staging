@@ -13,7 +13,7 @@ export async function POST(req: Request) {
   const rl = await limiters.signup.check(`signup:${ip}`)
   if (!rl.allowed) {
     return NextResponse.json(
-      { error: 'Trop de tentatives. Réessayez dans 15 minutes.' },
+      { error: 'Too many attempts. Try again in 15 minutes.' },
       { status: 429, headers: rl.headers }
     )
   }
@@ -23,13 +23,13 @@ export async function POST(req: Request) {
     const { token, password } = body
 
     if (!token || !password) {
-      return NextResponse.json({ error: 'Token et mot de passe requis' }, { status: 400 })
+      return NextResponse.json({ error: 'Token and password are required' }, { status: 400 })
     }
 
     // Create user and profile using admin client
     const result = await createUserAndProfileFromInvitation(token, password)
 
-    // Connexion automatique
+    // Sign in automatique
     const supabase = await createClient()
     const invitation = result?.profile ? result.profile : null
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     })
 
     if (signInError) {
-      // Connexion échouée mais compte créé — redirige vers login
+      // Sign in échouée mais compte créé — redirige vers login
       return NextResponse.json({ 
         success: true, 
         redirect: '/auth/login?message=compte_cree'
@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       redirect,
     })
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Erreur interne'
+    const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 400 })
   }
 }

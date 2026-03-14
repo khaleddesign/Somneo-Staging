@@ -7,42 +7,42 @@ export async function GET(req: Request) {
   try {
     const cronSecret = process.env.CRON_SECRET
     if (!cronSecret) {
-      console.error('[CRON] CRON_SECRET non configuré — route désactivée')
-      return NextResponse.json({ error: 'Configuration manquante' }, { status: 503 })
+      console.error('[CRON] CRON_SECRET not configured — route disabled')
+      return NextResponse.json({ error: 'Configuration missing' }, { status: 503 })
     }
     const authHeader = req.headers.get('authorization')
     if (authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const adminSupabase = createAdminClient()
 
-    // 1. Calculer la date limite (il y a 72 heures)
+    // 1. Calculate the cutoff date (72 hours ago)
     const deadline = new Date()
     deadline.setHours(deadline.getHours() - 72)
     const deadlineStr = deadline.toISOString()
 
-    // 2. Trouver toutes les études terminées depuis plus de 72h et ayant encore un fichier attaché
+    // 2. Find all completed studies older than 72h that still have a file attached
     const { data: expiredStudies, error: fetchError } = await adminSupabase
       .from('studies')
       .select('id, file_path, patient_reference')
       .eq('status', 'termine')
-      .not('file_path', 'is', null) // Assurez-vous que le fichier n'est pas déjà effacé!
+      .not('file_path', 'is', null) // Ensure file has not already been deleted
       .lt('updated_at', deadlineStr)
 
     if (fetchError) {
-      console.error('[CRON CLEANUP] Erreur récupération des études:', fetchError)
-      return NextResponse.json({ error: 'Erreur DB' }, { status: 500 })
+      console.error('[CRON CLEANUP] Error fetching studies:', fetchError)
+      return NextResponse.json({ error: 'Database error' }, { status: 500 })
     }
 
     if (!expiredStudies || expiredStudies.length === 0) {
-      return NextResponse.json({ message: 'Aucun fichier à nettoyer.' })
+      return NextResponse.json({ message: 'No files to clean up.' })
     }
 
     let deletedCount = 0
     let failedCount = 0
 
-    // 3. Boucler et supprimer les fichiers du bucket
+    // 3. Loop and delete files from the bucket
     for (const study of expiredStudies) {
       if (!study.file_path) continue
 
@@ -52,26 +52,26 @@ export async function GET(req: Request) {
           .remove([study.file_path])
 
         if (storageError) {
-          console.error(`[CRON CLEANUP] Impossible d'effacer le fichier pour l'étude ${study.id}:`, storageError)
+          console.error(`[CRON CLEANUP] Impossible d'effacer le fichier pour l'study ${study.id}:`, storageError)
           failedCount++
           continue
         }
 
-        // 4. Mettre à jour la ligne SQL pour marquer le `file_path` = null
+        // 4. Update the SQL row to set file_path = null
         const { error: updateError } = await adminSupabase
           .from('studies')
           .update({ file_path: null })
           .eq('id', study.id)
 
         if (updateError) {
-          console.error(`[CRON CLEANUP] Fichier supprimé mais échec update SQL pour l'étude ${study.id}:`, updateError)
+          console.error(`[CRON CLEANUP] File deleted but SQL update failed for study ${study.id}:`, updateError)
           failedCount++
           continue
         }
 
         deletedCount++
       } catch (err) {
-        console.error(`[CRON CLEANUP] Erreur inattendue pour ${study.id}:`, err)
+        console.error(`[CRON CLEANUP] Unexpected error for ${study.id}:`, err)
         failedCount++
       }
     }
@@ -84,7 +84,7 @@ export async function GET(req: Request) {
     })
 
   } catch (error) {
-    console.error('[CRON CLEANUP] Erreur fatale:', error)
+    console.error('[CRON CLEANUP] Fatal error:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

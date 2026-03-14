@@ -57,13 +57,13 @@ export default function AdminReassignDialog({
       })
       const data = await res.json().catch(() => null)
       if (!res.ok) {
-        setError(data?.error || 'Erreur lors de la réassignation')
+        setError(data?.error || 'Error lors de la réassignation')
         return
       }
       setOpen(false)
       router.refresh()
     } catch {
-      setError('Erreur réseau')
+      setError('Network error')
     } finally {
       setLoading(false)
     }
@@ -76,13 +76,13 @@ export default function AdminReassignDialog({
         className="border-teal text-teal hover:bg-teal/5"
         onClick={() => setOpen(true)}
       >
-        Réassigner à un autre agent
+        Reassign à un autre agent
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-heading">Réassigner l'étude</DialogTitle>
+            <DialogTitle className="font-heading">Reassign study</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             <div>
@@ -92,7 +92,7 @@ export default function AdminReassignDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="unassigned">Non assignée</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
                   {agents.map((agent) => (
                     <SelectItem key={agent.id} value={agent.id}>
                       {agent.full_name || agent.email}
@@ -107,7 +107,7 @@ export default function AdminReassignDialog({
               disabled={loading}
               onClick={handleReassign}
             >
-              {loading ? 'Réassignation...' : 'Confirmer'}
+              {loading ? 'Reassigning...' : 'Confirm'}
             </Button>
           </div>
         </DialogContent>

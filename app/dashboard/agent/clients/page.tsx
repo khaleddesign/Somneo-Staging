@@ -10,7 +10,7 @@ import AppLayout from '@/components/custom/AppLayout'
 
 const InviteForm = dynamic(() => import('@/components/custom/InviteForm'), {
   ssr: false,
-  loading: () => <div className="p-4 text-center text-gray-500">Chargement du formulaire...</div>,
+  loading: () => <div className="p-4 text-center text-gray-500">Loading du formulaire...</div>,
 })
 
 export default function ClientsPage() {
@@ -32,7 +32,7 @@ export default function ClientsPage() {
           <h1 className="text-4xl text-midnight font-display">
             Gestion des Clients
           </h1>
-          <p className="text-gray-500 mt-2 font-body">Gérez vos clients et envoyez des invitations</p>
+          <p className="text-gray-500 mt-2 font-body">Manage your clients and send invitations</p>
         </div>
         <Button
           onClick={() => setIsDialogOpen(true)}

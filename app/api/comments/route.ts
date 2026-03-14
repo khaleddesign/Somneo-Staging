@@ -32,19 +32,19 @@ export async function GET(req: Request) {
     const url = new URL(req.url)
     const study_id = url.searchParams.get('study_id')
     if (!study_id) {
-      return NextResponse.json({ error: 'study_id requis' }, { status: 400 })
+      return NextResponse.json({ error: 'study_id is required' }, { status: 400 })
     }
 
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const admin = createAdminClient()
     const access = await checkStudyAccess(user.id, study_id, supabase, admin)
     if (!access) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     // fetch comments with profile info
@@ -60,7 +60,7 @@ export async function GET(req: Request) {
   } catch (err: unknown) {
     console.error('[GET /api/comments]', err)
     const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message || 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 })
   }
 }
 
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
     const parsed = commentSchema.safeParse(raw)
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? 'Données invalides' },
+        { error: parsed.error.issues[0]?.message ?? 'Invalid data' },
         { status: 400 },
       )
     }
@@ -79,13 +79,13 @@ export async function POST(req: Request) {
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     const rl = await limiters.comment.check(`comment:${user.id}`)
     if (!rl.allowed) {
       return NextResponse.json(
-        { error: 'Trop de messages. Réessayez dans une minute.' },
+        { error: 'Too many messages. Try again in a minute.' },
         { status: 429, headers: rl.headers }
       )
     }
@@ -95,7 +95,7 @@ export async function POST(req: Request) {
     // Verify access before insert (same check as GET — admin client bypasses RLS)
     const access = await checkStudyAccess(user.id, study_id, supabase, admin)
     if (!access) {
-      return NextResponse.json({ error: 'Accès refusé' }, { status: 403 })
+      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
     }
 
     const { data: comment, error: insertErr } = await admin
@@ -120,21 +120,21 @@ export async function POST(req: Request) {
         if (studyData?.assigned_agent_id) {
           await admin.from('notifications').insert({
             user_id: studyData.assigned_agent_id,
-            title: 'Nouveau message client',
-            message: `Vous avez reçu un message pour l'étude ${study_id}`,
+            title: 'New client message',
+            message: `You received a message for study ${study_id}`,
           })
         }
       } else if (comment.profiles.role === 'agent' || comment.profiles.role === 'admin') {
         if (studyData?.client_id) {
           await admin.from('notifications').insert({
             user_id: studyData.client_id,
-            title: 'Nouvelle réponse',
-            message: 'Un agent a répondu à votre étude.',
+            title: 'New reply',
+            message: 'An agent replied to your study.',
           })
         }
       }
     } catch (e) {
-      console.error('erreur notification in-app commentaire', e)
+      console.error('in-app comment notification error', e)
     }
 
     // email notification
@@ -145,8 +145,8 @@ export async function POST(req: Request) {
 
       if (comment.profiles.role === 'client') {
         recipientEmail = 'contact@somnoventis.com'
-        subject = 'Nouveau message client sur SomnoConnect'
-        textMessage = `<p>Un client a posté un nouveau commentaire pour l'étude ${study_id}.</p>`
+        subject = 'New client message on SomnoConnect'
+        textMessage = `<p>A client posted a new comment for study ${study_id}.</p>`
       } else {
         // agent or admin
         // lookup client email from study
@@ -167,8 +167,8 @@ export async function POST(req: Request) {
           recipientEmail = clientProf?.email || null
         }
 
-        subject = 'Nouveau message agent sur SomnoConnect'
-        textMessage = `<p>Un agent a posté un nouveau commentaire pour votre étude.</p>`
+        subject = 'New agent message on SomnoConnect'
+        textMessage = `<p>An agent posted a new comment for your study.</p>`
       }
 
       if (recipientEmail) {
@@ -179,13 +179,13 @@ export async function POST(req: Request) {
         })
       }
     } catch (e) {
-      console.error('erreur envoi mail commentaire', e)
+      console.error('comment email notification error', e)
     }
 
     return NextResponse.json({ comment })
   } catch (err: unknown) {
     console.error('[POST /api/comments]', err)
     const message = err instanceof Error ? err.message : String(err)
-    return NextResponse.json({ error: message || 'Erreur serveur' }, { status: 500 })
+    return NextResponse.json({ error: message || 'Internal server error' }, { status: 500 })
   }
 }
