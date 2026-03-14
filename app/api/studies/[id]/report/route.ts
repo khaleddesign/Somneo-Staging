@@ -53,7 +53,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     // Générer une URL signée via le client admin (bypass RLS)
     const { data: signed, error: signedError } = await admin.storage
       .from('reports-files')
-      .createSignedUrl(storagePath, 60 * 60)
+      .createSignedUrl(storagePath, 15 * 60)
 
     if (signedError || !signed?.signedUrl) {
       return NextResponse.json({ error: signedError?.message || 'Impossible de générer l\'URL du rapport' }, { status: 500 })

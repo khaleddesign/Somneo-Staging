@@ -55,7 +55,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
 
     const { data: signed, error: signedError } = await admin.storage
       .from('study-files')
-      .createSignedUrl(storagePath, 60 * 60)
+      .createSignedUrl(storagePath, 15 * 60)
 
     if (signedError || !signed?.signedUrl) {
       return NextResponse.json({ error: signedError?.message || 'Impossible de générer l\'URL signée' }, { status: 500 })

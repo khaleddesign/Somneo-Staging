@@ -180,7 +180,7 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
     const { data: signed, error: signedError } = await admin.storage
       .from('reports-files')
-      .createSignedUrl(signedPath, 60 * 60)
+      .createSignedUrl(signedPath, 15 * 60)
 
     if (signedError || !signed?.signedUrl) {
       console.error('[api/reports/[id]/generate] Signed URL error:', signedError)
