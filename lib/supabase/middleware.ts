@@ -28,13 +28,29 @@ export async function updateSession(request: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+  const isDashboard = request.nextUrl.pathname.startsWith('/dashboard')
 
-  // Protège toutes les routes /dashboard
-  if (!user && request.nextUrl.pathname.startsWith('/dashboard')) {
+  // Redirect unauthenticated users away from dashboard
+  if (!user && isDashboard) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  // Redirige un utilisateur connecté qui va sur /auth/login
+  // Check suspension on every dashboard request (don't trust JWT alone — it lives up to 1h)
+  if (user && isDashboard) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_suspended')
+      .eq('id', user.id)
+      .maybeSingle()
+
+    if (profile?.is_suspended) {
+      const url = new URL('/auth/login', request.url)
+      url.searchParams.set('reason', 'suspended')
+      return NextResponse.redirect(url)
+    }
+  }
+
+  // Redirect authenticated (non-suspended) users away from login page
   if (user && request.nextUrl.pathname === '/auth/login') {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }

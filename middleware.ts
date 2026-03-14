@@ -1,14 +1,14 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { type NextRequest } from 'next/server'
+import { updateSession } from '@/lib/supabase/middleware'
 
 const isDev = process.env.NODE_ENV === 'development'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // Generate a unique nonce per request for CSP script-src
   const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
 
   const csp = [
     "default-src 'self'",
-    // nonce replaces unsafe-inline; unsafe-eval kept only in dev (HMR/webpack)
     `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ''}`,
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: https:",
@@ -19,13 +19,16 @@ export function middleware(request: NextRequest) {
     "form-action 'self'",
   ].join('; ')
 
-  // Pass nonce to RSC via request header so layout.tsx can forward it
+  // Inject nonce into request headers so RSC can read it via headers()
   const requestHeaders = new Headers(request.headers)
   requestHeaders.set('x-nonce', nonce)
 
-  const response = NextResponse.next({ request: { headers: requestHeaders } })
+  // updateSession handles: cookie refresh, auth redirect, suspended user check
+  const response = await updateSession(
+    new Request(request, { headers: requestHeaders }) as NextRequest
+  )
 
-  // Set CSP on the response
+  // Attach CSP to whatever response updateSession returns (redirect or next)
   response.headers.set('Content-Security-Policy', csp)
 
   return response
@@ -33,7 +36,6 @@ export function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Apply to all page routes; skip static assets and API routes
     '/((?!_next/static|_next/image|favicon.ico|api/).*)',
   ],
 }

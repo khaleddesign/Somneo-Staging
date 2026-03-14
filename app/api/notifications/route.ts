@@ -32,7 +32,7 @@ export async function POST(req: Request) {
     if (!success) {
       return NextResponse.json({ 
         error: 'Erreur lors de l\'envoi du mail', 
-        details: typeof error === 'object' ? (error as any).message : error 
+        details: error instanceof Error ? error.message : String(error)
       }, { status: 500 })
     }
 
