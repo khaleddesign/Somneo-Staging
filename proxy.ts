@@ -84,9 +84,12 @@ export async function proxy(request: NextRequest) {
     }
   }
 
+  // Inject CSP nonce header into request.headers so RSC can read it downstream
+  request.headers.set('x-nonce', nonce)
+
   // ── Session Supabase ─────────────────────────────────────────────
-  // Pass the original NextRequest (with .cookies intact) plus the modified headers
-  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
+  // Pass the original NextRequest to preserve POST bodies
+  let supabaseResponse = NextResponse.next({ request })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -96,9 +99,9 @@ export async function proxy(request: NextRequest) {
         getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
-            requestHeaders.set('cookie', `${name}=${value}`)
+            request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, {
               ...options,
