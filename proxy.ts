@@ -33,23 +33,10 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
   const origin = request.headers.get('origin') ?? ''
 
-  // ── CSP nonce ───────────────────────────────────────────────────────────────
-  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
-  const csp = [
-    "default-src 'self'",
-    `script-src 'self' 'nonce-${nonce}'${isDev ? " 'unsafe-eval'" : ''}`,
-    "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: https:",
-    "font-src 'self'",
-    `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://app.somnoventis.com`,
-    "frame-ancestors 'none'",
-    "base-uri 'self'",
-    "form-action 'self'",
-  ].join('; ')
+  // Drop manual CSP to avoid blocking Next.js React hydration
 
-  // Build forwarded headers (with nonce) for downstream RSC access
+  // Build forwarded headers for downstream RSC access
   const requestHeaders = new Headers(request.headers)
-  requestHeaders.set('x-nonce', nonce)
 
   // ── CORS + Rate limiting on API routes ───────────────────────────
   if (pathname.startsWith('/api/')) {
@@ -83,9 +70,6 @@ export async function proxy(request: NextRequest) {
       }
     }
   }
-
-  // Inject CSP nonce header into request.headers so RSC can read it downstream
-  request.headers.set('x-nonce', nonce)
 
   // ── Session Supabase ─────────────────────────────────────────────
   // Pass the original NextRequest to preserve POST bodies
@@ -170,8 +154,6 @@ export async function proxy(request: NextRequest) {
     }
     return NextResponse.redirect(new URL('/dashboard/client', request.url))
   }
-
-  supabaseResponse.headers.set('Content-Security-Policy', csp)
   return supabaseResponse
 }
 
