@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Avatar } from '@/components/ui/avatar'
 import { Send } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface StudyCommentsProps {
   studyId: string
@@ -35,8 +36,15 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
     try {
       await sendComment(msg)
       setText('')
-    } catch {
-      // error already handled by hook
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur réseau'
+      toast.error('Message non envoyé', {
+        description: message,
+        action: {
+          label: 'Réessayer',
+          onClick: () => handleSubmit(e),
+        },
+      })
     }
   }
 

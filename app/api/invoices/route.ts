@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { InvoicePDF } from '@/lib/pdf/InvoicePDF'
 import { decrypt } from '@/lib/encryption'
+import { withIdempotency, makeSupabaseIdempotencyStore } from '@/lib/idempotency'
 
 interface CreateInvoiceBody {
   client_id?: string
@@ -146,6 +147,21 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    // ── Idempotency check ─────────────────────────────────────────────────────
+    const idempotencyKey = req.headers.get('X-Idempotency-Key')
+    if (!idempotencyKey) {
+      return NextResponse.json(
+        { error: 'X-Idempotency-Key header is required' },
+        { status: 400 }
+      )
+    }
+    if (idempotencyKey.length > 256) {
+      return NextResponse.json(
+        { error: 'X-Idempotency-Key must be at most 256 characters' },
+        { status: 400 }
+      )
+    }
+
     const body = (await req.json()) as CreateInvoiceBody
     const clientId = body.client_id?.trim()
     const mode = body.mode
@@ -160,6 +176,13 @@ export async function POST(req: NextRequest) {
     if ('error' in auth) return auth.error
 
     const { user, admin: adminClient } = auth
+
+    // Check idempotency cache before executing the creation
+    const idempotencyStore = makeSupabaseIdempotencyStore(adminClient)
+    const cached = await idempotencyStore.get(idempotencyKey)
+    if (cached) {
+      return NextResponse.json(cached.response, { status: 200 })
+    }
 
     let studies: Array<{
       id: string
@@ -339,6 +362,9 @@ export async function POST(req: NextRequest) {
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 500 })
     }
+
+    // Store result in idempotency cache for 24h
+    await idempotencyStore.set(idempotencyKey, { invoice: updatedInvoice }, 201)
 
     return NextResponse.json({ invoice: updatedInvoice }, { status: 201 })
   } catch (err: unknown) {

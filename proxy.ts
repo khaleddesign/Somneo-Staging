@@ -38,6 +38,13 @@ export async function proxy(request: NextRequest) {
   // Build forwarded headers for downstream RSC access
   const requestHeaders = new Headers(request.headers)
 
+  // ── Correlation ID ────────────────────────────────────────────────
+  // Propagate X-Request-ID from upstream or generate one per request
+  if (!requestHeaders.get('x-request-id')) {
+    const correlationId = crypto.randomUUID()
+    requestHeaders.set('x-request-id', correlationId)
+  }
+
   // ── CORS + Rate limiting on API routes ───────────────────────────
   if (pathname.startsWith('/api/')) {
     const isAllowedOrigin = !origin || ALLOWED_ORIGINS.has(origin)

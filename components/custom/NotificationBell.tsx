@@ -112,7 +112,13 @@ export default function NotificationBell() {
 
   const notificationContent = useMemo(() => {
     if (loading) {
-      return <p className="text-sm text-gray-500 font-body">Loading...</p>
+      return (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }, (_, i) => (
+            <div key={i} className="animate-pulse rounded-lg border border-gray-100 bg-gray-50 p-3 h-16" />
+          ))}
+        </div>
+      )
     }
 
     if (notifications.length === 0) {

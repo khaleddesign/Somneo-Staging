@@ -121,7 +121,31 @@
       "agents": "Agents",
       "studies": "Studies",
       "invoices": "Invoices",
-      "settings": "Settings"
+      "settings": "Settings",
+      "agentsPage": {
+        "title": "Agent Management",
+        "subtitle": "Full technician account management",
+        "addAgent": "Add an agent",
+        "searchPlaceholder": "Search an agent",
+        "name": "Name",
+        "email": "Email",
+        "studiesInProgress": "Studies in progress",
+        "completedStudies": "Completed studies",
+        "status": "Status",
+        "active": "Active",
+        "suspended": "Suspended",
+        "actions": "Actions",
+        "viewStudies": "View studies",
+        "reactivate": "Reactivate",
+        "suspend": "Suspend",
+        "deleteConfirm": "Delete {name}?",
+        "noAgents": "No agents found",
+        "inviteTitle": "Send invitation",
+        "inviteSubtitle": "Send a secure invitation to a technician or administrator.",
+        "editTitle": "Edit agent",
+        "editSubtitle": "Update the selected account's information.",
+        "role": "Role"
+      }
     }
   },
   "studies": {
@@ -221,6 +245,7 @@
     "agents": "Agents",
     "invoices": "Invoices",
     "settings": "Settings",
+    "pricing": "Pricing",
     "support": "Support",
     "signOut": "Sign out"
   },

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { validateMagicBytes } from '@/lib/validation/magicBytes'
 
 const BUCKET = 'study-files'
 const ALLOWED_EXTENSIONS = ['edf', 'edf+', 'bdf', 'zip']
@@ -18,6 +19,19 @@ export async function POST(req: Request) {
 
     if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
       return NextResponse.json({ error: 'File extension not allowed' }, { status: 400 })
+    }
+
+    // Magic bytes validation: client sends first 8 bytes as base64
+    // If provided, validate the file signature before issuing the upload token
+    if (body?.file_header_b64) {
+      const headerBuffer = Buffer.from(String(body.file_header_b64), 'base64')
+      const magicResult = validateMagicBytes(headerBuffer, `file.${fileExt}`)
+      if (!magicResult.valid) {
+        return NextResponse.json(
+          { error: `File validation failed: ${magicResult.reason}` },
+          { status: 400 }
+        )
+      }
     }
 
     // Path scoped to the user — matches storage RLS policy

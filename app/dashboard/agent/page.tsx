@@ -1,11 +1,14 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import AppLayout from '@/components/custom/AppLayout'
 import AgentStats from '@/components/custom/AgentStats'
 import { Card } from '@/components/ui/card'
 import type { Role } from '@/types/database'
+import { useStudies } from '@/hooks/useStudies'
+import StudyListWithFilters from '@/components/custom/StudyListWithFilters'
 
 interface AgentKpiRow {
   agent_id: string
@@ -14,12 +17,33 @@ interface AgentKpiRow {
   termine_ce_mois: number
 }
 
-export default function AgentDashboardPage() {
+function AgentDashboardContent() {
   const [agentName, setAgentName] = useState<string>('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [agentKpis, setAgentKpis] = useState<AgentKpiRow[]>([])
   const [loadingAgentKpis, setLoadingAgentKpis] = useState(false)
   const [agentKpisError, setAgentKpisError] = useState<string | null>(null)
+
+  const [userId, setUserId] = useState<string | null>(null)
+  const { studies, loading: studiesLoading, error: studiesError, refresh } = useStudies()
+
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const [activeStatus, setActiveStatus] = useState<string | null>(
+    searchParams.get('status')
+  )
+
+  function handleKpiClick(status: string) {
+    const newStatus = activeStatus === status ? null : status // toggle
+    setActiveStatus(newStatus)
+    const params = new URLSearchParams(searchParams.toString())
+    if (newStatus) {
+      params.set('status', newStatus)
+    } else {
+      params.delete('status')
+    }
+    router.push(`?${params.toString()}`)
+  }
 
   useEffect(() => {
     const controller = new AbortController()
@@ -40,6 +64,7 @@ export default function AgentDashboardPage() {
 
       const role = profileData?.role as Role | undefined
       const admin = role === 'admin'
+      setUserId(user.id)
       setAgentName(profileData?.full_name || 'Agent')
       setIsAdmin(admin)
 
@@ -123,7 +148,78 @@ export default function AgentDashboardPage() {
             )}
           </Card>
         )}
+
+        {/* Quick filter via KPI shortcuts */}
+        {!isAdmin && (
+          <div className="flex flex-wrap gap-3 mb-6">
+            {[
+              { label: 'En attente', status: 'en_attente', color: 'bg-yellow-50 text-yellow-700 border border-yellow-200' },
+              { label: 'En cours', status: 'en_cours', color: 'bg-blue-50 text-blue-700 border border-blue-200' },
+              { label: 'Terminées', status: 'termine', color: 'bg-green-50 text-green-700 border border-green-200' },
+            ].map(({ label, status, color }) => (
+              <button
+                key={status}
+                type="button"
+                onClick={() => handleKpiClick(status)}
+                className={`px-4 py-2 rounded-xl text-sm font-heading transition-all ${color} ${
+                  activeStatus === status ? 'ring-2 ring-offset-1 ring-teal' : ''
+                }`}
+              >
+                {label}
+                {activeStatus === status && ' ✓'}
+              </button>
+            ))}
+            {activeStatus && (
+              <button
+                type="button"
+                onClick={() => handleKpiClick(activeStatus)}
+                className="px-4 py-2 rounded-xl text-sm font-heading bg-gray-100 text-gray-600 hover:bg-gray-200"
+              >
+                Réinitialiser
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Unified study table */}
+        {!isAdmin && (
+          <div className="mt-4">
+            <h2 className="text-xl text-midnight font-heading mb-4">All studies</h2>
+            <StudyListWithFilters
+              studies={studies}
+              loading={studiesLoading}
+              error={studiesError}
+              role="agent"
+              currentUserId={userId}
+              onAssigned={refresh}
+              activeChip={activeStatus ?? 'all'}
+              onChipChange={(status) => setActiveStatus(status)}
+            />
+          </div>
+        )}
+
+        {/* Admin unified study table */}
+        {isAdmin && (
+          <div className="mt-8">
+            <h2 className="text-xl text-midnight font-heading mb-4">All studies</h2>
+            <StudyListWithFilters
+              studies={studies}
+              loading={studiesLoading}
+              error={studiesError}
+              role="admin"
+              currentUserId={userId}
+            />
+          </div>
+        )}
       </div>
     </AppLayout>
+  )
+}
+
+export default function AgentDashboardPage() {
+  return (
+    <Suspense>
+      <AgentDashboardContent />
+    </Suspense>
   )
 }

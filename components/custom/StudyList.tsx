@@ -26,6 +26,7 @@ interface StudyListProps {
   role?: 'agent' | 'client' | 'admin'
   currentUserId?: string | null
   onAssigned?: () => void
+  showOwner?: boolean
 }
 
 export const StudyList: FC<StudyListProps> = ({
@@ -35,6 +36,7 @@ export const StudyList: FC<StudyListProps> = ({
   role = 'client',
   currentUserId = null,
   onAssigned,
+  showOwner,
 }) => {
   const [assigningStudyId, setAssigningStudyId] = useState<string | null>(null)
   
@@ -157,33 +159,141 @@ export const StudyList: FC<StudyListProps> = ({
     if (!toExport) return
 
     const doc = new jsPDF()
-    const title = exportPeriod === 'custom' && customMonth 
-                  ? `Study Reports - ${customMonth}` 
-                  : `Study Reports (${exportPeriod})`
-    
-    doc.setFontSize(18)
-    doc.text(title, 14, 22)
-    doc.setFontSize(11)
-    doc.text(`Généré le: ${new Date().toLocaleDateString('en-GB')}`, 14, 30)
 
-    const tableColumn = ["Patient ID", "Type", "Priority", "Status", "Submission Date"]
+    // Configuration des couleurs et dimensions
+    const pageWidth = doc.internal.pageSize.getWidth()
+    const pageHeight = doc.internal.pageSize.getHeight()
+    const brandTeal: [number, number, number] = [4, 153, 150]
+    const brandMidnight: [number, number, number] = [26, 32, 44]
+    const lightGray: [number, number, number] = [240, 244, 248]
+
+    // 1. BANDEAU D'EN-TÊTE (Header Banner)
+    doc.setFillColor(...brandMidnight)
+    doc.rect(0, 0, pageWidth, 40, 'F')
+
+    // Logo SomnoConnect
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(26)
+    doc.setTextColor(255, 255, 255)
+    doc.text("Somno", 14, 26)
+    doc.setTextColor(...brandTeal)
+    doc.text("Connect", 47, 26)
+
+    // Titre de l'export à droite
+    const title = exportPeriod === 'custom' && customMonth
+                  ? `Rapport d'Études - ${customMonth}`
+                  : `Rapport d'Études (${exportPeriod.toUpperCase()})`
+    
+    doc.setFont("helvetica", "normal")
+    doc.setFontSize(14)
+    doc.setTextColor(255, 255, 255)
+    doc.text(title, pageWidth - 14, 20, { align: 'right' })
+
+    // Date de génération
+    doc.setFontSize(10)
+    doc.setTextColor(180, 190, 200)
+    doc.text(`Généré le : ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - 14, 28, { align: 'right' })
+
+    // 2. ENCARTS DE RÉSUMÉ (KPI stat boxes)
+    const statsY = 48
+    
+    // Box 1: Total
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(14, statsY, 55, 22, 2, 2, 'F')
+    doc.setFontSize(9)
+    doc.setTextColor(100, 100, 100)
+    doc.text("TOTAL ÉTUDES", 20, statsY + 8)
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(18)
+    doc.setTextColor(...brandMidnight)
+    doc.text(String(toExport.length), 20, statsY + 18)
+
+    // Box 2: Haute Priorité
+    const highPriorityCount = toExport.filter(s => s.priority === 'high').length
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(75, statsY, 55, 22, 2, 2, 'F')
+    doc.setFont("helvetica", "normal")
+    doc.setFontSize(9)
+    doc.setTextColor(100, 100, 100)
+    doc.text("HAUTE PRIORITÉ", 81, statsY + 8)
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(18)
+    doc.setTextColor(220, 38, 38) // Red
+    doc.text(String(highPriorityCount), 81, statsY + 18)
+
+    // Box 3: Terminées
+    const completedCount = toExport.filter(s => s.status === 'termine').length
+    doc.setFillColor(...lightGray)
+    doc.roundedRect(136, statsY, 55, 22, 2, 2, 'F')
+    doc.setFont("helvetica", "normal")
+    doc.setFontSize(9)
+    doc.setTextColor(100, 100, 100)
+    doc.text("TERMINÉES", 142, statsY + 8)
+    doc.setFont("helvetica", "bold")
+    doc.setFontSize(18)
+    doc.setTextColor(22, 163, 74) // Green
+    doc.text(String(completedCount), 142, statsY + 18)
+
+    // 3. TABLEAU (Styled clean autoTable)
+    const tableColumn = ["Patient ID", "Type", "Priorité", "Statut", "Soumission"]
     const tableRows = toExport.map(s => [
       s.patient_reference,
       s.study_type,
-      s.priority || 'N/A',
-      s.status.replace('_', ' '),
-      new Date(s.submitted_at).toLocaleDateString('en-GB')
+      s.priority ? s.priority.toUpperCase() : 'N/A',
+      s.status.replace('_', ' ').toUpperCase(),
+      new Date(s.submitted_at).toLocaleDateString('fr-FR')
     ])
 
     autoTable(doc, {
-      startY: 40,
+      startY: statsY + 30, // Starts below the stat boxes
       head: [tableColumn],
       body: tableRows,
-      theme: 'striped',
-      headStyles: { fillColor: [4, 153, 150] } // Teal color from SomnoConnect theme
+      theme: 'plain',
+      styles: {
+        font: 'helvetica',
+        fontSize: 9,
+        cellPadding: { top: 6, bottom: 6, left: 4, right: 4 },
+        textColor: [60, 60, 60],
+      },
+      headStyles: {
+        fillColor: [248, 250, 252], // bg-slate-50
+        textColor: brandMidnight,
+        fontStyle: 'bold',
+        lineWidth: { bottom: 0.5 },
+        lineColor: [200, 210, 220], // subtle bottom border for header
+      },
+      bodyStyles: {
+        lineWidth: { bottom: 0.1 },
+        lineColor: [230, 235, 240], // subtle row dividers
+      },
+      alternateRowStyles: {
+        fillColor: [252, 253, 255], 
+      },
+      columnStyles: {
+        0: { fontStyle: 'bold', textColor: brandMidnight }, // Patient ID darker
+        4: { halign: 'right' } // Date
+      },
+      
+      // 4. PIED DE PAGE (Footer) avec mentions et pagination
+      didDrawPage: function (data) {
+        doc.setFontSize(8)
+        doc.setFont("helvetica", "normal")
+        doc.setTextColor(150, 150, 150)
+        
+        // Ligne de séparation
+        doc.setDrawColor(240, 240, 240)
+        doc.line(14, pageHeight - 16, pageWidth - 14, pageHeight - 16)
+
+        // Mentions légales à gauche
+        doc.text("DOCUMENT CONFIDENTIEL - Données médicales protégées (HDS/RGPD).", 14, pageHeight - 10)
+        
+        // Numéro de page à droite
+        const pageNumberStr = `Page ${data.pageNumber}`
+        doc.text(pageNumberStr, pageWidth - 14, pageHeight - 10, { align: 'right' })
+      }
     })
 
-    doc.save(`export_etudes_${exportPeriod}_${new Date().toISOString().split('T')[0]}.pdf`)
+    doc.save(`SomnoConnect_Rapport_${exportPeriod}_${new Date().toISOString().split('T')[0]}.pdf`)
   }
 
   if (loading) {
@@ -254,9 +364,21 @@ export const StudyList: FC<StudyListProps> = ({
                 />
               </th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Patient ID</th>
+              {showOwner && (
+                <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">
+                  Soumis par
+                </th>
+              )}
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Type</th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Priority</th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Status</th>
+              {(role === 'agent' || role === 'admin') && (
+                <>
+                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Client</th>
+                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date résultats</th>
+                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Délai (j)</th>
+                </>
+              )}
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date de soumission</th>
               <th className="px-3 py-3 text-center text-xs text-gray-400 uppercase tracking-wider font-heading">Archive</th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Actions</th>
@@ -273,6 +395,11 @@ export const StudyList: FC<StudyListProps> = ({
                   />
                 </td>
                 <td className="px-3 py-3 font-body text-sm text-midnight">{study.patient_reference}</td>
+                {showOwner && (
+                  <td className="px-3 py-3 font-body text-sm text-gray-600">
+                    {study.client_name ?? '—'}
+                  </td>
+                )}
                 <td className="px-3 py-3 font-body text-sm text-midnight">{study.study_type}</td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2">
@@ -289,8 +416,40 @@ export const StudyList: FC<StudyListProps> = ({
                   </div>
                 </td>
                 <td className="px-3 py-3">
-                  <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
+                    {study.is_stale && (
+                      <span className="inline-flex items-center gap-1 text-xs text-orange-600 font-medium animate-pulse">
+                        ⚠ Retard
+                      </span>
+                    )}
+                  </div>
                 </td>
+                {(role === 'agent' || role === 'admin') && (
+                  <>
+                    <td className="px-3 py-3 font-body text-sm text-gray-600">
+                      {study.client_name ?? '—'}
+                    </td>
+                    <td className="px-3 py-3 font-body text-sm text-gray-600">
+                      {study.result_date
+                        ? new Date(study.result_date).toLocaleDateString('fr-FR')
+                        : '—'}
+                    </td>
+                    <td className="px-3 py-3 font-body text-sm">
+                      {study.delay_days != null ? (
+                        <span className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                          study.delay_days > 10
+                            ? 'bg-red-100 text-red-700'
+                            : study.delay_days > 5
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-gray-100 text-gray-600'
+                        }`}>
+                          {study.delay_days}j
+                        </span>
+                      ) : '—'}
+                    </td>
+                  </>
+                )}
                 <td className="px-3 py-3 font-body text-sm text-midnight">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</td>
                 <td className="px-3 py-3 text-center">
                   {study.archived_at ? (

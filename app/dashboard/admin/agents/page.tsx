@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import AdminLayout from '@/components/custom/AdminLayout'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
@@ -21,6 +22,8 @@ interface Agent {
 }
 
 export default function AdminAgentsPage() {
+  const t = useTranslations('dashboard.admin.agentsPage')
+  const common = useTranslations('common')
   const [agents, setAgents] = useState<Agent[]>([])
   const [loading, setLoading] = useState(true)
   const [query, setQuery] = useState('')
@@ -113,7 +116,7 @@ export default function AdminAgentsPage() {
   }
 
   async function deleteAgent(agent: Agent) {
-    if (!window.confirm(`Supprimer ${agent.full_name || agent.email} ?`)) return
+    if (!window.confirm(t('deleteConfirm', { name: agent.full_name || agent.email }))) return
     await fetch(`/api/agents?id=${agent.id}`, { method: 'DELETE' })
     await fetchAgents()
   }
@@ -123,11 +126,11 @@ export default function AdminAgentsPage() {
       <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-4xl text-midnight font-display">Gestion des agents</h1>
-            <p className="text-gray-500 font-body">Full technician account management</p>
+            <h1 className="text-4xl text-midnight font-display">{t('title')}</h1>
+            <p className="text-gray-500 font-body">{t('subtitle')}</p>
           </div>
           <Button className="bg-teal text-white hover:bg-teal/90 rounded-xl font-heading" onClick={() => setInviteOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" /> Ajouter un agent
+            <Plus className="h-4 w-4 mr-2" /> {t('addAgent')}
           </Button>
         </div>
 
@@ -136,7 +139,7 @@ export default function AdminAgentsPage() {
             <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
               className="pl-9 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
-              placeholder="Rechercher un agent"
+              placeholder={t('searchPlaceholder')}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -146,12 +149,12 @@ export default function AdminAgentsPage() {
             <table className="min-w-full text-sm">
               <thead className="bg-[#fafbfc] border-b border-gray-100">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Nom</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Email</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Studies in progress</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Completed studies</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Status</th>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Actions</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">{t('name')}</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">{t('email')}</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">{t('studiesInProgress')}</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">{t('completedStudies')}</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">{t('status')}</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">{t('actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -163,22 +166,22 @@ export default function AdminAgentsPage() {
                     <td className="px-3 py-3 font-body">{agent.termine}</td>
                     <td className="px-3 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-heading ${agent.is_suspended ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                        {agent.is_suspended ? 'Suspendu' : 'Actif'}
+                        {agent.is_suspended ? t('suspended') : t('active')}
                       </span>
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex flex-wrap gap-2">
                         <Link href={`/dashboard/admin/studies?agent=${agent.id}`}>
-                          <Button variant="outline" className="border-teal text-teal">View studies</Button>
+                          <Button variant="outline" className="border-teal text-teal">{t('viewStudies')}</Button>
                         </Link>
                         <Button variant="outline" onClick={() => openEdit(agent)}>
-                          <Pencil className="h-4 w-4 mr-1" /> Modifier
+                          <Pencil className="h-4 w-4 mr-1" /> {common('edit')}
                         </Button>
                         <Button variant="outline" onClick={() => toggleSuspend(agent)}>
-                          <Ban className="h-4 w-4 mr-1" /> {agent.is_suspended ? 'Reactivate' : 'Suspend'}
+                          <Ban className="h-4 w-4 mr-1" /> {agent.is_suspended ? t('reactivate') : t('suspend')}
                         </Button>
                         <Button className="bg-red-500 text-white hover:bg-red-600" onClick={() => deleteAgent(agent)}>
-                          <Trash2 className="h-4 w-4 mr-1" /> Supprimer
+                          <Trash2 className="h-4 w-4 mr-1" /> {common('delete')}
                         </Button>
                       </div>
                     </td>
@@ -186,7 +189,7 @@ export default function AdminAgentsPage() {
                 ))}
                 {!loading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="px-3 py-6 text-center text-gray-500 font-body">Aucun agent</td>
+                    <td colSpan={6} className="px-3 py-6 text-center text-gray-500 font-body">{t('noAgents')}</td>
                   </tr>
                 )}
               </tbody>
@@ -198,22 +201,22 @@ export default function AdminAgentsPage() {
       <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-heading">Send invitation</DialogTitle>
+            <DialogTitle className="font-heading">{t('inviteTitle')}</DialogTitle>
             <DialogDescription className="font-body text-gray-500">
-              Send a secure invitation to a technician or administrator.
+              {t('inviteSubtitle')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="font-heading">Full name</Label>
+              <Label className="font-heading">{t('name')}</Label>
               <Input value={inviteForm.full_name} onChange={(e) => setInviteForm((s) => ({ ...s, full_name: e.target.value }))} />
             </div>
             <div>
-              <Label className="font-heading">Professional email</Label>
+              <Label className="font-heading">{t('email')}</Label>
               <Input value={inviteForm.email} onChange={(e) => setInviteForm((s) => ({ ...s, email: e.target.value }))} />
             </div>
             <div>
-              <Label className="font-heading">Role</Label>
+              <Label className="font-heading">{t('role')}</Label>
               <Select value={inviteForm.role} onValueChange={(value) => setInviteForm((s) => ({ ...s, role: value }))}>
                 <SelectTrigger>
                   <SelectValue />
@@ -225,7 +228,7 @@ export default function AdminAgentsPage() {
               </Select>
             </div>
             <Button className="w-full bg-teal text-white hover:bg-teal/90" disabled={submitting} onClick={inviteAgent}>
-              Send invitation
+              {t('inviteTitle')}
             </Button>
             {inviteError && (
               <p className="text-sm text-red-600 font-body">{inviteError}</p>
@@ -237,22 +240,22 @@ export default function AdminAgentsPage() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-heading">Modifier l'agent</DialogTitle>
+            <DialogTitle className="font-heading">{t('editTitle')}</DialogTitle>
             <DialogDescription className="font-body text-gray-500">
-              Update the selected account's information.
+              {t('editSubtitle')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="font-heading">Full name</Label>
+              <Label className="font-heading">{t('name')}</Label>
               <Input value={form.full_name} onChange={(e) => setForm((s) => ({ ...s, full_name: e.target.value }))} />
             </div>
             <div>
-              <Label className="font-heading">Email</Label>
+              <Label className="font-heading">{t('email')}</Label>
               <Input value={form.email} onChange={(e) => setForm((s) => ({ ...s, email: e.target.value }))} />
             </div>
             <Button className="w-full bg-teal text-white hover:bg-teal/90" disabled={submitting} onClick={saveEdit}>
-              Enregistrer
+              {common('save')}
             </Button>
           </div>
         </DialogContent>

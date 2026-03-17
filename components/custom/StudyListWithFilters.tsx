@@ -13,6 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Search } from 'lucide-react'
+import StudyListSkeleton from '@/components/custom/skeletons/StudyListSkeleton'
+import EmptyState from '@/components/custom/EmptyState'
 
 interface StudyListWithFiltersProps {
   studies: Study[]
@@ -21,6 +23,8 @@ interface StudyListWithFiltersProps {
   role: 'agent' | 'client' | 'admin'
   currentUserId?: string | null
   onAssigned?: () => void
+  activeChip?: string | null
+  onChipChange?: (status: string | null) => void
 }
 
 export default function StudyListWithFilters({
@@ -30,12 +34,32 @@ export default function StudyListWithFilters({
   role,
   currentUserId,
   onAssigned,
+  activeChip,
+  onChipChange,
 }: StudyListWithFiltersProps) {
-  const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [chipFilter, setChipFilter] = useState<string>(activeChip ?? 'all')
+  const [statusFilter, setStatusFilter] = useState<string>(
+    activeChip && activeChip !== 'all' ? activeChip : 'all'
+  )
   const [priorityFilter, setPriorityFilter] = useState<string>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 10
+
+  useEffect(() => {
+    if (activeChip !== undefined && activeChip !== null) {
+      setChipFilter(activeChip)
+      setStatusFilter(activeChip === 'all' ? 'all' : activeChip)
+      setCurrentPage(1)
+    }
+  }, [activeChip])
+
+  function handleChipClick(value: string) {
+    setChipFilter(value)
+    setStatusFilter(value === 'all' ? 'all' : value)
+    setCurrentPage(1)
+    onChipChange?.(value === 'all' ? null : value)
+  }
 
   const filteredStudies = useMemo(() => {
     let result = studies
@@ -73,6 +97,31 @@ export default function StudyListWithFilters({
 
   return (
     <div className="space-y-4">
+      {/* Quick filter chips */}
+      <div className="flex flex-wrap gap-2 mb-4">
+        {[
+          { label: 'Toutes', value: 'all' },
+          { label: 'En attente', value: 'en_attente' },
+          { label: 'En cours', value: 'en_cours' },
+          { label: 'Terminées', value: 'termine' },
+          { label: 'Annulées', value: 'annule' },
+        ].map((chip) => (
+          <button
+            key={chip.value}
+            type="button"
+            aria-pressed={chipFilter === chip.value}
+            onClick={() => handleChipClick(chip.value)}
+            className={`px-3 py-1.5 rounded-full text-xs font-heading transition-colors ${
+              chipFilter === chip.value
+                ? 'bg-teal text-white'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
+          >
+            {chip.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex gap-4 flex-wrap">
         <div className="w-full">
           <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Recherche patient</label>
@@ -94,6 +143,7 @@ export default function StudyListWithFilters({
           <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Status</label>
           <Select value={statusFilter} onValueChange={(value) => {
             setStatusFilter(value)
+            setChipFilter(value)
             setCurrentPage(1)
           }}>
             <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal">
@@ -132,6 +182,7 @@ export default function StudyListWithFilters({
             <button
               onClick={() => {
                 setStatusFilter('all')
+                setChipFilter('all')
                 setPriorityFilter('all')
                 setSearchQuery('')
                 setCurrentPage(1)
@@ -149,8 +200,17 @@ export default function StudyListWithFilters({
           {filteredStudies.length} étude{filteredStudies.length !== 1 ? 's' : ''}
         </p>
 
-        {!loading && !error && filteredStudies.length === 0 && searchQuery.trim() !== '' ? (
-          <div className="text-center text-gray-500 py-8">Aucune study found pour cette référence</div>
+        {loading ? (
+          <StudyListSkeleton rows={pageSize} />
+        ) : !error && filteredStudies.length === 0 ? (
+          <EmptyState
+            title={searchQuery.trim() ? 'Aucun résultat' : 'Aucune étude'}
+            description={
+              searchQuery.trim()
+                ? `Aucune étude trouvée pour « ${searchQuery.trim()} ».`
+                : 'Les études soumises apparaîtront ici.'
+            }
+          />
         ) : (
           <StudyList
             studies={paginatedStudies}

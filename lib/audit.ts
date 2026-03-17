@@ -1,6 +1,30 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { headers } from 'next/headers'
 
+export interface AuditEntry {
+  action: string
+  resource_type: string
+  resource_id: string
+  metadata: Record<string, unknown>
+}
+
+/**
+ * Pure factory — builds the audit entry object without any I/O.
+ * Intentionally excludes all PHI fields.
+ */
+export function buildAuditEntry(
+  studyId: string,
+  ownerId: string
+): AuditEntry {
+  return {
+    action: 'cross_client_read',
+    resource_type: 'study',
+    resource_id: studyId,
+    metadata: { owner_id: ownerId },
+    // patient_reference intentionally excluded (PHI)
+  }
+}
+
 /**
  * Enregistre une action dans la table audit_logs (immuable, via service role).
  * Ne bloque jamais le flux principal en cas d'échec.

@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import SparkMD5 from 'spark-md5'
 import * as tus from 'tus-js-client'
+import { retryWithBackoff } from '@/lib/utils/retry'
 
 export type UploadState = 'idle' | 'uploading' | 'paused' | 'completed' | 'error'
 
@@ -75,16 +76,25 @@ export function useFileUpload(): UseFileUploadResult {
         if (!fileExt) throw new Error('Missing file extension')
 
         // Get a scoped upload token from the server — never expose the full JWT in the browser
-        const tokenRes = await fetch('/api/upload/token', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ file_ext: fileExt }),
-        })
-        if (!tokenRes.ok) {
-          const err = await tokenRes.json()
-          throw new Error(err.error || 'Impossible d\'obtenir le token d\'upload')
-        }
-        const { token, path: objectPath } = await tokenRes.json()
+        // Retry up to 3 times on server errors (5xx) with exponential backoff
+        const { token, path: objectPath } = await retryWithBackoff(
+          async () => {
+            const tokenRes = await fetch('/api/upload/token', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ file_ext: fileExt }),
+            })
+            if (!tokenRes.ok) {
+              const err = await tokenRes.json()
+              throw Object.assign(
+                new Error(err.error || 'Impossible d\'obtenir le token d\'upload'),
+                { status: tokenRes.status }
+              )
+            }
+            return tokenRes.json()
+          },
+          { maxAttempts: 3, baseDelayMs: 1000 }
+        )
         setFilePath(objectPath)
 
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL

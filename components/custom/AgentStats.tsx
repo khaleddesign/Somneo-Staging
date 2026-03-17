@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { BarChart3, AlertCircle, Clock, CheckCircle2 } from 'lucide-react'
+import AgentStatsSkeleton from '@/components/custom/skeletons/AgentStatsSkeleton'
 
 interface Stats {
   total_studies: number
@@ -43,13 +44,7 @@ export default function AgentStats() {
   }, [])
 
   if (loading) {
-    return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {[...Array(4)].map((_, i) => (
-          <div key={i} className="bg-gray-100 animate-pulse h-24 rounded-2xl" />
-        ))}
-      </div>
-    )
+    return <AgentStatsSkeleton />
   }
 
   if (error || !stats) {

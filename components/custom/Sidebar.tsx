@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { logoutAndRedirect } from '@/lib/auth/logout'
+import { useTranslations } from 'next-intl'
 import {
   Home,
   FileText,
@@ -29,6 +30,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const t = useTranslations('navigation')
   const [email, setEmail] = useState<string | null>(null)
   const [role, setRole] = useState<string | null>(null)
 
@@ -54,17 +56,17 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
     fetchUserRole()
   }, [])
 
-  const agentItems: NavItem[] = [
-    { label: 'Dashboard', href: '/dashboard/agent', icon: Home },
-    { label: 'Studies', href: '/dashboard/agent/studies', icon: FileText },
-    { label: 'Clients', href: '/dashboard/agent/clients', icon: Users },
-    { label: 'Settings', href: '/dashboard/agent/settings', icon: Settings },
-  ]
-  const clientItems: NavItem[] = [
-    { label: 'Dashboard', href: '/dashboard/client', icon: Home },
-    { label: 'My studies', href: '/dashboard/client/studies', icon: FileText },
-    { label: 'Support', href: '/support', icon: LifeBuoy },
-  ]
+  const agentItems = useMemo<NavItem[]>(() => [
+    { label: t('dashboard'), href: '/dashboard/agent', icon: Home },
+    { label: t('studies'), href: '/dashboard/agent/studies', icon: FileText },
+    { label: t('clients'), href: '/dashboard/agent/clients', icon: Users },
+    { label: t('settings'), href: '/dashboard/agent/settings', icon: Settings },
+  ], [t])
+  const clientItems = useMemo<NavItem[]>(() => [
+    { label: t('dashboard'), href: '/dashboard/client', icon: Home },
+    { label: t('studies'), href: '/dashboard/client/studies', icon: FileText },
+    { label: t('support'), href: '/support', icon: LifeBuoy },
+  ], [t])
 
   const items = loadingRole 
     ? [] 
@@ -129,7 +131,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             className="mt-3 flex items-center gap-2 text-sm text-sand/50 hover:text-red-400 font-body"
           >
             <LogOut className="h-4 w-4" />
-            Sign out
+            {t('signOut')}
           </button>
         </div>
       </aside>

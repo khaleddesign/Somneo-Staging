@@ -8,6 +8,7 @@ import AssignStudyButton from '@/components/custom/AssignStudyButton'
 import ReportEditor from '@/components/custom/ReportEditor'
 import StudyFileDownloadCard from '@/components/custom/StudyFileDownloadCard'
 import ClientOnly from '@/components/custom/ClientOnly'
+import SectionErrorBoundary from '@/components/custom/SectionErrorBoundary'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -147,7 +148,9 @@ export default async function AgentStudyDetail({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
+                    <SectionErrorBoundary sectionName="Actions">
                     <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
+                  </SectionErrorBoundary>
                   </CardContent>
                 </Card>
               )}
@@ -155,12 +158,14 @@ export default async function AgentStudyDetail({
 
             <TabsContent value="report">
               {canWriteReport ? (
-                <ReportEditor
-                  studyId={study.id}
-                  studyType={study.study_type}
-                  patientReference={study.patient_reference}
-                  agentName={profile.full_name || 'Agent'}
-                />
+                <SectionErrorBoundary sectionName="Report Editor">
+                  <ReportEditor
+                    studyId={study.id}
+                    studyType={study.study_type}
+                    patientReference={study.patient_reference}
+                    agentName={profile.full_name || 'Agent'}
+                  />
+                </SectionErrorBoundary>
               ) : (
                 <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
                   <CardContent className="p-6 text-sm text-gray-600">
@@ -179,10 +184,12 @@ export default async function AgentStudyDetail({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <StudyComments
-                    studyId={study.id}
-                    currentUser={{ id: user.id, name: profile?.full_name || null }}
-                  />
+                  <SectionErrorBoundary sectionName="Discussion">
+                    <StudyComments
+                      studyId={study.id}
+                      currentUser={{ id: user.id, name: profile?.full_name || null }}
+                    />
+                  </SectionErrorBoundary>
                 </CardContent>
               </Card>
             </TabsContent>

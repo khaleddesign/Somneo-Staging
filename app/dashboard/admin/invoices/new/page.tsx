@@ -197,11 +197,11 @@ export default function AdminNewInvoicePage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <div className="rounded-xl border border-teal/30 bg-white p-3">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Step A</p>
-            <p className="text-midnight font-heading">Choisir le client</p>
+            <p className="text-midnight font-heading">Choose client</p>
           </div>
           <div className="rounded-xl border border-teal/30 bg-white p-3">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Step B</p>
-            <p className="text-midnight font-heading">Choisir le mode</p>
+            <p className="text-midnight font-heading">Choose mode</p>
           </div>
           <div className="rounded-xl border border-teal/30 bg-white p-3">
             <p className="text-xs uppercase tracking-wider text-gray-400 font-heading">Step C</p>
@@ -214,7 +214,7 @@ export default function AdminNewInvoicePage() {
             <Label className="font-heading text-midnight">Client</Label>
             <Select value={selectedClientId} onValueChange={setSelectedClientId} disabled={loading}>
               <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal">
-                <SelectValue placeholder="Choisir un client" />
+                <SelectValue placeholder="Select a client" />
               </SelectTrigger>
               <SelectContent>
                 {clients.map((client) => (
@@ -227,7 +227,7 @@ export default function AdminNewInvoicePage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="font-heading text-midnight">Mode de facturation</Label>
+            <Label className="font-heading text-midnight">Billing mode</Label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <button
                 type="button"
@@ -251,15 +251,15 @@ export default function AdminNewInvoicePage() {
                     : 'border-gray-200 bg-white hover:border-teal/40'
                 }`}
               >
-                <p className="font-heading text-midnight">Mensuel</p>
-                <p className="text-sm text-gray-500 font-body mt-1">Une facture pour toutes les études validées d’un mois</p>
+                <p className="font-heading text-midnight">Monthly</p>
+                <p className="text-sm text-gray-500 font-body mt-1">One invoice for all validated studies of the month</p>
               </button>
             </div>
           </div>
 
           {mode === 'monthly' && (
             <div className="space-y-2">
-              <Label className="font-heading text-midnight">Mois</Label>
+              <Label className="font-heading text-midnight">Month</Label>
               <Input
                 type="month"
                 value={billingMonth}

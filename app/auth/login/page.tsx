@@ -3,12 +3,14 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import AuthLeftPanel from '@/components/custom/AuthLeftPanel'
 import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+
+const AuthLeftPanel = dynamic(() => import('@/components/custom/AuthLeftPanel'), { ssr: false })
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')

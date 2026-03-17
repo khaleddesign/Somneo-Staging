@@ -5,11 +5,12 @@ import { useStudies } from '@/hooks/useStudies'
 import { StudySubmissionForm } from '@/components/custom/StudySubmissionForm'
 import { StudyList } from '@/components/custom/StudyList'
 import AppLayout from '@/components/custom/AppLayout'
-import { BarChart3, Clock, CheckCircle2, AlertCircle } from 'lucide-react'
+import { BarChart3, Clock, CheckCircle2, AlertCircle, Building2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function ClientDashboard() {
   const { studies, loading, error, refresh } = useStudies()
+  const { studies: instStudies } = useStudies(100, 'institution')
 
   // Calculate stats from studies
   const stats = useMemo(() => {
@@ -29,7 +30,7 @@ export default function ClientDashboard() {
         </div>
         
         {/* Stats Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
           <Card className="shadow-sm border-gray-100 rounded-2xl bg-white transition-all hover:shadow-md hover:-translate-y-px">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
@@ -81,6 +82,20 @@ export default function ClientDashboard() {
                 </div>
                 <div className="p-3 rounded-xl bg-teal/8">
                   <CheckCircle2 className="h-6 w-6 text-gold" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="shadow-sm border-gray-100 rounded-2xl bg-white transition-all hover:shadow-md hover:-translate-y-px">
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Mon institution</p>
+                  <p className="text-3xl text-midnight font-display">{instStudies.length}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-teal/8">
+                  <Building2 className="h-6 w-6 text-teal" />
                 </div>
               </div>
             </CardContent>

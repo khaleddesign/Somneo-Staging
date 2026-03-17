@@ -9,14 +9,14 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 
 const supportSubjects = [
-  'Question technique',
+  'Technical question',
   'Upload issue',
-  'Facturation',
-  'Autre',
+  'Billing',
+  'Other',
 ] as const
 
 export default function SupportPage() {
-  const [subject, setSubject] = useState<string>('Question technique')
+  const [subject, setSubject] = useState<string>('Technical question')
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState<string | null>(null)
@@ -28,7 +28,7 @@ export default function SupportPage() {
     setSuccess(null)
 
     if (!message.trim()) {
-      setError('Veuillez saisir un message.')
+      setError('Please enter a message.')
       return
     }
 
@@ -42,14 +42,14 @@ export default function SupportPage() {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.error || 'Impossible d\'envoyer votre demande')
+        throw new Error(data.error || 'Unable to send your request')
       }
 
       setSuccess('Your request has been sent successfully.')
       setMessage('')
-      setSubject('Question technique')
+      setSubject('Technical question')
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error inattendue'
+      const msg = err instanceof Error ? err.message : 'Unexpected error'
       setError(msg)
     } finally {
       setLoading(false)
@@ -86,7 +86,7 @@ export default function SupportPage() {
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="font-heading text-midnight">Formulaire de contact</CardTitle>
+            <CardTitle className="font-heading text-midnight">Contact Form</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">

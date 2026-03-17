@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server'
 import { decrypt } from '@/lib/encryption'
 import ReportDownload from '@/components/custom/ReportDownload'
 import StudyComments from '@/components/custom/StudyComments'
+import SectionErrorBoundary from '@/components/custom/SectionErrorBoundary'
 import AppLayout from '@/components/custom/AppLayout'
 import DeleteStudyButton from '@/components/custom/DeleteStudyButton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -121,10 +122,12 @@ export default async function ClientStudyDetail({
             <CardTitle className="text-xl text-midnight font-heading">Discussion</CardTitle>
           </CardHeader>
           <CardContent>
-            <StudyComments
-              studyId={study.id}
-              currentUser={{ id: user.id, name: profile?.full_name || null }}
-            />
+            <SectionErrorBoundary sectionName="Discussion">
+              <StudyComments
+                studyId={study.id}
+                currentUser={{ id: user.id, name: profile?.full_name || null }}
+              />
+            </SectionErrorBoundary>
           </CardContent>
         </Card>
       </div>

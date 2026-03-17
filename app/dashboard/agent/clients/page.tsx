@@ -10,7 +10,7 @@ import AppLayout from '@/components/custom/AppLayout'
 
 const InviteForm = dynamic(() => import('@/components/custom/InviteForm'), {
   ssr: false,
-  loading: () => <div className="p-4 text-center text-gray-500">Loading du formulaire...</div>,
+  loading: () => <div className="p-4 text-center text-gray-500">Loading form...</div>,
 })
 
 export default function ClientsPage() {
@@ -30,7 +30,7 @@ export default function ClientsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-4xl text-midnight font-display">
-            Gestion des Clients
+            Client Management
           </h1>
           <p className="text-gray-500 mt-2 font-body">Manage your clients and send invitations</p>
         </div>
@@ -39,7 +39,7 @@ export default function ClientsPage() {
           className="bg-teal hover:bg-teal/90 text-white rounded-xl font-heading"
         >
           <UserPlus className="h-4 w-4 mr-2" />
-          Inviter un nouveau client
+          Invite new client
         </Button>
       </div>
 
@@ -52,7 +52,7 @@ export default function ClientsPage() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-125">
           <DialogHeader>
-            <DialogTitle>Inviter un nouveau client</DialogTitle>
+            <DialogTitle>Invite new client</DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <InviteForm onSuccess={handleInviteSuccess} />

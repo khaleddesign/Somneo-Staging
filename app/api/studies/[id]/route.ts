@@ -1,6 +1,68 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { shouldAuditAccess } from '@/lib/studies/scopeFilter'
+import { buildAuditEntry } from '@/lib/audit'
+
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    const supabase = await createClient()
+
+    // 1. Authenticate
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // 2. Get profile (role)
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile) {
+      return NextResponse.json({ error: 'Profile not found' }, { status: 404 })
+    }
+
+    // 3. Fetch study via RLS (RLS enforces access control)
+    const { data: study, error: fetchError } = await supabase
+      .from('studies')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    if (fetchError || !study) {
+      return NextResponse.json({ error: 'Study not found' }, { status: 404 })
+    }
+
+    // 4. Audit cross-client reads (client accessing another client's study)
+    if (profile.role === 'client' && shouldAuditAccess(user.id, study.client_id as string)) {
+      const entry = buildAuditEntry(study.id as string, study.client_id as string)
+      // fire-and-forget — audit failure must not block response
+      ;(async () => {
+        try {
+          const adminClient = createAdminClient()
+          await adminClient.from('audit_logs').insert({
+            user_id: user.id,
+            action: entry.action,
+            resource_type: entry.resource_type,
+            resource_id: entry.resource_id,
+            metadata: entry.metadata,
+          })
+        } catch {
+          // intentionally swallowed
+        }
+      })()
+    }
+
+    return NextResponse.json({ study })
+  } catch (error) {
+    console.error('[GET Study]', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
 
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

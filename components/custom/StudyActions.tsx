@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2 } from 'lucide-react'
+import { Loader2, RefreshCw } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface StudyActionsProps {
   studyId: string
@@ -49,6 +50,13 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Error'
       setError(message)
+      toast.error('Erreur de mise à jour', {
+        description: message,
+        action: {
+          label: 'Réessayer',
+          onClick: handleStatusUpdate,
+        },
+      })
     } finally {
       setLoading(false)
     }
@@ -155,6 +163,15 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       setUploadError(message)
+      toast.error('Erreur d\'upload', {
+        description: message,
+        action: {
+          label: 'Réessayer',
+          onClick: () => {
+            if (file) handleReportUpload(new Event('submit') as unknown as React.FormEvent)
+          },
+        },
+      })
     } finally {
       setUploading(false)
     }

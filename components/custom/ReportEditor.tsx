@@ -186,7 +186,6 @@ export default function ReportEditor({ studyId, studyType, patientReference, age
     if (!reportId) return
 
     // content est en closure directe — toujours la valeur courante du state
-    console.log('[saveReport] saving content:', JSON.stringify(content))
 
     setSaving(true)
     setError(null)

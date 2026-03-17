@@ -1,7 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Shield, FileText, Users, TrendingUp, CheckCircle } from 'lucide-react'
-import AuthLeftPanel from '@/components/custom/AuthLeftPanel'
 
 const features = [
   {
