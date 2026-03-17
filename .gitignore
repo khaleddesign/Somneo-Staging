@@ -47,3 +47,4 @@ playwright-report/
 # Fichiers SQL temporaires
 tmp_*.sql
 check_storage.js
+.claude/
