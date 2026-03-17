@@ -38,6 +38,14 @@ export async function GET(req: NextRequest) {
       const scope = parseScopeParam(searchParams.get('scope'))
       const descriptor = buildClientScopeFilter(scope, user.id)
 
+      // For institution scope, resolve all client IDs in the same institution
+      let institutionClientIds: string[] | null = null
+      if (scope === 'institution') {
+        const { data: rpcData, error: rpcError } = await supabase.rpc('get_my_institution_client_ids')
+        if (rpcError) throw rpcError
+        institutionClientIds = (rpcData ?? []) as string[]
+      }
+
       let query = supabase
         .from('studies')
         .select(
@@ -49,7 +57,11 @@ export async function GET(req: NextRequest) {
         .limit(limit + 1)
 
       if (descriptor.applyClientIdFilter) {
+        // scope === 'mine': show only own studies
         query = query.eq('client_id', user.id)
+      } else if (institutionClientIds !== null) {
+        // scope === 'institution': show all studies from the same institution
+        query = query.in('client_id', institutionClientIds)
       }
       if (cursor) {
         query = query.lt('submitted_at', cursor)
