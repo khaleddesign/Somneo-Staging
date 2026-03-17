@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
 import { validateMagicBytes } from '@/lib/validation/magicBytes'
 
 const BUCKET = 'study-files'
@@ -37,8 +36,10 @@ export async function POST(req: Request) {
     // Path scoped to the user — matches storage RLS policy
     const objectPath = `${user.id}/${user.id}-${Date.now()}.${fileExt}`
 
-    const admin = createAdminClient()
-    const { data, error } = await admin.storage
+    // Use the user's own client so the signed URL token embeds the user's sub (UUID).
+    // Using the admin client would embed the service-role sub, causing auth.uid() to
+    // return the wrong value during TUS upload and failing the INSERT RLS check.
+    const { data, error } = await supabase.storage
       .from(BUCKET)
       .createSignedUploadUrl(objectPath)
 
