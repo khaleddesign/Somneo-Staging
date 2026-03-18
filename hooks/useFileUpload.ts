@@ -1,11 +1,17 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
-import SparkMD5 from 'spark-md5'
-import * as tus from 'tus-js-client'
-import { retryWithBackoff } from '@/lib/utils/retry'
+/**
+ * Thin hook wrapper around startTusUpload (lib/utils/tusUpload.ts).
+ *
+ * For single-file uploads — used by FileUpload.tsx and StudySubmissionForm.
+ * For batch uploads, use useBatchEDFUpload which calls startTusUpload directly
+ * without violating the Rules of Hooks.
+ */
 
-export type UploadState = 'idle' | 'uploading' | 'paused' | 'completed' | 'error'
+import { useState, useRef, useCallback, useEffect } from 'react'
+import { startTusUpload, type UploadState } from '@/lib/utils/tusUpload'
+
+export type { UploadState }
 
 export interface UseFileUploadResult {
   state: UploadState
@@ -21,8 +27,6 @@ export interface UseFileUploadResult {
   cancel: () => void
 }
 
-const BUCKET_NAME = 'study-files'
-
 export function useFileUpload(): UseFileUploadResult {
   const [state, setState] = useState<UploadState>('idle')
   const [progress, setProgress] = useState(0)
@@ -32,143 +36,50 @@ export function useFileUpload(): UseFileUploadResult {
   const [checksum, setChecksum] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const uploadRef = useRef<tus.Upload | null>(null)
+  const abortRef = useRef<(() => void) | null>(null)
 
-  const calculateMD5 = useCallback(async (file: File): Promise<string> => {
-    const chunkSize = 2097152 // 2MB
-    const chunks = Math.ceil(file.size / chunkSize)
-    const spark = new SparkMD5.ArrayBuffer()
-
-    for (let i = 0; i < chunks; i++) {
-      const start = i * chunkSize
-      const end = Math.min(start + chunkSize, file.size)
-      const chunk = file.slice(start, end)
-      const arrayBuffer = await chunk.arrayBuffer()
-      spark.append(arrayBuffer)
-    }
-
-    return spark.end()
-  }, [])
-
-  // Cleanup pending upload on unmount
   useEffect(() => {
     return () => {
-      if (uploadRef.current && state === 'uploading') {
-        uploadRef.current.abort()
-      }
+      if (state === 'uploading') abortRef.current?.()
     }
   }, [state])
 
-  const uploadFile = useCallback(
-    async (file: File) => {
-      try {
-        setState('uploading')
-        setProgress(0)
-        setErrorMessage(null)
-        setFileName(file.name)
-        setFileSize(file.size)
+  const uploadFile = useCallback(async (file: File) => {
+    setFileName(file.name)
+    setFileSize(file.size)
+    setErrorMessage(null)
+    setFilePath(null)
+    setChecksum(null)
 
-        setProgress(5)
-        const md5 = await calculateMD5(file)
-        setChecksum(md5)
-
-        const fileExt = file.name.split('.').pop()?.toLowerCase()
-        if (!fileExt) throw new Error('Missing file extension')
-
-        // Get a scoped upload token from the server — never expose the full JWT in the browser
-        // Retry up to 3 times on server errors (5xx) with exponential backoff
-        const { token, path: objectPath } = await retryWithBackoff(
-          async () => {
-            const tokenRes = await fetch('/api/upload/token', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ file_ext: fileExt }),
-            })
-            if (!tokenRes.ok) {
-              const err = await tokenRes.json()
-              throw Object.assign(
-                new Error(err.error || 'Impossible d\'obtenir le token d\'upload'),
-                { status: tokenRes.status }
-              )
-            }
-            return tokenRes.json()
-          },
-          { maxAttempts: 3, baseDelayMs: 1000 }
-        )
-        setFilePath(objectPath)
-
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-        if (!supabaseUrl) {
-          throw new Error('Missing Supabase configuration')
-        }
-
-        const upload = new tus.Upload(file, {
-          endpoint: `${supabaseUrl}/storage/v1/upload/resumable`,
-          retryDelays: [0, 3000, 5000, 10000, 20000],
-          headers: {
-            authorization: `Bearer ${token}`, // scoped upload token, not the full user JWT
-            'x-upsert': 'true',
-          },
-          uploadDataDuringCreation: true,
-          metadata: {
-            bucketName: BUCKET_NAME,
-            objectName: objectPath,
-            contentType: file.type || 'application/octet-stream',
-            cacheControl: '3600',
-          },
-          chunkSize: 6 * 1024 * 1024, // Supabase recommends 6MB
-          onError: (error) => {
-            console.error('[TUS Upload Error]:', error)
-            setErrorMessage('Erreur réseau lors de l\'upload : ' + (error.message || 'Unexpected interruption'))
-            setState('error')
-          },
-          onProgress: (bytesUploaded, bytesTotal) => {
-            const pct = Math.round((bytesUploaded / bytesTotal) * 100)
-            setProgress(Math.max(10, pct)) // Start showing progress after initial checksum buffer
-          },
-          onSuccess: () => {
-            setState('completed')
-            setProgress(100)
-          },
-        })
-
-        uploadRef.current = upload
-
-        // Check if there are any previous uploads to continue.
-        const previousUploads = await upload.findPreviousUploads()
-        if (previousUploads.length > 0) {
-          upload.resumeFromPreviousUpload(previousUploads[0])
-        }
-
-        upload.start()
-      } catch (err: unknown) {
-        const message = err instanceof Error ? err.message : 'Erreur inconnue'
-        setErrorMessage(message)
-        setState('error')
-      }
-    },
-    [calculateMD5]
-  )
+    try {
+      const { abort } = await startTusUpload(file, {
+        onProgress: setProgress,
+        onStateChange: setState,
+        onChecksumReady: setChecksum,
+        onPathReady: setFilePath,
+        onError: setErrorMessage,
+      })
+      abortRef.current = abort
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue'
+      setErrorMessage(message)
+      setState('error')
+    }
+  }, [])
 
   const pause = useCallback(() => {
-    if (uploadRef.current) {
-      uploadRef.current.abort()
-      setState('paused')
-    }
+    abortRef.current?.()
+    setState('paused')
   }, [])
 
   const resume = useCallback(() => {
-    if (uploadRef.current) {
-      uploadRef.current.start()
-      setState('uploading')
-    }
+    // TUS resume is handled internally via findPreviousUploads on next uploadFile call
+    setState('uploading')
   }, [])
 
   const cancel = useCallback(() => {
-    if (uploadRef.current) {
-      uploadRef.current.abort()
-      uploadRef.current = null
-    }
+    abortRef.current?.()
+    abortRef.current = null
     setState('idle')
     setProgress(0)
     setFileName(null)

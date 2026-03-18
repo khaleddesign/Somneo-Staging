@@ -15,6 +15,8 @@ import {
   LogOut,
   Menu,
   X,
+  UploadCloud,
+  FilePlus2,
 } from 'lucide-react'
 
 interface NavItem {
@@ -59,12 +61,14 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const agentItems = useMemo<NavItem[]>(() => [
     { label: t('dashboard'), href: '/dashboard/agent', icon: Home },
     { label: t('studies'), href: '/dashboard/agent/studies', icon: FileText },
+    { label: t('batchReports'), href: '/dashboard/agent/studies/batch-reports', icon: UploadCloud },
     { label: t('clients'), href: '/dashboard/agent/clients', icon: Users },
     { label: t('settings'), href: '/dashboard/agent/settings', icon: Settings },
   ], [t])
   const clientItems = useMemo<NavItem[]>(() => [
     { label: t('dashboard'), href: '/dashboard/client', icon: Home },
     { label: t('studies'), href: '/dashboard/client/studies', icon: FileText },
+    { label: t('batchUpload'), href: '/dashboard/client/studies/batch', icon: FilePlus2 },
     { label: t('support'), href: '/support', icon: LifeBuoy },
   ], [t])
 

@@ -241,6 +241,8 @@
   "navigation": {
     "dashboard": "Dashboard",
     "studies": "Studies",
+    "batchUpload": "Batch upload",
+    "batchReports": "Batch reports",
     "clients": "Clients",
     "agents": "Agents",
     "invoices": "Invoices",
