@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, RefreshCw } from 'lucide-react'
+import { Loader2, RefreshCw, Download } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface StudyActionsProps {
@@ -31,6 +31,8 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
   const [uploading, setUploading] = useState(false)
   const [uploadSuccess, setUploadSuccess] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState(false)
+  const [downloadError, setDownloadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const supabaseRef = useRef(createClient())
 
@@ -177,6 +179,24 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
     }
   }
 
+  async function handleReportDownload() {
+    setDownloading(true)
+    setDownloadError(null)
+    try {
+      const res = await fetch(`/api/studies/${studyId}/report`)
+      const payload = await res.json() as { url?: string; error?: string }
+      if (!res.ok || !payload.url) {
+        throw new Error(payload.error || 'Unable to generate download URL')
+      }
+      window.open(payload.url, '_blank', 'noopener,noreferrer')
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Download error'
+      setDownloadError(message)
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
@@ -199,14 +219,20 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
       {reportPath && (
         <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
           <p className="text-sm text-indigo-900 font-medium mb-2">Current report</p>
-          <a
-            href={`/api/studies/${studyId}/report?path=${encodeURIComponent(reportPath)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-indigo-600 hover:underline text-sm"
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleReportDownload}
+            disabled={downloading}
+            className="text-indigo-600 border-indigo-300 hover:bg-indigo-100"
           >
-            📄 Voir le report PDF
-          </a>
+            {downloading ? (
+              <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Downloading...</>
+            ) : (
+              <><Download className="h-4 w-4 mr-2" />📄 Voir le report PDF</>
+            )}
+          </Button>
+          {downloadError && <p className="text-red-600 text-sm mt-2">{downloadError}</p>}
         </div>
       )}
       {status !== 'termine' && (
