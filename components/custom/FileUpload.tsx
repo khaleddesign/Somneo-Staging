@@ -96,7 +96,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           }`}
         >
           <Upload className="h-12 w-12 mx-auto mb-3 text-teal" />
-          <p className="text-lg font-medium text-gray-900">Glissez votre fichier EDF ici</p>
+          <p className="text-lg font-medium text-gray-900">Glissez votre fichier EDF ou ZIP ici</p>
           <p className="text-sm text-gray-500 mt-1">ou cliquez pour parcourir</p>
           <Button
             variant="outline"
@@ -106,11 +106,11 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           >
             Parcourir les fichiers
           </Button>
-          <p className="text-xs text-gray-400 mt-3">EDF, ZIP up to 2 GB</p>
+          <p className="text-xs text-gray-400 mt-3">Formats acceptés : .edf, .zip (max 500 MB)</p>
           <input
             ref={fileInputRef}
             type="file"
-            accept=".edf,.zip"
+            accept=".edf,.zip,application/x-zip-compressed,application/zip,application/x-zip"
             onChange={handleFileSelect}
             className="hidden"
           />
