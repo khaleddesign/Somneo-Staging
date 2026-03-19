@@ -47,7 +47,12 @@ export async function proxy(request: NextRequest) {
 
   // ── CORS + Rate limiting on API routes ───────────────────────────
   if (pathname.startsWith('/api/')) {
-    const isAllowedOrigin = !origin || ALLOWED_ORIGINS.has(origin)
+    // Allow same-origin requests (origin matches the request's own host).
+    // This covers preview deployments (e.g. *.vercel.app branches) where the
+    // browser sends Origin on same-site POST requests but the preview URL is
+    // not in the static ALLOWED_ORIGINS set.
+    const requestOrigin = `${request.nextUrl.protocol}//${request.nextUrl.host}`
+    const isAllowedOrigin = !origin || ALLOWED_ORIGINS.has(origin) || origin === requestOrigin
     if (!isAllowedOrigin) {
       return new NextResponse(null, { status: 403 })
     }

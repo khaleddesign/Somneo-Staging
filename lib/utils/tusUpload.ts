@@ -81,11 +81,17 @@ export async function startTusUpload(
         body: JSON.stringify({ file_ext: fileExt }),
       })
       if (!res.ok) {
-        const err = await res.json()
-        throw Object.assign(
-          new Error(err.error || "Impossible d'obtenir le token d'upload"),
-          { status: res.status }
-        )
+        // Parse JSON body safely — non-JSON responses (e.g. Vercel protection HTML
+        // or gateway error pages) must still carry the HTTP status so that
+        // retryWithBackoff can detect 4xx as a non-retryable client error.
+        let errMsg = "Impossible d'obtenir le token d'upload"
+        try {
+          const err = await res.json()
+          errMsg = err.error || errMsg
+        } catch {
+          // Body is not JSON — keep default message, attach status below
+        }
+        throw Object.assign(new Error(errMsg), { status: res.status })
       }
       return res.json()
     },
