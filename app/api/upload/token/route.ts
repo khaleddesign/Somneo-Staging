@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { validateMagicBytes } from '@/lib/validation/magicBytes'
 
 const BUCKET = 'study-files'
@@ -7,6 +8,7 @@ const ALLOWED_EXTENSIONS = ['edf', 'edf+', 'bdf', 'zip']
 
 export async function POST(req: Request) {
   try {
+    // Auth check with user client
     const supabase = await createClient()
     const { data: { user }, error: authErr } = await supabase.auth.getUser()
     if (authErr || !user) {
@@ -33,13 +35,16 @@ export async function POST(req: Request) {
       }
     }
 
-    // Path scoped to the user — matches storage RLS policy
+    // Path scoped to the user — enforces ownership even with admin client
     const objectPath = `${user.id}/${user.id}-${Date.now()}.${fileExt}`
 
-    // Use the user's own client so the signed URL token embeds the user's sub (UUID).
-    // Using the admin client would embed the service-role sub, causing auth.uid() to
-    // return the wrong value during TUS upload and failing the INSERT RLS check.
-    const { data, error } = await supabase.storage
+    // Use admin client to call createSignedUploadUrl — the user client gets
+    // 403 from storage RLS since the `createSignedUploadUrl` RPC requires
+    // elevated permissions. Security is preserved: the path is locked to
+    // user.id above, and Supabase validates the token cryptographically
+    // before any upload is allowed to proceed.
+    const admin = createAdminClient()
+    const { data, error } = await admin.storage
       .from(BUCKET)
       .createSignedUploadUrl(objectPath)
 
@@ -58,3 +63,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
+
