@@ -1,7 +1,7 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
-import { FC, useState } from 'react'
-import { AlertTriangle, Package, Download, FileText } from 'lucide-react'
+import { FC, useRef, useState } from 'react'
+import { AlertTriangle, Package, Download, FileText, UploadCloud, CheckCircle2, Layers } from 'lucide-react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { jsPDF } from 'jspdf'
@@ -39,7 +39,60 @@ export const StudyList: FC<StudyListProps> = ({
   showOwner,
 }) => {
   const [assigningStudyId, setAssigningStudyId] = useState<string | null>(null)
-  
+
+  // ── Upload rapport inline ──────────────────────────────────────────
+  type ReportUploadState = { state: 'uploading' | 'done' | 'error'; progress: number; error?: string }
+  const [reportUploads, setReportUploads] = useState<Map<string, ReportUploadState>>(new Map())
+  const [uploadTargetId, setUploadTargetId] = useState<string | null>(null)
+  const reportInputRef = useRef<HTMLInputElement>(null)
+
+  function handleUploadReportClick(studyId: string) {
+    setUploadTargetId(studyId)
+    reportInputRef.current?.click()
+  }
+
+  async function handleReportFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file || !uploadTargetId) return
+    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      alert('Seuls les fichiers PDF sont acceptés')
+      return
+    }
+
+    const studyId = uploadTargetId
+    const patch = (update: ReportUploadState) =>
+      setReportUploads(prev => new Map(prev).set(studyId, update))
+
+    patch({ state: 'uploading', progress: 30 })
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const uploadRes = await fetch(`/api/studies/${studyId}/report`, { method: 'POST', body: formData })
+      if (!uploadRes.ok) {
+        const err = await uploadRes.json().catch(() => ({}))
+        throw new Error(err.error || 'Erreur upload PDF')
+      }
+
+      patch({ state: 'uploading', progress: 70 })
+
+      await fetch(`/api/studies/${studyId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'termine' }),
+      })
+
+      fetch(`/api/studies/${studyId}/report-notify`, { method: 'POST' }).catch(() => {})
+
+      patch({ state: 'done', progress: 100 })
+      onAssigned?.()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Erreur'
+      patch({ state: 'error', progress: 0, error: message })
+    }
+  }
+
   // États pour l'export
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [exportPeriod, setExportPeriod] = useState<"selection" | "month" | "year" | "all" | "custom">("selection")
@@ -312,6 +365,15 @@ export const StudyList: FC<StudyListProps> = ({
 
   return (
     <div className="space-y-4">
+      {/* Input caché pour l'upload rapport inline */}
+      <input
+        ref={reportInputRef}
+        type="file"
+        accept=".pdf,application/pdf"
+        className="hidden"
+        onChange={handleReportFileChange}
+      />
+
       {/* Barre d'outils d'export */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
         <div className="flex flex-wrap items-center gap-3">
@@ -472,12 +534,65 @@ export const StudyList: FC<StudyListProps> = ({
                         {assigningStudyId === study.id ? 'Assignation...' : 'Prendre en charge'}
                       </button>
                     ) : study.assigned_agent_id === currentUserId ? (
-                      <a
-                        href={`/dashboard/agent/studies/${study.id}`}
-                        className="border border-teal text-teal text-sm px-3 py-1 rounded-lg hover:bg-teal/5"
-                      >
-                        Voir
-                      </a>
+                      <div className="flex flex-col gap-1.5 min-w-[130px]">
+                        {/* Voir */}
+                        <a
+                          href={`/dashboard/agent/studies/${study.id}`}
+                          className="border border-teal text-teal text-xs px-2.5 py-1 rounded-lg hover:bg-teal/5 text-center"
+                        >
+                          Voir
+                        </a>
+
+                        {/* Upload rapport inline */}
+                        {(() => {
+                          const up = reportUploads.get(study.id)
+                          if (up?.state === 'done') {
+                            return (
+                              <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-lg">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Rapport uploadé
+                              </span>
+                            )
+                          }
+                          if (up?.state === 'uploading') {
+                            return (
+                              <div className="space-y-0.5">
+                                <div className="w-full bg-gray-200 rounded-full h-1.5">
+                                  <div
+                                    className="bg-teal h-1.5 rounded-full transition-all"
+                                    style={{ width: `${up.progress}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-gray-400">Upload {up.progress}%</p>
+                              </div>
+                            )
+                          }
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleUploadReportClick(study.id)}
+                              className="inline-flex items-center gap-1 text-xs border border-gray-300 text-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-50"
+                            >
+                              <UploadCloud className="h-3 w-3" />
+                              {up?.state === 'error' ? 'Réessayer rapport' : 'Upload rapport'}
+                            </button>
+                          )
+                        })()}
+                        {reportUploads.get(study.id)?.state === 'error' && (
+                          <p className="text-xs text-red-600 truncate max-w-[130px]" title={reportUploads.get(study.id)?.error}>
+                            {reportUploads.get(study.id)?.error}
+                          </p>
+                        )}
+
+                        {/* Associer rapport (batch) */}
+                        <a
+                          href="/dashboard/agent/studies/batch-reports"
+                          className="inline-flex items-center gap-1 text-xs border border-gray-200 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-gray-50"
+                        >
+                          <Layers className="h-3 w-3" />
+                          Associer rapport
+                        </a>
+                      </div>
                     ) : null
                   ) : role === 'client' ? (
                     <a
