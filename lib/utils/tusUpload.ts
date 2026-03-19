@@ -116,7 +116,10 @@ export async function startTusUpload(
     metadata: {
       bucketName: BUCKET_NAME,
       objectName: objectPath,
-      contentType: file.type || 'application/octet-stream',
+      // Normalize ZIP MIME types: Windows reports 'application/x-zip-compressed'
+      // or 'application/octet-stream', macOS reports 'application/zip'.
+      // Supabase storage only accepts 'application/zip', so we force it for ZIP files.
+      contentType: fileExt === 'zip' ? 'application/zip' : (file.type || 'application/octet-stream'),
       cacheControl: '3600',
     },
     chunkSize: 6 * 1024 * 1024,
