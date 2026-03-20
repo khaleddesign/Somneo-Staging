@@ -101,7 +101,7 @@ export function StudySearchCombobox({ onSelect, initialCandidates = [], disabled
       </div>
 
       {open && results.length > 0 && (
-        <ul className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-52 overflow-y-auto">
+        <ul className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden max-h-64 overflow-y-auto">
           {results.map(study => (
             <li key={study.id}>
               <button
