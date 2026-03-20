@@ -3,10 +3,11 @@
 /**
  * Batch PDF report upload orchestrator (agent side).
  *
- * Each item tracks one PDF file → one matched study.
- * Uploads run sequentially. Reuses existing:
- *   POST /api/studies/{id}/report  — upload PDF
- *   PATCH /api/studies/{id}/status — set 'termine'
+ * Each item tracks one PDF file → one matched study (or unassigned storage).
+ * Uploads run sequentially. Uses:
+ *   POST /api/studies/{id}/report       — upload PDF to assigned study
+ *   PATCH /api/studies/{id}/status      — set 'termine'
+ *   POST /api/reports/unassigned        — upload without study (new)
  */
 
 import { useState, useCallback } from 'react'
@@ -32,6 +33,7 @@ export interface ReportBatchItem {
   matchedStudy: StudyMatch | null
   candidateStudies: StudyMatch[] // for ambiguous / manual combobox
   overwriteConfirmed: boolean    // true if existing report acknowledged
+  skipAssignment: boolean        // true → upload sans étude assignée
   uploadState: ItemUploadState
   progress: number
   errorMessage: string | null
@@ -45,12 +47,14 @@ export interface UseBatchReportUploadResult {
   addFiles: (files: File[]) => Promise<void>
   assignStudy: (itemId: string, study: StudyMatch) => void
   setOverwriteConfirmed: (itemId: string, confirmed: boolean) => void
+  markAsSkipAssignment: (itemId: string, skip: boolean) => void
   removeItem: (itemId: string) => void
   startBatch: () => Promise<void>
   retryErrors: () => Promise<void>
   canStart: boolean
   successCount: number
   errorCount: number
+  unassignedCount: number
 }
 
 function newItem(file: File): ReportBatchItem {
@@ -62,6 +66,7 @@ function newItem(file: File): ReportBatchItem {
     matchedStudy: null,
     candidateStudies: [],
     overwriteConfirmed: false,
+    skipAssignment: false,
     uploadState: 'idle',
     progress: 0,
     errorMessage: null,
@@ -91,10 +96,8 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
       .filter(f => f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf'))
       .map(newItem)
 
-    // Add immediately with unmatched state
     setItems(prev => [...prev, ...newItems])
 
-    // Auto-match in background for each item
     for (const item of newItems) {
       const ref = extractPatientRef(item.file.name)
       if (!ref) {
@@ -129,7 +132,7 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
   const assignStudy = useCallback((itemId: string, study: StudyMatch) => {
     setItems(prev => prev.map(it =>
       it.id === itemId
-        ? { ...it, matchedStudy: study, matchStatus: 'matched', candidateStudies: [] }
+        ? { ...it, matchedStudy: study, matchStatus: 'matched', candidateStudies: [], skipAssignment: false }
         : it
     ))
   }, [])
@@ -138,13 +141,47 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
     patchItem(itemId, { overwriteConfirmed: confirmed })
   }, [patchItem])
 
+  const markAsSkipAssignment = useCallback((itemId: string, skip: boolean) => {
+    patchItem(itemId, { skipAssignment: skip })
+  }, [patchItem])
+
   const removeItem = useCallback((itemId: string) => {
     setItems(prev => prev.filter(it => it.id !== itemId))
   }, [])
 
+  // Upload a PDF without any study assignment
+  const uploadUnassigned = useCallback(async (item: ReportBatchItem) => {
+    patchItem(item.id, { uploadState: 'uploading', progress: 10, errorMessage: null })
+
+    try {
+      const formData = new FormData()
+      formData.append('file', item.file)
+
+      patchItem(item.id, { progress: 40 })
+      const res = await fetch('/api/reports/unassigned', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Erreur upload PDF')
+      }
+
+      patchItem(item.id, { uploadState: 'completed', progress: 100 })
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Erreur inconnue'
+      patchItem(item.id, { uploadState: 'error', errorMessage: message })
+    }
+  }, [patchItem])
+
   const uploadOne = useCallback(async (item: ReportBatchItem) => {
     if (!item.matchedStudy) {
-      patchItem(item.id, { uploadState: 'skipped' })
+      if (item.skipAssignment) {
+        await uploadUnassigned(item)
+      } else {
+        patchItem(item.id, { uploadState: 'skipped' })
+      }
       return
     }
 
@@ -162,7 +199,6 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
     try {
       const studyId = item.matchedStudy.id
 
-      // 1. Upload PDF via existing route
       const formData = new FormData()
       formData.append('file', item.file)
 
@@ -179,14 +215,12 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
 
       patchItem(item.id, { progress: 70 })
 
-      // 2. Update status to 'termine'
       await fetch(`/api/studies/${studyId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: 'termine' }),
       })
 
-      // 3. Notify client (fire-and-forget)
       fetch(`/api/studies/${studyId}/report-notify`, { method: 'POST' }).catch(() => {})
 
       patchItem(item.id, { uploadState: 'completed', progress: 100 })
@@ -194,7 +228,7 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
       const message = err instanceof Error ? err.message : 'Erreur inconnue'
       patchItem(item.id, { uploadState: 'error', errorMessage: message })
     }
-  }, [patchItem])
+  }, [patchItem, uploadUnassigned])
 
   const runBatch = useCallback(async (targets: ReportBatchItem[]) => {
     setPhase('uploading')
@@ -215,7 +249,10 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
     await runBatch(targets)
   }, [items, runBatch, patchItem])
 
-  const readyItems = items.filter(it => it.matchedStudy !== null && it.uploadState === 'idle')
+  // canStart: at least one item is ready (assigned OR skipAssignment) and no unconfirmed overwrites
+  const readyItems = items.filter(
+    it => it.uploadState === 'idle' && (it.matchedStudy !== null || it.skipAssignment)
+  )
   const needsOverwriteConfirm = items.some(
     it => it.matchedStudy?.has_report && !it.overwriteConfirmed && it.uploadState === 'idle'
   )
@@ -223,6 +260,9 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
 
   const successCount = items.filter(it => it.uploadState === 'completed').length
   const errorCount = items.filter(it => it.uploadState === 'error').length
+  const unassignedCount = items.filter(
+    it => it.skipAssignment && it.uploadState === 'idle'
+  ).length
 
   return {
     items,
@@ -230,11 +270,13 @@ export function useBatchReportUpload(): UseBatchReportUploadResult {
     addFiles,
     assignStudy,
     setOverwriteConfirmed,
+    markAsSkipAssignment,
     removeItem,
     startBatch,
     retryErrors,
     canStart,
     successCount,
     errorCount,
+    unassignedCount,
   }
 }
