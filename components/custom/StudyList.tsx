@@ -1,7 +1,8 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
-import { FC, useRef, useState } from 'react'
-import { AlertTriangle, Package, Download, FileText, UploadCloud, CheckCircle2 } from 'lucide-react'
+import { FC, useState } from 'react'
+import { AlertTriangle, Package, Download, FileText } from 'lucide-react'
+import { toast } from 'sonner'
 import { AssignReportPopover } from '@/components/custom/AssignReportPopover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
@@ -39,61 +40,6 @@ export const StudyList: FC<StudyListProps> = ({
   onAssigned,
   showOwner,
 }) => {
-  const [assigningStudyId, setAssigningStudyId] = useState<string | null>(null)
-
-  // ── Upload rapport inline ──────────────────────────────────────────
-  type ReportUploadState = { state: 'uploading' | 'done' | 'error'; progress: number; error?: string }
-  const [reportUploads, setReportUploads] = useState<Map<string, ReportUploadState>>(new Map())
-  const [uploadTargetId, setUploadTargetId] = useState<string | null>(null)
-  const reportInputRef = useRef<HTMLInputElement>(null)
-
-  function handleUploadReportClick(studyId: string) {
-    setUploadTargetId(studyId)
-    reportInputRef.current?.click()
-  }
-
-  async function handleReportFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (!file || !uploadTargetId) return
-    if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
-      alert('Seuls les fichiers PDF sont acceptés')
-      return
-    }
-
-    const studyId = uploadTargetId
-    const patch = (update: ReportUploadState) =>
-      setReportUploads(prev => new Map(prev).set(studyId, update))
-
-    patch({ state: 'uploading', progress: 30 })
-    try {
-      const formData = new FormData()
-      formData.append('file', file)
-
-      const uploadRes = await fetch(`/api/studies/${studyId}/report`, { method: 'POST', body: formData })
-      if (!uploadRes.ok) {
-        const err = await uploadRes.json().catch(() => ({}))
-        throw new Error(err.error || 'Erreur upload PDF')
-      }
-
-      patch({ state: 'uploading', progress: 70 })
-
-      await fetch(`/api/studies/${studyId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'termine' }),
-      })
-
-      fetch(`/api/studies/${studyId}/report-notify`, { method: 'POST' }).catch(() => {})
-
-      patch({ state: 'done', progress: 100 })
-      onAssigned?.()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Erreur'
-      patch({ state: 'error', progress: 0, error: message })
-    }
-  }
-
   // États pour l'export
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [exportPeriod, setExportPeriod] = useState<"selection" | "month" | "year" | "all" | "custom">("selection")
@@ -106,23 +52,6 @@ export const StudyList: FC<StudyListProps> = ({
     const now = Date.now()
     const twentyFourHoursMs = 24 * 60 * 60 * 1000
     return now - submittedAt > twentyFourHoursMs
-  }
-
-  async function handleAssign(studyId: string) {
-    setAssigningStudyId(studyId)
-    try {
-      const res = await fetch(`/api/studies/${studyId}/assign`, { method: 'PATCH' })
-      if (!res.ok) {
-        const data = await res.json().catch(() => null)
-        throw new Error(data?.error || 'Unable to take on this study')
-      }
-      onAssigned?.()
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Error lors de l’assignation'
-      alert(message)
-    } finally {
-      setAssigningStudyId(null)
-    }
   }
 
   // Fonctions de sélection
@@ -149,7 +78,7 @@ export const StudyList: FC<StudyListProps> = ({
     if (exportPeriod === 'selection') {
       toExport = studies.filter(s => selectedIds.has(s.id))
       if (toExport.length === 0) {
-        alert("Veuillez sélectionner au moins une étude.")
+        toast.error("Veuillez sélectionner au moins une étude.")
         return null
       }
     } else if (exportPeriod === 'month') {
@@ -159,7 +88,7 @@ export const StudyList: FC<StudyListProps> = ({
       })
     } else if (exportPeriod === 'custom') {
       if (!customMonth) {
-         alert("Veuillez choisir un mois.")
+         toast.error("Veuillez choisir un mois.")
          return null
       }
       const [yearStr, monthStr] = customMonth.split('-')
@@ -174,7 +103,7 @@ export const StudyList: FC<StudyListProps> = ({
     }
 
     if (toExport.length === 0) {
-      alert("Aucune étude à exporter pour cette période.")
+      toast.error("Aucune étude à exporter pour cette période.")
       return null
     }
     return toExport
@@ -366,14 +295,6 @@ export const StudyList: FC<StudyListProps> = ({
 
   return (
     <div className="space-y-4">
-      {/* Input caché pour l'upload rapport inline */}
-      <input
-        ref={reportInputRef}
-        type="file"
-        accept=".pdf,application/pdf"
-        className="hidden"
-        onChange={handleReportFileChange}
-      />
 
       {/* Barre d'outils d'export */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
@@ -437,7 +358,7 @@ export const StudyList: FC<StudyListProps> = ({
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Status</th>
               {(role === 'agent' || role === 'admin') && (
                 <>
-                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Client</th>
+                  {!showOwner && <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Client</th>}
                   <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date résultats</th>
                   <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Délai (j)</th>
                 </>
@@ -490,9 +411,11 @@ export const StudyList: FC<StudyListProps> = ({
                 </td>
                 {(role === 'agent' || role === 'admin') && (
                   <>
-                    <td className="px-3 py-3 font-body text-sm text-gray-600">
-                      {study.client_name ?? '—'}
-                    </td>
+                    {!showOwner && (
+                      <td className="px-3 py-3 font-body text-sm text-gray-600">
+                        {study.client_name ?? '—'}
+                      </td>
+                    )}
                     <td className="px-3 py-3 font-body text-sm text-gray-600">
                       {study.result_date
                         ? new Date(study.result_date).toLocaleDateString('fr-FR')
@@ -525,73 +448,12 @@ export const StudyList: FC<StudyListProps> = ({
                 </td>
                 <td className="px-3 py-3">
                   {role === 'agent' ? (
-                    !study.assigned_agent_id ? (
-                      <button
-                        type="button"
-                        onClick={() => handleAssign(study.id)}
-                        disabled={assigningStudyId === study.id}
-                        className="bg-teal text-white text-sm px-3 py-1 rounded-lg hover:bg-teal/90 disabled:opacity-60"
-                      >
-                        {assigningStudyId === study.id ? 'Assignation...' : 'Prendre en charge'}
-                      </button>
-                    ) : study.assigned_agent_id === currentUserId ? (
-                      <div className="flex flex-col gap-1.5 min-w-[130px]">
-                        {/* Voir */}
-                        <a
-                          href={`/dashboard/agent/studies/${study.id}`}
-                          className="border border-teal text-teal text-xs px-2.5 py-1 rounded-lg hover:bg-teal/5 text-center"
-                        >
-                          Voir
-                        </a>
-
-                        {/* Upload rapport inline */}
-                        {(() => {
-                          const up = reportUploads.get(study.id)
-                          if (up?.state === 'done') {
-                            return (
-                              <span className="inline-flex items-center gap-1 text-xs text-green-700 bg-green-50 border border-green-200 px-2.5 py-1 rounded-lg">
-                                <CheckCircle2 className="h-3 w-3" />
-                                Rapport uploadé
-                              </span>
-                            )
-                          }
-                          if (up?.state === 'uploading') {
-                            return (
-                              <div className="space-y-0.5">
-                                <div className="w-full bg-gray-200 rounded-full h-1.5">
-                                  <div
-                                    className="bg-teal h-1.5 rounded-full transition-all"
-                                    style={{ width: `${up.progress}%` }}
-                                  />
-                                </div>
-                                <p className="text-xs text-gray-400">Upload {up.progress}%</p>
-                              </div>
-                            )
-                          }
-                          return (
-                            <button
-                              type="button"
-                              onClick={() => handleUploadReportClick(study.id)}
-                              className="inline-flex items-center gap-1 text-xs border border-gray-300 text-gray-700 px-2.5 py-1 rounded-lg hover:bg-gray-50"
-                            >
-                              <UploadCloud className="h-3 w-3" />
-                              {up?.state === 'error' ? 'Réessayer rapport' : 'Upload rapport'}
-                            </button>
-                          )
-                        })()}
-                        {reportUploads.get(study.id)?.state === 'error' && (
-                          <p className="text-xs text-red-600 truncate max-w-[130px]" title={reportUploads.get(study.id)?.error}>
-                            {reportUploads.get(study.id)?.error}
-                          </p>
-                        )}
-
-                        {/* Associer rapport — popover inline */}
-                        <AssignReportPopover
-                          studyId={study.id}
-                          studyPatientRef={study.patient_reference}
-                          onSuccess={() => onAssigned?.()}
-                        />
-                      </div>
+                    (study.status === 'en_attente' || study.status === 'en_cours') ? (
+                      <AssignReportPopover
+                        studyId={study.id}
+                        studyPatientRef={study.patient_reference}
+                        onSuccess={() => onAssigned?.()}
+                      />
                     ) : null
                   ) : role === 'client' ? (
                     <a

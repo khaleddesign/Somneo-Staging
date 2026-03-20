@@ -9,6 +9,7 @@ import { Card } from '@/components/ui/card'
 import type { Role } from '@/types/database'
 import { useStudies } from '@/hooks/useStudies'
 import StudyListWithFilters from '@/components/custom/StudyListWithFilters'
+import { BatchReportUpload } from '@/components/custom/BatchReportUpload'
 
 interface AgentKpiRow {
   agent_id: string
@@ -106,6 +107,14 @@ function AgentDashboardContent() {
 
         {/* KPIs */}
         <AgentStats />
+
+        {/* Upload rapports en masse */}
+        {!isAdmin && (
+          <div className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <h2 className="text-base font-heading text-midnight mb-4">Upload de rapports</h2>
+            <BatchReportUpload />
+          </div>
+        )}
 
         {/* Admin: KPI par agent */}
         {isAdmin && (
