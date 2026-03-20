@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { StudySearchCombobox } from '@/components/custom/StudySearchCombobox'
 import {
-  CheckCircle2, AlertTriangle, AlertCircle, X, Loader2
+  CheckCircle2, AlertTriangle, AlertCircle, X, Loader2, ArchiveX
 } from 'lucide-react'
 import type { ReportBatchItem, StudyMatch } from '@/hooks/useBatchReportUpload'
 
@@ -14,6 +14,7 @@ interface ReportMatchRowProps {
   index: number
   onAssign: (itemId: string, study: StudyMatch) => void
   onOverwriteConfirm: (itemId: string, confirmed: boolean) => void
+  onSkipAssignment: (itemId: string, skip: boolean) => void
   onRemove: (itemId: string) => void
   disabled: boolean
 }
@@ -31,6 +32,7 @@ export function ReportMatchRow({
   index,
   onAssign,
   onOverwriteConfirm,
+  onSkipAssignment,
   onRemove,
   disabled,
 }: ReportMatchRowProps) {
@@ -39,12 +41,14 @@ export function ReportMatchRow({
   const isUploading = item.uploadState === 'uploading'
   const isSkipped = item.uploadState === 'skipped'
   const needsOverwrite = item.matchedStudy?.has_report && !item.overwriteConfirmed && item.uploadState === 'idle'
+  const isUnmatched = (item.matchStatus === 'unmatched' || item.matchStatus === 'ambiguous') && !item.matchedStudy
 
   return (
     <div className={`rounded-xl border p-4 space-y-3 transition-colors ${
       isCompleted ? 'border-green-200 bg-green-50' :
       isError ? 'border-red-200 bg-red-50' :
       isSkipped ? 'border-gray-100 bg-gray-50' :
+      item.skipAssignment ? 'border-blue-200 bg-blue-50' :
       needsOverwrite ? 'border-amber-200 bg-amber-50' :
       item.matchStatus === 'unmatched' || item.matchStatus === 'ambiguous'
         ? 'border-orange-200 bg-orange-50'
@@ -84,6 +88,12 @@ export function ReportMatchRow({
                 <span className="inline-flex items-center gap-1 text-xs font-heading text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full shrink-0">
                   <AlertTriangle className="h-3 w-3" />
                   Rapport existant
+                </span>
+              )}
+              {item.skipAssignment && (
+                <span className="inline-flex items-center gap-1 text-xs font-heading text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full shrink-0">
+                  <ArchiveX className="h-3 w-3" />
+                  Sans assignation
                 </span>
               )}
             </>
@@ -137,8 +147,8 @@ export function ReportMatchRow({
       )}
 
       {/* Combobox for unmatched/ambiguous */}
-      {(item.matchStatus === 'unmatched' || item.matchStatus === 'ambiguous') && item.uploadState === 'idle' && (
-        <div className="space-y-1">
+      {isUnmatched && !item.skipAssignment && item.uploadState === 'idle' && (
+        <div className="space-y-2">
           <Label className="text-xs font-heading text-gray-600">
             {item.matchStatus === 'ambiguous'
               ? `${item.candidateStudies.length} correspondances trouvées — sélectionnez la bonne étude`
@@ -149,6 +159,34 @@ export function ReportMatchRow({
             initialCandidates={item.candidateStudies}
             disabled={disabled}
           />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-blue-600 hover:text-blue-800 hover:bg-blue-50 h-7 px-2"
+            onClick={() => onSkipAssignment(item.id, true)}
+            disabled={disabled}
+          >
+            <ArchiveX className="h-3 w-3 mr-1" />
+            Uploader sans assigner — j&apos;assignerai plus tard
+          </Button>
+        </div>
+      )}
+
+      {/* Skip assignment — undo option */}
+      {item.skipAssignment && item.uploadState === 'idle' && (
+        <div className="flex items-center justify-between bg-blue-50 rounded-lg px-3 py-2">
+          <p className="text-xs text-blue-700">
+            Ce rapport sera stocké en attente d&apos;assignation.
+          </p>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs text-blue-600 hover:text-blue-800 h-6 px-2 shrink-0"
+            onClick={() => onSkipAssignment(item.id, false)}
+            disabled={disabled}
+          >
+            Annuler
+          </Button>
         </div>
       )}
 
@@ -172,9 +210,14 @@ export function ReportMatchRow({
       )}
 
       {/* Completed summary */}
-      {isCompleted && (
+      {isCompleted && item.matchedStudy && (
         <p className="text-xs text-green-700">
-          Rapport uploadé → {item.matchedStudy?.patient_reference} · étude passée en <strong>terminé</strong>
+          Rapport uploadé → {item.matchedStudy.patient_reference} · étude passée en <strong>terminé</strong>
+        </p>
+      )}
+      {isCompleted && !item.matchedStudy && (
+        <p className="text-xs text-blue-700">
+          Rapport stocké en attente d&apos;assignation — accessible dans la section ci-dessous.
         </p>
       )}
 
