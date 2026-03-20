@@ -70,7 +70,7 @@ export function AssignReportPopover({
 
   async function runUpload(file: File) {
     if (!isPdf(file)) {
-      setUploadError('Seuls les fichiers PDF sont acceptés')
+      setUploadError('Only PDF files are accepted')
       setUploadPhase('error')
       return
     }
@@ -88,7 +88,7 @@ export function AssignReportPopover({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Erreur upload PDF')
+        throw new Error(err.error || 'PDF upload error')
       }
 
       setUploadProgress(70)
@@ -108,7 +108,7 @@ export function AssignReportPopover({
         onSuccess()
       }, 800)
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : 'Erreur inconnue')
+      setUploadError(err instanceof Error ? err.message : 'Unknown error')
       setUploadPhase('error')
     }
   }
@@ -163,7 +163,7 @@ export function AssignReportPopover({
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || "Erreur lors de l'assignation")
+        throw new Error(err.error || 'Assignment error')
       }
       setPending(prev => prev.filter(r => r.id !== reportId))
       setTimeout(() => {
@@ -171,7 +171,7 @@ export function AssignReportPopover({
         onSuccess()
       }, 400)
     } catch (err) {
-      setLinkError(err instanceof Error ? err.message : 'Erreur réseau')
+      setLinkError(err instanceof Error ? err.message : 'Network error')
     } finally {
       setLinkingId(null)
     }
@@ -187,15 +187,15 @@ export function AssignReportPopover({
           className="inline-flex items-center gap-1 text-xs border border-gray-200 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-gray-50"
         >
           <Layers className="h-3 w-3" />
-          Associer rapport
+          Assign report
         </button>
       </PopoverTrigger>
 
       <PopoverContent className="w-96 p-0" align="end">
         {/* Header */}
         <div className="px-4 py-3 border-b bg-gray-50 rounded-t-md">
-          <p className="text-sm font-semibold text-gray-900">Associer un rapport</p>
-          <p className="text-xs text-gray-500 mt-0.5">Étude : {studyPatientRef}</p>
+          <p className="text-sm font-semibold text-gray-900">Assign a report</p>
+          <p className="text-xs text-gray-500 mt-0.5">Study: {studyPatientRef}</p>
         </div>
 
         <Tabs defaultValue="upload" className="w-full">
@@ -206,7 +206,7 @@ export function AssignReportPopover({
             </TabsTrigger>
             <TabsTrigger value="pending" className="flex-1 text-xs h-7">
               <ArchiveX className="h-3 w-3 mr-1.5" />
-              En attente{pending.length > 0 ? ` (${pending.length})` : ''}
+              Pending{pending.length > 0 ? ` (${pending.length})` : ''}
             </TabsTrigger>
           </TabsList>
 
@@ -232,8 +232,8 @@ export function AssignReportPopover({
                 }`}
               >
                 <Upload className="h-6 w-6 mx-auto mb-2 text-teal" />
-                <p className="text-sm font-medium text-gray-800">Glissez votre PDF ici</p>
-                <p className="text-xs text-gray-400 mt-0.5">ou cliquez pour parcourir</p>
+                <p className="text-sm font-medium text-gray-800">Drop your PDF here</p>
+                <p className="text-xs text-gray-400 mt-0.5">or click to browse</p>
               </div>
             )}
 
@@ -241,7 +241,7 @@ export function AssignReportPopover({
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Loader2 className="h-4 w-4 animate-spin text-teal" />
-                  Upload en cours…
+                  Uploading…
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-1.5">
                   <div
@@ -255,7 +255,7 @@ export function AssignReportPopover({
             {uploadPhase === 'done' && (
               <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-3">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
-                Rapport assigné — étude passée en terminé
+                Report assigned — study marked as completed
               </div>
             )}
 
@@ -279,13 +279,13 @@ export function AssignReportPopover({
             {pendingLoading && (
               <div className="flex items-center gap-2 text-sm text-gray-500 py-4 justify-center">
                 <Loader2 className="h-4 w-4 animate-spin" />
-                Chargement…
+                Loading…
               </div>
             )}
 
             {!pendingLoading && pending.length === 0 && (
               <p className="text-sm text-gray-400 text-center py-4">
-                Aucun rapport en attente d&apos;assignation
+                No reports pending assignment
               </p>
             )}
 
@@ -314,7 +314,7 @@ export function AssignReportPopover({
                     >
                       {linkingId === report.id
                         ? <Loader2 className="h-3 w-3 animate-spin" />
-                        : <><Link2 className="h-3 w-3 mr-1" />Lier</>
+                        : <><Link2 className="h-3 w-3 mr-1" />Link</>
                       }
                     </Button>
                   </div>

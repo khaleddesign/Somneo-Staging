@@ -80,12 +80,12 @@ export function BatchReportUpload() {
       })
       if (!res.ok) {
         const err = await res.json()
-        setAssignError(err.error || 'Erreur lors de l\'assignation')
+        setAssignError(err.error || 'Assignment error')
       } else {
         await loadPending()
       }
     } catch {
-      setAssignError('Erreur réseau')
+      setAssignError('Network error')
     } finally {
       setAssigningId(null)
     }
@@ -108,7 +108,7 @@ export function BatchReportUpload() {
     const invalid = arr.filter(f => !isPdf(f))
 
     if (invalid.length > 0) {
-      setValidationError(`${invalid.length} fichier(s) ignoré(s) : seuls les PDF sont acceptés.`)
+      setValidationError(`${invalid.length} file(s) ignored: only PDF files are accepted.`)
     }
 
     const valid = arr.filter(isPdf)
@@ -145,13 +145,13 @@ export function BatchReportUpload() {
         >
           <Upload className="h-10 w-10 mx-auto mb-3 text-teal" />
           <p className="text-base font-medium text-gray-900">
-            Glissez vos rapports PDF ici
+            Drop your PDF reports here
           </p>
           <p className="text-sm text-gray-500 mt-1">
-            ou cliquez pour parcourir
+            or click to browse
           </p>
           <p className="text-xs text-gray-400 mt-2">
-            PDF uniquement · Association automatique par référence patient
+            PDF only · Automatic matching by patient reference
           </p>
           <input
             ref={fileInputRef}
@@ -176,7 +176,7 @@ export function BatchReportUpload() {
       {isUploading && (
         <div className="space-y-1">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>{successCount} / {items.filter(it => it.matchedStudy || it.skipAssignment).length} rapports uploadés</span>
+            <span>{successCount} / {items.filter(it => it.matchedStudy || it.skipAssignment).length} reports uploaded</span>
             <span>{globalProgress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -193,12 +193,12 @@ export function BatchReportUpload() {
         <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 space-y-1">
           {unmatchedCount > 0 && (
             <p><AlertCircle className="inline h-3.5 w-3.5 mr-1" />
-              {unmatchedCount} fichier{unmatchedCount > 1 ? 's' : ''} sans correspondance — assignez manuellement ou uploadez sans assigner.
+              {unmatchedCount} file{unmatchedCount > 1 ? 's' : ''} without a match — assign manually or upload without assigning.
             </p>
           )}
           {overwritePending > 0 && (
             <p><AlertCircle className="inline h-3.5 w-3.5 mr-1" />
-              {overwritePending} étude{overwritePending > 1 ? 's' : ''} avec rapport existant — confirmez l&apos;écrasement.
+              {overwritePending} study{overwritePending > 1 ? 'ies' : ''} with an existing report — confirm overwrite.
             </p>
           )}
         </div>
@@ -251,13 +251,13 @@ export function BatchReportUpload() {
                 const assigned = items.filter(it => it.matchedStudy && it.uploadState === 'idle').length
                 const unassigned = items.filter(it => !it.matchedStudy && it.skipAssignment && it.uploadState === 'idle').length
                 const total = assigned + unassigned
-                return `Confirmer et uploader (${total} rapport${total > 1 ? 's' : ''})`
+                return `Confirm and upload (${total} report${total > 1 ? 's' : ''})`
               })()}
             </Button>
             {unassignedCount > 0 && (
               <p className="text-xs text-blue-600 flex items-center gap-1">
                 <ArchiveX className="h-3 w-3" />
-                {unassignedCount} rapport{unassignedCount > 1 ? 's' : ''} sera{unassignedCount > 1 ? 'ont' : ''} stocké{unassignedCount > 1 ? 's' : ''} sans assignation
+                {unassignedCount} report{unassignedCount > 1 ? 's' : ''} will be stored without assignment
               </p>
             )}
           </div>
@@ -270,7 +270,7 @@ export function BatchReportUpload() {
             className="border-amber-300 text-amber-700 hover:bg-amber-50"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Réessayer les erreurs ({errorCount})
+            Retry errors ({errorCount})
           </Button>
         )}
       </div>
@@ -282,15 +282,15 @@ export function BatchReportUpload() {
             <div>
               <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                 <ArchiveX className="h-4 w-4 text-blue-500" />
-                Rapports en attente d&apos;assignation
+                Reports pending assignment
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                Ces rapports ont été uploadés sans étude. Assignez-les à une étude pour notifier le prescripteur.
+                These reports were uploaded without a study. Assign them to a study to notify the prescriber.
               </p>
             </div>
             <Button variant="ghost" size="sm" onClick={loadPending} disabled={pendingLoading} className="text-xs">
               <RefreshCw className={`h-3.5 w-3.5 mr-1 ${pendingLoading ? 'animate-spin' : ''}`} />
-              Actualiser
+              Refresh
             </Button>
           </div>
 
@@ -311,22 +311,22 @@ export function BatchReportUpload() {
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-gray-900 truncate">{report.original_filename}</p>
                     <p className="text-xs text-gray-400">
-                      {formatFileSize(report.file_size)} · uploadé le{' '}
-                      {new Date(report.uploaded_at).toLocaleDateString('fr-FR', {
+                      {formatFileSize(report.file_size)} · uploaded on{' '}
+                      {new Date(report.uploaded_at).toLocaleDateString('en-GB', {
                         day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
                       })}
                     </p>
                   </div>
                   <span className="inline-flex items-center gap-1 text-xs font-heading text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full shrink-0">
                     <ArchiveX className="h-3 w-3" />
-                    En attente
+                    Pending
                   </span>
                 </div>
                 <div className="flex items-end gap-2">
                   <div className="flex-1 space-y-1">
                     <p className="text-xs font-heading text-gray-600 flex items-center gap-1">
                       <Link2 className="h-3 w-3" />
-                      Assigner à une étude
+                      Assign to a study
                     </p>
                     <StudySearchCombobox
                       onSelect={study => assignPending(report.id, study)}
@@ -335,7 +335,7 @@ export function BatchReportUpload() {
                     />
                   </div>
                   {assigningId === report.id && (
-                    <p className="text-xs text-blue-600 pb-2">Assignation en cours…</p>
+                    <p className="text-xs text-blue-600 pb-2">Assigning…</p>
                   )}
                 </div>
               </div>

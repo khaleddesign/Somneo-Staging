@@ -79,13 +79,13 @@ export function AgentReportsPage() {
       })
       if (!res.ok) {
         const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || "Erreur lors de l'assignation")
+        throw new Error(err.error || 'Assignment error')
       }
       // Remove locally + refresh assigned section
       setPending(prev => prev.filter(r => r.id !== reportId))
       loadAssigned()
     } catch (err) {
-      setAssignError(err instanceof Error ? err.message : 'Erreur réseau')
+      setAssignError(err instanceof Error ? err.message : 'Network error')
     } finally {
       setAssigningId(null)
     }
@@ -138,7 +138,7 @@ export function AgentReportsPage() {
     setPdfLoadingId(studyId)
     try {
       const res = await fetch(`/api/studies/${studyId}/report`)
-      if (!res.ok) throw new Error('Impossible de charger le rapport')
+      if (!res.ok) throw new Error('Failed to load report')
       const { url } = await res.json()
       window.open(url, '_blank', 'noopener,noreferrer')
     } catch {
@@ -162,9 +162,9 @@ export function AgentReportsPage() {
       {/* Page header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl text-midnight font-display">Rapports</h1>
+          <h1 className="text-3xl text-midnight font-display">Reports</h1>
           <p className="text-gray-500 mt-1 font-body text-sm">
-            Gérez les rapports en attente et consultez les rapports déjà assignés.
+            Manage pending reports and view already assigned reports.
           </p>
         </div>
         <a
@@ -172,7 +172,7 @@ export function AgentReportsPage() {
           className="inline-flex items-center gap-2 text-sm border border-teal text-teal px-4 py-2 rounded-lg hover:bg-teal/5 shrink-0"
         >
           <UploadCloud className="h-4 w-4" />
-          Upload en masse
+          Bulk upload
         </a>
       </div>
 
@@ -181,7 +181,7 @@ export function AgentReportsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <ArchiveX className="h-5 w-5 text-blue-500" />
-            <h2 className="text-lg font-semibold text-gray-900">Rapports en attente d&apos;assignation</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Reports pending assignment</h2>
             {pending.length > 0 && (
               <span className="bg-blue-100 text-blue-700 text-xs font-heading px-2 py-0.5 rounded-full">
                 {pending.length}
@@ -196,7 +196,7 @@ export function AgentReportsPage() {
             className="text-xs text-gray-500"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1 ${pendingLoading ? 'animate-spin' : ''}`} />
-            Actualiser
+            Refresh
           </Button>
         </div>
 
@@ -210,22 +210,22 @@ export function AgentReportsPage() {
         {pendingLoading ? (
           <div className="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Chargement…
+            Loading…
           </div>
         ) : pending.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
             <ArchiveX className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-sm text-gray-400">Aucun rapport en attente d&apos;assignation</p>
+            <p className="text-sm text-gray-400">No reports pending assignment</p>
           </div>
         ) : (
           <div className="rounded-xl border border-gray-200 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
-                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Fichier</th>
-                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Taille</th>
-                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Uploadé le</th>
-                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide w-72">Assigner à</th>
+                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">File</th>
+                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Size</th>
+                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Uploaded on</th>
+                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide w-72">Assign to</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -243,7 +243,7 @@ export function AgentReportsPage() {
                       {formatFileSize(report.file_size)}
                     </td>
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(report.uploaded_at).toLocaleDateString('fr-FR', {
+                      {new Date(report.uploaded_at).toLocaleDateString('en-GB', {
                         day: 'numeric', month: 'short', year: 'numeric'
                       })}
                     </td>
@@ -274,7 +274,7 @@ export function AgentReportsPage() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Link2 className="h-5 w-5 text-green-500" />
-            <h2 className="text-lg font-semibold text-gray-900">Rapports assignés</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Assigned reports</h2>
             {assigned.length > 0 && (
               <span className="bg-green-100 text-green-700 text-xs font-heading px-2 py-0.5 rounded-full">
                 {assigned.length}
@@ -289,19 +289,19 @@ export function AgentReportsPage() {
             className="text-xs text-gray-500"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1 ${assignedLoading ? 'animate-spin' : ''}`} />
-            Actualiser
+            Refresh
           </Button>
         </div>
 
         {assignedLoading ? (
           <div className="flex items-center gap-2 text-sm text-gray-400 py-6 justify-center">
             <Loader2 className="h-4 w-4 animate-spin" />
-            Chargement…
+            Loading…
           </div>
         ) : assigned.length === 0 ? (
           <div className="rounded-xl border border-dashed border-gray-200 bg-gray-50 p-8 text-center">
             <FileText className="h-8 w-8 mx-auto mb-2 text-gray-300" />
-            <p className="text-sm text-gray-400">Aucun rapport assigné pour le moment</p>
+            <p className="text-sm text-gray-400">No reports assigned yet</p>
           </div>
         ) : (
           <div className="rounded-xl border border-gray-200 overflow-hidden">
@@ -311,7 +311,7 @@ export function AgentReportsPage() {
                   <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Patient ID</th>
                   <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Type</th>
                   <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Client</th>
-                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Date rapport</th>
+                  <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Report date</th>
                   <th className="text-left px-4 py-3 text-xs font-heading text-gray-500 uppercase tracking-wide">Action</th>
                 </tr>
               </thead>
@@ -330,7 +330,7 @@ export function AgentReportsPage() {
                       {study.client_name ?? '—'}
                     </td>
                     <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(study.updated_at).toLocaleDateString('fr-FR', {
+                      {new Date(study.updated_at).toLocaleDateString('en-GB', {
                         day: 'numeric', month: 'short', year: 'numeric'
                       })}
                     </td>
@@ -344,7 +344,7 @@ export function AgentReportsPage() {
                       >
                         {pdfLoadingId === study.id
                           ? <Loader2 className="h-3 w-3 animate-spin" />
-                          : <><ExternalLink className="h-3 w-3 mr-1" />Voir PDF</>
+                          : <><ExternalLink className="h-3 w-3 mr-1" />View PDF</>
                         }
                       </Button>
                     </td>

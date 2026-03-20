@@ -111,7 +111,7 @@ function AgentDashboardContent() {
         {/* Upload rapports en masse */}
         {!isAdmin && (
           <div className="mb-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-            <h2 className="text-base font-heading text-midnight mb-4">Upload de rapports</h2>
+            <h2 className="text-base font-heading text-midnight mb-4">Report upload</h2>
             <BatchReportUpload />
           </div>
         )}
@@ -162,9 +162,9 @@ function AgentDashboardContent() {
         {!isAdmin && (
           <div className="flex flex-wrap gap-3 mb-6">
             {[
-              { label: 'En attente', status: 'en_attente', color: 'bg-yellow-50 text-yellow-700 border border-yellow-200' },
-              { label: 'En cours', status: 'en_cours', color: 'bg-blue-50 text-blue-700 border border-blue-200' },
-              { label: 'Terminées', status: 'termine', color: 'bg-green-50 text-green-700 border border-green-200' },
+              { label: 'Pending', status: 'en_attente', color: 'bg-yellow-50 text-yellow-700 border border-yellow-200' },
+              { label: 'In progress', status: 'en_cours', color: 'bg-blue-50 text-blue-700 border border-blue-200' },
+              { label: 'Completed', status: 'termine', color: 'bg-green-50 text-green-700 border border-green-200' },
             ].map(({ label, status, color }) => (
               <button
                 key={status}
@@ -184,7 +184,7 @@ function AgentDashboardContent() {
                 onClick={() => handleKpiClick(activeStatus)}
                 className="px-4 py-2 rounded-xl text-sm font-heading bg-gray-100 text-gray-600 hover:bg-gray-200"
               >
-                Réinitialiser
+                Reset
               </button>
             )}
           </div>

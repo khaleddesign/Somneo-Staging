@@ -78,7 +78,7 @@ export const StudyList: FC<StudyListProps> = ({
     if (exportPeriod === 'selection') {
       toExport = studies.filter(s => selectedIds.has(s.id))
       if (toExport.length === 0) {
-        toast.error("Veuillez sélectionner au moins une étude.")
+        toast.error("Please select at least one study.")
         return null
       }
     } else if (exportPeriod === 'month') {
@@ -88,7 +88,7 @@ export const StudyList: FC<StudyListProps> = ({
       })
     } else if (exportPeriod === 'custom') {
       if (!customMonth) {
-         toast.error("Veuillez choisir un mois.")
+         toast.error("Please select a month.")
          return null
       }
       const [yearStr, monthStr] = customMonth.split('-')
@@ -103,7 +103,7 @@ export const StudyList: FC<StudyListProps> = ({
     }
 
     if (toExport.length === 0) {
-      toast.error("Aucune étude à exporter pour cette période.")
+      toast.error("No studies to export for this period.")
       return null
     }
     return toExport
@@ -164,8 +164,8 @@ export const StudyList: FC<StudyListProps> = ({
 
     // Titre de l'export à droite
     const title = exportPeriod === 'custom' && customMonth
-                  ? `Rapport d'Études - ${customMonth}`
-                  : `Rapport d'Études (${exportPeriod.toUpperCase()})`
+                  ? `Studies Report - ${customMonth}`
+                  : `Studies Report (${exportPeriod.toUpperCase()})`
     
     doc.setFont("helvetica", "normal")
     doc.setFontSize(14)
@@ -175,7 +175,7 @@ export const StudyList: FC<StudyListProps> = ({
     // Date de génération
     doc.setFontSize(10)
     doc.setTextColor(180, 190, 200)
-    doc.text(`Généré le : ${new Date().toLocaleDateString('fr-FR')}`, pageWidth - 14, 28, { align: 'right' })
+    doc.text(`Generated on: ${new Date().toLocaleDateString('en-GB')}`, pageWidth - 14, 28, { align: 'right' })
 
     // 2. ENCARTS DE RÉSUMÉ (KPI stat boxes)
     const statsY = 48
@@ -185,7 +185,7 @@ export const StudyList: FC<StudyListProps> = ({
     doc.roundedRect(14, statsY, 55, 22, 2, 2, 'F')
     doc.setFontSize(9)
     doc.setTextColor(100, 100, 100)
-    doc.text("TOTAL ÉTUDES", 20, statsY + 8)
+    doc.text("TOTAL STUDIES", 20, statsY + 8)
     doc.setFont("helvetica", "bold")
     doc.setFontSize(18)
     doc.setTextColor(...brandMidnight)
@@ -198,7 +198,7 @@ export const StudyList: FC<StudyListProps> = ({
     doc.setFont("helvetica", "normal")
     doc.setFontSize(9)
     doc.setTextColor(100, 100, 100)
-    doc.text("HAUTE PRIORITÉ", 81, statsY + 8)
+    doc.text("HIGH PRIORITY", 81, statsY + 8)
     doc.setFont("helvetica", "bold")
     doc.setFontSize(18)
     doc.setTextColor(220, 38, 38) // Red
@@ -211,20 +211,20 @@ export const StudyList: FC<StudyListProps> = ({
     doc.setFont("helvetica", "normal")
     doc.setFontSize(9)
     doc.setTextColor(100, 100, 100)
-    doc.text("TERMINÉES", 142, statsY + 8)
+    doc.text("COMPLETED", 142, statsY + 8)
     doc.setFont("helvetica", "bold")
     doc.setFontSize(18)
     doc.setTextColor(22, 163, 74) // Green
     doc.text(String(completedCount), 142, statsY + 18)
 
     // 3. TABLEAU (Styled clean autoTable)
-    const tableColumn = ["Patient ID", "Type", "Priorité", "Statut", "Soumission"]
+    const tableColumn = ["Patient ID", "Type", "Priority", "Status", "Submission"]
     const tableRows = toExport.map(s => [
       s.patient_reference,
       s.study_type,
       s.priority ? s.priority.toUpperCase() : 'N/A',
       s.status.replace('_', ' ').toUpperCase(),
-      new Date(s.submitted_at).toLocaleDateString('fr-FR')
+      new Date(s.submitted_at).toLocaleDateString('en-GB')
     ])
 
     autoTable(doc, {
@@ -268,7 +268,7 @@ export const StudyList: FC<StudyListProps> = ({
         doc.line(14, pageHeight - 16, pageWidth - 14, pageHeight - 16)
 
         // Mentions légales à gauche
-        doc.text("DOCUMENT CONFIDENTIEL - Données médicales protégées (HDS/RGPD).", 14, pageHeight - 10)
+        doc.text("CONFIDENTIAL DOCUMENT - Protected medical data (HDS/GDPR).", 14, pageHeight - 10)
         
         // Numéro de page à droite
         const pageNumberStr = `Page ${data.pageNumber}`
@@ -276,7 +276,7 @@ export const StudyList: FC<StudyListProps> = ({
       }
     })
 
-    doc.save(`SomnoConnect_Rapport_${exportPeriod}_${new Date().toISOString().split('T')[0]}.pdf`)
+    doc.save(`SomnoConnect_Report_${exportPeriod}_${new Date().toISOString().split('T')[0]}.pdf`)
   }
 
   if (loading) {
@@ -290,7 +290,7 @@ export const StudyList: FC<StudyListProps> = ({
     return <div className="text-red-600">Error : {error}</div>
   }
   if (!studies.length) {
-    return <div className="text-center text-gray-500 py-8">Aucune étude pour le moment</div>
+    return <div className="text-center text-gray-500 py-8">No studies yet</div>
   }
 
   return (
@@ -304,10 +304,10 @@ export const StudyList: FC<StudyListProps> = ({
             value={exportPeriod}
             onChange={(e) => setExportPeriod(e.target.value as 'selection' | 'month' | 'year' | 'all' | 'custom')}
           >
-            <option value="selection">Exporter la sélection ({selectedIds.size})</option>
-            <option value="month">Ce mois-ci</option>
-            <option value="custom">Un mois spécifique...</option>
-            <option value="year">Cette année</option>
+            <option value="selection">Export selection ({selectedIds.size})</option>
+            <option value="month">This month</option>
+            <option value="custom">A specific month...</option>
+            <option value="year">This year</option>
             <option value="all">All studies</option>
           </select>
 
@@ -332,7 +332,7 @@ export const StudyList: FC<StudyListProps> = ({
           </div>
         </div>
         <div className="text-sm text-gray-500 font-body">
-          {studies.length} étude(s) au total
+          {studies.length} study(ies) total
         </div>
       </div>
 
@@ -344,13 +344,13 @@ export const StudyList: FC<StudyListProps> = ({
                 <Checkbox 
                   checked={studies.length > 0 && selectedIds.size === studies.length}
                   onCheckedChange={(checked) => handleSelectAll(checked as boolean)}
-                  aria-label="Sélectionner tout"
+                  aria-label="Select all"
                 />
               </th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Patient ID</th>
               {showOwner && (
                 <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">
-                  Soumis par
+                  Submitted by
                 </th>
               )}
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Type</th>
@@ -359,11 +359,11 @@ export const StudyList: FC<StudyListProps> = ({
               {(role === 'agent' || role === 'admin') && (
                 <>
                   {!showOwner && <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Client</th>}
-                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date résultats</th>
-                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Délai (j)</th>
+                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Result date</th>
+                  <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Delay (d)</th>
                 </>
               )}
-              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Date de soumission</th>
+              <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Submission date</th>
               <th className="px-3 py-3 text-center text-xs text-gray-400 uppercase tracking-wider font-heading">Archive</th>
               <th className="px-3 py-3 text-left text-xs text-gray-400 uppercase tracking-wider font-heading">Actions</th>
             </tr>
@@ -375,7 +375,7 @@ export const StudyList: FC<StudyListProps> = ({
                   <Checkbox 
                     checked={selectedIds.has(study.id)}
                     onCheckedChange={(checked) => handleSelect(study.id, checked as boolean)}
-                    aria-label={`Sélectionner étude ${study.patient_reference}`}
+                    aria-label={`Select study ${study.patient_reference}`}
                   />
                 </td>
                 <td className="px-3 py-3 font-body text-sm text-midnight">{study.patient_reference}</td>
@@ -390,11 +390,11 @@ export const StudyList: FC<StudyListProps> = ({
                     <span className={`px-2 py-1 rounded text-xs font-semibold ${priorityColors[study.priority]}`}>{study.priority}</span>
                     {isSlaBreached(study) && (
                       <span
-                        title="SLA dépassé"
+                        title="SLA breached"
                         className="inline-flex items-center gap-1 text-xs text-red-600 font-medium animate-pulse"
                       >
                         <AlertTriangle className="h-3.5 w-3.5" />
-                        SLA dépassé
+                        SLA breached
                       </span>
                     )}
                   </div>
@@ -404,7 +404,7 @@ export const StudyList: FC<StudyListProps> = ({
                     <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
                     {study.is_stale && (
                       <span className="inline-flex items-center gap-1 text-xs text-orange-600 font-medium animate-pulse">
-                        ⚠ Retard
+                        ⚠ Delayed
                       </span>
                     )}
                   </div>
@@ -460,14 +460,14 @@ export const StudyList: FC<StudyListProps> = ({
                       href={`/dashboard/client/studies/${study.id}`}
                       className="px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 hover:bg-gray-300"
                     >
-                      Voir
+                      View
                     </a>
                   ) : role === 'admin' ? (
                     <a
                       href={`/dashboard/admin/studies/${study.id}`}
                       className="border border-teal text-teal text-sm px-3 py-1 rounded-lg hover:bg-teal/5"
                     >
-                      Voir
+                      View
                     </a>
                   ) : (
                     <span className="text-xs text-gray-400">—</span>
