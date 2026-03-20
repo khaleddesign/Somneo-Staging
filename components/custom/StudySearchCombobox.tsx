@@ -19,6 +19,20 @@ export function StudySearchCombobox({ onSelect, initialCandidates = [], disabled
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
+  const loadDefault = useCallback(async () => {
+    setLoading(true)
+    try {
+      const res = await fetch(
+        '/api/studies/search?status=en_attente,en_cours&no_report=true&limit=20'
+      )
+      const data = await res.json()
+      setResults(data.studies ?? [])
+      setOpen((data.studies ?? []).length > 0)
+    } finally {
+      setLoading(false)
+    }
+  }, [])
+
   const search = useCallback(async (q: string) => {
     if (q.length < 2) {
       setResults(initialCandidates)
@@ -72,7 +86,13 @@ export function StudySearchCombobox({ onSelect, initialCandidates = [], disabled
         <Input
           value={query}
           onChange={e => { setQuery(e.target.value); setOpen(true) }}
-          onFocus={() => setOpen(results.length > 0)}
+          onFocus={() => {
+            if (query === '' && results.length === 0) {
+              loadDefault()
+            } else {
+              setOpen(results.length > 0)
+            }
+          }}
           placeholder="Rechercher par référence patient..."
           disabled={disabled}
           className="pl-8 text-sm border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20"
@@ -100,7 +120,7 @@ export function StudySearchCombobox({ onSelect, initialCandidates = [], disabled
         </ul>
       )}
 
-      {open && !loading && results.length === 0 && query.length >= 2 && (
+      {open && !loading && results.length === 0 && (query.length >= 2 || initialCandidates.length > 0) && (
         <div className="absolute z-50 mt-1 w-full bg-white border border-gray-100 rounded-lg shadow-lg px-3 py-2 text-sm text-gray-400">
           Aucune étude trouvée
         </div>

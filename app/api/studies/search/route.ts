@@ -35,6 +35,7 @@ export async function GET(req: NextRequest) {
     const patientRef = searchParams.get('patient_ref')?.trim() ?? ''
     const statusParam = searchParams.get('status') ?? 'en_attente,en_cours'
     const limit = Math.min(Number(searchParams.get('limit') ?? '10'), 50)
+    const noReport = searchParams.get('no_report') === 'true'
 
     const statuses = statusParam.split(',').map(s => s.trim()).filter(Boolean)
 
@@ -42,11 +43,16 @@ export async function GET(req: NextRequest) {
       .from('studies')
       .select('id, patient_reference, study_type, status, submitted_at, report_path')
       .in('status', statuses)
-      .order('submitted_at', { ascending: false })
+      // Without a search term we sort oldest-first (most urgent); with a term, newest-first
+      .order('submitted_at', { ascending: !patientRef })
       .limit(limit)
 
     if (patientRef) {
       query = query.ilike('patient_reference', `%${patientRef}%`)
+    }
+
+    if (noReport) {
+      query = query.is('report_path', null)
     }
 
     const { data, error } = await query
