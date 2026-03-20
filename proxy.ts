@@ -2,8 +2,6 @@ import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 import { rateLimit, rateLimitHeaders } from '@/lib/rateLimit'
 
-const isDev = process.env.NODE_ENV === 'development'
-
 const ALLOWED_ORIGINS = new Set([
   'https://app.somnoventis.com',
   'https://somnoventis.com',

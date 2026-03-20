@@ -48,3 +48,4 @@ playwright-report/
 tmp_*.sql
 check_storage.js
 .claude/
+check_storage.js
