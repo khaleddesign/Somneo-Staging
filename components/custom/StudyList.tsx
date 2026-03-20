@@ -1,7 +1,8 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
 import { FC, useRef, useState } from 'react'
-import { AlertTriangle, Package, Download, FileText, UploadCloud, CheckCircle2, Layers } from 'lucide-react'
+import { AlertTriangle, Package, Download, FileText, UploadCloud, CheckCircle2 } from 'lucide-react'
+import { AssignReportPopover } from '@/components/custom/AssignReportPopover'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'
 import { jsPDF } from 'jspdf'
@@ -584,14 +585,12 @@ export const StudyList: FC<StudyListProps> = ({
                           </p>
                         )}
 
-                        {/* Associer rapport (batch) */}
-                        <a
-                          href="/dashboard/agent/studies/batch-reports"
-                          className="inline-flex items-center gap-1 text-xs border border-gray-200 text-gray-500 px-2.5 py-1 rounded-lg hover:bg-gray-50"
-                        >
-                          <Layers className="h-3 w-3" />
-                          Associer rapport
-                        </a>
+                        {/* Associer rapport — popover inline */}
+                        <AssignReportPopover
+                          studyId={study.id}
+                          studyPatientRef={study.patient_reference}
+                          onSuccess={() => onAssigned?.()}
+                        />
                       </div>
                     ) : null
                   ) : role === 'client' ? (

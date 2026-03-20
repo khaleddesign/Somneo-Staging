@@ -15,7 +15,6 @@ import {
   LogOut,
   Menu,
   X,
-  UploadCloud,
   FilePlus2,
 } from 'lucide-react'
 
@@ -61,7 +60,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   const agentItems = useMemo<NavItem[]>(() => [
     { label: t('dashboard'), href: '/dashboard/agent', icon: Home },
     { label: t('studies'), href: '/dashboard/agent/studies', icon: FileText },
-    { label: t('batchReports'), href: '/dashboard/agent/studies/batch-reports', icon: UploadCloud },
+    { label: t('reports'), href: '/dashboard/agent/reports', icon: FileText },
     { label: t('clients'), href: '/dashboard/agent/clients', icon: Users },
     { label: t('settings'), href: '/dashboard/agent/settings', icon: Settings },
   ], [t])
