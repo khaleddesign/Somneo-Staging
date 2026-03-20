@@ -118,12 +118,14 @@ export function AgentReportsPage() {
           patient_reference: string
           study_type: string
           updated_at: string
-          profiles: { full_name: string | null } | null
+          profiles: { full_name: string | null }[] | { full_name: string | null } | null
         }) => ({
           id: row.id,
           patient_reference: row.patient_reference,
           study_type: row.study_type,
-          client_name: row.profiles?.full_name ?? null,
+          client_name: Array.isArray(row.profiles)
+            ? row.profiles[0]?.full_name ?? null
+            : row.profiles?.full_name ?? null,
           updated_at: row.updated_at,
         }))
       )
