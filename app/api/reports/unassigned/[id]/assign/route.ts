@@ -61,11 +61,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Rapport non trouvé' }, { status: 404 })
     }
 
-    // Agent can only assign their own reports
-    if (callerProfile.role === 'agent' && report.agent_id !== user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     // Load study
     const { data: study } = await admin
       .from('studies')
@@ -75,11 +70,6 @@ export async function PATCH(
 
     if (!study) {
       return NextResponse.json({ error: 'Étude non trouvée' }, { status: 404 })
-    }
-
-    // Agent must be assigned to the target study
-    if (callerProfile.role === 'agent' && study.assigned_agent_id !== user.id) {
-      return NextResponse.json({ error: 'Vous n\'êtes pas assigné à cette étude' }, { status: 403 })
     }
 
     // 1. Download the PDF from unassigned storage path
