@@ -97,11 +97,6 @@ export async function GET(req: NextRequest) {
       .select('id, agent_id, original_filename, file_size, uploaded_at')
       .order('uploaded_at', { ascending: false })
 
-    // Agents only see their own; admins see all
-    if (role === 'agent') {
-      query = query.eq('agent_id', user.id)
-    }
-
     const { data, error } = await query
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
