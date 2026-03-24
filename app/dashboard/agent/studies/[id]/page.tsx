@@ -59,7 +59,7 @@ export default async function AgentStudyDetail({
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6 bg-[#f0f4f8]">
-        <a href="/dashboard/agent" className="text-teal hover:underline font-body text-sm">
+        <a href="/dashboard/agent/studies" className="text-teal hover:underline font-body text-sm">
           &larr; Back to studies
         </a>
 
