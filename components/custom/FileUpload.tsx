@@ -89,6 +89,9 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           onDragEnter={handleDragEnter}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
+          role="button"
+          tabIndex={0}
+          aria-label="File drop zone — click or drop a file"
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
             isDragging
               ? 'border-teal bg-teal/10'

@@ -114,8 +114,9 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
             type="submit"
             disabled={sending || !text.trim()}
             className="bg-teal text-white hover:bg-teal/90 p-2"
+            aria-label="Send message"
           >
-            <Send className="h-4 w-4" />
+            <Send className="h-4 w-4" aria-hidden="true" />
           </Button>
         </form>
       </CardContent>

@@ -24,8 +24,8 @@ export default function AppLayout({ children }: AppLayoutProps) {
       <div className="flex-1 flex flex-col">
         {/* mobile header */}
         <header className="lg:hidden flex items-center justify-between bg-midnight text-white h-14 px-4">
-          <button onClick={() => setSidebarOpen(true)}>
-            <Menu className="h-6 w-6" />
+          <button onClick={() => setSidebarOpen(true)} aria-label="Open menu">
+            <Menu className="h-6 w-6" aria-hidden="true" />
           </button>
           <span className="text-teal text-lg font-display">
             SomnoConnect

@@ -87,6 +87,9 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
           onDragOver={e => e.preventDefault()}
           onDragLeave={e => { e.preventDefault(); setIsDragging(false) }}
           onDrop={handleDrop}
+          role="button"
+          tabIndex={0}
+          aria-label="File drop zone — click or drop EDF files"
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
             isDragging ? 'border-teal bg-teal/10' : 'border-teal/30 bg-teal/5 hover:bg-teal/10'
           }`}
