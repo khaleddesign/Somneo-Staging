@@ -154,16 +154,16 @@ export default function AdminStudiesPage() {
             <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Priority" /></SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All priorities</SelectItem>
-              <SelectItem value="low">Basse</SelectItem>
-              <SelectItem value="medium">Moyenne</SelectItem>
-              <SelectItem value="high">Haute</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="medium">Average</SelectItem>
+              <SelectItem value="high">High</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={agent} onValueChange={setAgent}>
             <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Agent" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous agents</SelectItem>
+              <SelectItem value="all">All agents</SelectItem>
               <SelectItem value="unassigned">Unassigneds</SelectItem>
               {agents.map((a) => (
                 <SelectItem key={a.id} value={a.id}>{a.full_name || a.email}</SelectItem>
@@ -174,7 +174,7 @@ export default function AdminStudiesPage() {
           <Select value={client} onValueChange={setClient}>
             <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal"><SelectValue placeholder="Client" /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous clients</SelectItem>
+              <SelectItem value="all">All clients</SelectItem>
               {clients.map((c) => (
                 <SelectItem key={c.id} value={c.id}>{c.full_name || c.email}</SelectItem>
               ))}
@@ -185,7 +185,7 @@ export default function AdminStudiesPage() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 overflow-x-auto">
-          <h2 className="text-lg text-midnight font-heading mb-4">Vue filtrable</h2>
+          <h2 className="text-lg text-midnight font-heading mb-4">Filtered view</h2>
           <StudyListWithFilters
             studies={filtered}
             loading={loading}
@@ -226,7 +226,7 @@ export default function AdminStudiesPage() {
               ))}
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">Aucune study found</td>
+                  <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">No studies found</td>
                 </tr>
               )}
             </tbody>

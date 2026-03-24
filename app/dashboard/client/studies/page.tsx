@@ -15,17 +15,17 @@ export default function ClientStudiesPage() {
       <div className="p-5 md:p-8 space-y-6">
         <div>
           <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">
-            Études
+            Studies
           </h1>
           <p className="text-gray-500 mt-2 font-body">
-            Retrouvez vos études et celles de votre institution.
+            View your studies and those from your institution.
           </p>
         </div>
 
         <Tabs defaultValue="mine">
           <TabsList className="mb-4">
             <TabsTrigger value="mine">
-              Mes études
+              My studies
               {!myLoading && (
                 <span className="ml-2 bg-teal/10 text-teal text-xs font-heading px-2 py-0.5 rounded-full">
                   {myStudies.length}
@@ -33,7 +33,7 @@ export default function ClientStudiesPage() {
               )}
             </TabsTrigger>
             <TabsTrigger value="institution">
-              Mon institution
+              My institution
               {!instLoading && (
                 <span className="ml-2 bg-gray-100 text-gray-600 text-xs font-heading px-2 py-0.5 rounded-full">
                   {instStudies.length}
@@ -46,7 +46,7 @@ export default function ClientStudiesPage() {
             <Card className="shadow-sm border-gray-200">
               <CardHeader>
                 <CardTitle className="text-xl text-midnight font-heading">
-                  Mes études soumises
+                  My submitted studies
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -64,7 +64,7 @@ export default function ClientStudiesPage() {
             <Card className="shadow-sm border-gray-200">
               <CardHeader>
                 <CardTitle className="text-xl text-midnight font-heading">
-                  Toutes les études de mon institution
+                  All studies from my institution
                 </CardTitle>
               </CardHeader>
               <CardContent>

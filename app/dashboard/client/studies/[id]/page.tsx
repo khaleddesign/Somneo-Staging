@@ -48,13 +48,13 @@ export default async function ClientStudyDetail({
   return (
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6 bg-[#f0f4f8]">
-        <a href="/dashboard/client" className="text-teal hover:underline font-body text-sm">
-          &larr; Retour au dashboard
+        <a href="/dashboard/client/studies" className="text-teal hover:underline font-body text-sm">
+          &larr; Back to studies
         </a>
 
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
+            <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Patient File</h1>
             <p className="text-gray-500 font-body mt-1">Your sleep study tracking</p>
           </div>
           <div className="self-end sm:self-auto">
@@ -64,7 +64,7 @@ export default async function ClientStudyDetail({
 
         <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
           <CardHeader>
-            <CardTitle className="text-2xl text-midnight font-heading">Informations</CardTitle>
+            <CardTitle className="text-2xl text-midnight font-heading">Details</CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
@@ -86,13 +86,13 @@ export default async function ClientStudyDetail({
               </span>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Submission date</p>
               <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</p>
             </div>
             {study.file_size_orig && (
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Taille du fichier</p>
-                <p className="text-midnight font-body mt-1">{(study.file_size_orig / 1024 / 1024).toFixed(2)} Mo</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">File size</p>
+                <p className="text-midnight font-body mt-1">{(study.file_size_orig / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             )}
             {study.notes && (
@@ -106,13 +106,13 @@ export default async function ClientStudyDetail({
 
         <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
           <CardHeader>
-            <CardTitle className="text-xl text-midnight font-heading">Rapport</CardTitle>
+            <CardTitle className="text-xl text-midnight font-heading">Report</CardTitle>
           </CardHeader>
           <CardContent>
             {study.report_path && study.status === 'termine' ? (
               <ReportDownload studyId={study.id} reportPath={study.report_path} />
             ) : (
-              <p className="text-sm text-gray-500 font-body">En attente de traitement par un agent.</p>
+              <p className="text-sm text-gray-500 font-body">Awaiting processing by an agent.</p>
             )}
           </CardContent>
         </Card>

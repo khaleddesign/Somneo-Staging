@@ -42,14 +42,14 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
     const arr = Array.from(files)
 
     if (items.length >= MAX_FILES) {
-      setValidationError(`Maximum ${MAX_FILES} fichiers par batch.`)
+      setValidationError(`Maximum ${MAX_FILES} files per batch.`)
       return
     }
 
     const invalid = arr.filter(f => !isValidFile(f))
     if (invalid.length > 0) {
       setValidationError(
-        `${invalid.length} fichier(s) ignoré(s) : format invalide ou taille > 500 MB.`
+        `${invalid.length} file(s) skipped: invalid format or size > 500 MB.`
       )
     }
 
@@ -70,7 +70,7 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
 
   async function handleStart() {
     if (!canStart) {
-      setValidationError('Veuillez renseigner la référence patient et le type pour chaque étude.')
+      setValidationError('Please fill in the patient reference and type for each study.')
       return
     }
     setValidationError(null)
@@ -94,9 +94,9 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
         >
           <Upload className="h-10 w-10 mx-auto mb-3 text-teal" />
           <p className="text-base font-medium text-gray-900">
-            Glissez vos fichiers EDF ici
+            Drop your EDF files here
           </p>
-          <p className="text-sm text-gray-500 mt-1">ou cliquez pour parcourir</p>
+          <p className="text-sm text-gray-500 mt-1">or click to browse</p>
           <p className="text-xs text-gray-400 mt-2">
             .edf, .edf+, .bdf, .zip · max 500 MB par fichier · max {MAX_FILES} fichiers
           </p>
@@ -123,7 +123,7 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
       {phase === 'uploading' && (
         <div className="space-y-1">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>{successCount} / {items.length} études uploadées</span>
+            <span>{successCount} / {items.length} studies uploaded</span>
             <span>{globalProgress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -159,13 +159,13 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
               ? <AlertCircle className="h-5 w-5 text-amber-600" />
               : <CheckCircle2 className="h-5 w-5 text-green-600" />}
             <p className="text-sm font-medium">
-              {successCount} étude{successCount > 1 ? 's' : ''} créée{successCount > 1 ? 's' : ''}
-              {hasErrors && `, ${errorCount} erreur${errorCount > 1 ? 's' : ''}`}
+              {successCount} {successCount > 1 ? 'studies' : 'study'} created
+              {hasErrors && `, ${errorCount} ${errorCount > 1 ? 'errors' : 'error'}`}
             </p>
           </div>
           {hasErrors && (
             <p className="text-xs text-amber-700 mt-1 ml-7">
-              Les fichiers en erreur peuvent être réessayés individuellement.
+              Failed files can be retried individually.
             </p>
           )}
         </div>
@@ -180,7 +180,7 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
             className="bg-teal text-white hover:bg-teal/90"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Valider et uploader ({items.length} fichier{items.length > 1 ? 's' : ''})
+            Start upload ({items.length} {items.length > 1 ? 'files' : 'file'})
           </Button>
         )}
 
@@ -191,7 +191,7 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
             className="border-amber-300 text-amber-700 hover:bg-amber-50"
           >
             <RefreshCw className="h-4 w-4 mr-2" />
-            Réessayer les erreurs ({errorCount})
+            Retry errors ({errorCount})
           </Button>
         )}
       </div>

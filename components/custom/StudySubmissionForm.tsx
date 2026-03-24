@@ -117,7 +117,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
               className={patientRefError ? 'border-red-500 focus:border-red-600' : 'border-gray-200 focus-visible:border-teal focus-visible:ring-teal/20'}
             />
             {patientRefError && (
-              <p className="text-sm text-red-600">Champ requis</p>
+              <p className="text-sm text-red-600">Required field</p>
             )}
           </div>
 
@@ -137,7 +137,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
               </SelectContent>
             </Select>
             {studyTypeError && (
-              <p className="text-sm text-red-600">Champ requis</p>
+              <p className="text-sm text-red-600">Required field</p>
             )}
           </div>
 
@@ -149,16 +149,16 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="low">Basse</SelectItem>
-                <SelectItem value="medium">Normale</SelectItem>
-                <SelectItem value="high">Haute</SelectItem>
+                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="medium">Normal</SelectItem>
+                <SelectItem value="high">High</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           {/* Notes */}
           <div className="space-y-2">
-            <Label htmlFor="notes" className="font-heading text-sm text-gray-700">Notes (optionnel)</Label>
+            <Label htmlFor="notes" className="font-heading text-sm text-gray-700">Notes (optional)</Label>
             <Textarea
               id="notes"
               value={notes}
@@ -172,10 +172,10 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
 
           {/* File Upload */}
           <div className="space-y-2">
-            <Label className="font-heading text-sm text-gray-700">Fichier EDF *</Label>
+            <Label className="font-heading text-sm text-gray-700">EDF file *</Label>
             <FileUpload onUploadComplete={handleUploadComplete} />
             {fileError && (
-              <p className="text-sm text-red-600">Veuillez uploader un fichier</p>
+              <p className="text-sm text-red-600">Please upload a file</p>
             )}
           </div>
 
@@ -198,7 +198,7 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
             disabled={loading || !uploadedFile || !patientRef || !studyType}
             className="w-full bg-teal text-white hover:bg-teal/90"
           >
-            {loading ? "Création de l’étude..." : "Soumettre l’étude"}
+            {loading ? "Creating study..." : "Submit study"}
           </Button>
         </form>
       </CardContent>

@@ -96,15 +96,15 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           }`}
         >
           <Upload className="h-12 w-12 mx-auto mb-3 text-teal" />
-          <p className="text-lg font-medium text-gray-900">Glissez votre fichier EDF ou ZIP ici</p>
-          <p className="text-sm text-gray-500 mt-1">ou cliquez pour parcourir</p>
+          <p className="text-lg font-medium text-gray-900">Drop your EDF or ZIP file here</p>
+          <p className="text-sm text-gray-500 mt-1">or click to browse</p>
           <Button
             variant="outline"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
             className="mt-3"
           >
-            Parcourir les fichiers
+            Browse files
           </Button>
           <p className="text-xs text-gray-400 mt-3">Formats acceptés : .edf, .zip (max 500 MB)</p>
           <input
@@ -130,7 +130,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
           {/* Barre de progression */}
           {state === 'uploading' && (
             <p className="text-sm text-gray-600">
-              {progress === 0 ? 'Calcul du checksum...' : 'Upload en cours...'}
+              {progress === 0 ? 'Computing checksum...' : 'Uploading...'}
             </p>
           )}
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -157,7 +157,7 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
                 size="sm"
                 onClick={resume}
               >
-                Reprendre
+                Resume
               </Button>
             )}
             {state !== 'completed' && (

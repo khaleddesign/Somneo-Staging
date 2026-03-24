@@ -37,7 +37,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
       await sendComment(msg)
       setText('')
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Erreur réseau'
+      const message = err instanceof Error ? err.message : 'Network error'
       toast.error('Message non envoyé', {
         description: message,
         action: {
@@ -49,7 +49,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
   }
 
   const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
 
   return (
     <Card className="w-full border border-gray-100 rounded-2xl shadow-sm">
@@ -76,7 +76,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
                 className={`flex items-end ${mine ? 'justify-end' : 'justify-start'}`}
               >
                 {!mine && (
-                  <Avatar name={c.profiles?.full_name || "Utilisateur inconnu"} className="mr-2 bg-midnight text-sand font-heading" />
+                  <Avatar name={c.profiles?.full_name || "Unknown user"} className="mr-2 bg-midnight text-sand font-heading" />
                 )}
                 <div
                   className={`p-2 rounded-lg max-w-[70%] wrap-break-word ${
@@ -92,7 +92,7 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
                 </div>
                 {mine && (
                   <Avatar
-                    name={currentUser.name || 'Vous'}
+                    name={currentUser.name || 'You'}
                     className="ml-2 bg-midnight text-sand font-heading"
                   />
                 )}

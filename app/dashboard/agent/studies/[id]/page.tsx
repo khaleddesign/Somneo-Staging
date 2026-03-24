@@ -60,12 +60,12 @@ export default async function AgentStudyDetail({
     <AppLayout>
       <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6 bg-[#f0f4f8]">
         <a href="/dashboard/agent" className="text-teal hover:underline font-body text-sm">
-          &larr; Retour au dashboard
+          &larr; Back to studies
         </a>
 
         <Card className="bg-linear-to-r from-midnight to-[#0d2137] border-t-4 border-t-teal text-white rounded-2xl shadow-sm">
           <CardContent className="p-6">
-            <h1 className="text-4xl lg:text-5xl font-display leading-tight text-sand">Dossier Patient</h1>
+            <h1 className="text-4xl lg:text-5xl font-display leading-tight text-sand">Patient File</h1>
             <p className="text-sand/70 font-body mt-1">Clinical sleep study monitoring</p>
           </CardContent>
         </Card>
@@ -73,7 +73,7 @@ export default async function AgentStudyDetail({
         <ClientOnly fallback={<div className="h-12" />}>
           <Tabs defaultValue="informations">
             <TabsList>
-              <TabsTrigger value="informations">Informations</TabsTrigger>
+              <TabsTrigger value="informations">Details</TabsTrigger>
               {canWriteReport && <TabsTrigger value="report">Write report</TabsTrigger>}
               <TabsTrigger value="discussion">Discussion</TabsTrigger>
             </TabsList>
@@ -83,7 +83,7 @@ export default async function AgentStudyDetail({
                 <CardHeader>
                   <CardTitle className="text-2xl text-midnight font-heading inline-flex items-center gap-3">
                     <span className="text-3xl font-display text-teal/30">01</span>
-                    Informations
+                    Details
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -110,7 +110,7 @@ export default async function AgentStudyDetail({
                     </span>
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
+                    <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Submission date</p>
                     <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</p>
                   </div>
                   {study.notes && (

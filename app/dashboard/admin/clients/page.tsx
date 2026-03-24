@@ -54,7 +54,7 @@ export default function AdminClientsPage() {
     const normalizedName = inviteForm.full_name.trim()
 
     if (!normalizedEmail) {
-      setInviteError('Email requis')
+      setInviteError('Email required')
       return
     }
 
@@ -119,11 +119,11 @@ export default function AdminClientsPage() {
       <div className="p-2 md:p-4 space-y-6 bg-[#f0f4f8]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-4xl text-midnight font-display">Gestion des clients</h1>
+            <h1 className="text-4xl text-midnight font-display">Client management</h1>
             <p className="text-gray-500 font-body">Complete client account management</p>
           </div>
           <Button className="bg-teal text-white hover:bg-teal/90 rounded-xl font-heading" onClick={() => setInviteOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" /> Inviter un client
+            <Plus className="h-4 w-4 mr-2" /> Invite client
           </Button>
         </div>
 
@@ -132,7 +132,7 @@ export default function AdminClientsPage() {
             <Search className="h-4 w-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
               className="pl-9 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
-              placeholder="Rechercher un client"
+              placeholder="Search client"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -142,7 +142,7 @@ export default function AdminClientsPage() {
             <table className="min-w-full text-sm">
               <thead className="bg-[#fafbfc] border-b border-gray-100">
                 <tr>
-                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Nom</th>
+                  <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Name</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Email</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Institution</th>
                   <th className="px-3 py-2 text-left text-xs uppercase tracking-wider text-gray-500 font-heading">Studies submitted</th>
@@ -161,13 +161,13 @@ export default function AdminClientsPage() {
                     <td className="px-3 py-3 font-body">{client.last_study_at ? new Date(client.last_study_at).toLocaleDateString('en-GB') : '—'}</td>
                     <td className="px-3 py-3">
                       <span className={`px-2 py-1 rounded-full text-xs font-heading ${client.is_suspended ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                        {client.is_suspended ? 'Suspendu' : 'Actif'}
+                        {client.is_suspended ? 'Suspended' : 'Active'}
                       </span>
                     </td>
                     <td className="px-3 py-3">
                       <div className="flex flex-wrap gap-2">
                         <Button variant="outline" onClick={() => openEdit(client)}>
-                          <Pencil className="h-4 w-4 mr-1" /> Modifier
+                          <Pencil className="h-4 w-4 mr-1" /> Edit
                         </Button>
                         <Button variant="outline" onClick={() => toggleSuspend(client)}>
                           <Ban className="h-4 w-4 mr-1" /> {client.is_suspended ? 'Reactivate' : 'Suspend'}
@@ -178,7 +178,7 @@ export default function AdminClientsPage() {
                 ))}
                 {!loading && filtered.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">Aucun client</td>
+                    <td colSpan={7} className="px-3 py-6 text-center text-gray-500 font-body">No clients</td>
                   </tr>
                 )}
               </tbody>
@@ -215,7 +215,7 @@ export default function AdminClientsPage() {
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="font-heading">Modifier le client</DialogTitle>
+            <DialogTitle className="font-heading">Edit client</DialogTitle>
             <DialogDescription className="font-body text-gray-500">
               Update the selected client's information.
             </DialogDescription>

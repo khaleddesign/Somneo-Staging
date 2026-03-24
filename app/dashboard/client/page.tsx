@@ -91,7 +91,7 @@ export default function ClientDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">Mon institution</p>
+                  <p className="text-xs uppercase tracking-wider text-gray-400 mb-2 font-heading">My institution</p>
                   <p className="text-3xl text-midnight font-display">{instStudies.length}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-teal/8">

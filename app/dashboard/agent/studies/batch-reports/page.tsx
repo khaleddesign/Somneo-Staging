@@ -6,10 +6,10 @@ export default function BatchReportsPage() {
     <AppLayout>
       <div className="p-5 md:p-8 max-w-3xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl text-midnight font-display">Upload de rapports en masse</h1>
+          <h1 className="text-3xl text-midnight font-display">Bulk report upload</h1>
           <p className="text-gray-500 mt-1 font-body text-sm">
-            Uploadez plusieurs rapports PDF. Le système tente d&apos;associer chaque fichier
-            automatiquement à une étude via la référence patient dans le nom du fichier.
+            Upload multiple PDF reports. The system attempts to match each file
+            automatically to a study using the patient reference in the filename.
           </p>
         </div>
 

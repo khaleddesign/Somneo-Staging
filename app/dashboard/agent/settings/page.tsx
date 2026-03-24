@@ -110,11 +110,11 @@ export default function SettingsPage() {
         {/* Account Information */}
         <Card className="mb-8 rounded-2xl border border-gray-100 shadow-sm bg-white">
           <CardHeader>
-            <CardTitle className="font-heading">Informations du compte</CardTitle>
+            <CardTitle className="font-heading">Account information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-                <Label className="text-gray-600 font-heading">Nom</Label>
+                <Label className="text-gray-600 font-heading">Name</Label>
               <p className="mt-1 text-lg text-gray-900 font-body">{profile?.full_name}</p>
             </div>
             <div>
@@ -127,12 +127,12 @@ export default function SettingsPage() {
         {/* Change Password */}
         <Card className="rounded-xl border border-gray-100 shadow-sm">
           <CardHeader>
-            <CardTitle className="font-heading">Changer le mot de passe</CardTitle>
+            <CardTitle className="font-heading">Change password</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Mot de passe actuel</Label>
+                <Label htmlFor="current-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Current password</Label>
                 <Input
                   id="current-password"
                   type="password"

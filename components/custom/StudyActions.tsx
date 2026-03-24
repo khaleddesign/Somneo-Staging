@@ -52,10 +52,10 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
     } catch (e: unknown) {
       const message = e instanceof Error ? e.message : 'Error'
       setError(message)
-      toast.error('Erreur de mise à jour', {
+      toast.error('Update error', {
         description: message,
         action: {
-          label: 'Réessayer',
+          label: 'Retry',
           onClick: handleStatusUpdate,
         },
       })
@@ -165,10 +165,10 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Unknown error'
       setUploadError(message)
-      toast.error('Erreur d\'upload', {
+      toast.error('Upload error', {
         description: message,
         action: {
-          label: 'Réessayer',
+          label: 'Retry',
           onClick: () => {
             if (file) handleReportUpload(new Event('submit') as unknown as React.FormEvent)
           },
@@ -229,7 +229,7 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
             {downloading ? (
               <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Downloading...</>
             ) : (
-              <><Download className="h-4 w-4 mr-2" />📄 Voir le report PDF</>
+              <><Download className="h-4 w-4 mr-2" />View PDF report</>
             )}
           </Button>
           {downloadError && <p className="text-red-600 text-sm mt-2">{downloadError}</p>}

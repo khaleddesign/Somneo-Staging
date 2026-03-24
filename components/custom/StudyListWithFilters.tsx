@@ -100,11 +100,11 @@ export default function StudyListWithFilters({
       {/* Quick filter chips */}
       <div className="flex flex-wrap gap-2 mb-4">
         {[
-          { label: 'Toutes', value: 'all' },
-          { label: 'En attente', value: 'en_attente' },
-          { label: 'En cours', value: 'en_cours' },
-          { label: 'Terminées', value: 'termine' },
-          { label: 'Annulées', value: 'annule' },
+          { label: 'All', value: 'all' },
+          { label: 'Pending', value: 'en_attente' },
+          { label: 'In progress', value: 'en_cours' },
+          { label: 'Completed', value: 'termine' },
+          { label: 'Cancelled', value: 'annule' },
         ].map((chip) => (
           <button
             key={chip.value}
@@ -124,7 +124,7 @@ export default function StudyListWithFilters({
 
       <div className="flex gap-4 flex-wrap">
         <div className="w-full">
-          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Recherche patient</label>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Patient search</label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
@@ -133,7 +133,7 @@ export default function StudyListWithFilters({
                 setSearchQuery(e.target.value)
                 setCurrentPage(1)
               }}
-              placeholder="Rechercher par référence patient"
+              placeholder="Search by patient reference"
               className="pl-9 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
             />
           </div>
@@ -150,7 +150,7 @@ export default function StudyListWithFilters({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
+              <SelectItem value="all">All statuses</SelectItem>
               <SelectItem value="en_attente">Pending</SelectItem>
               <SelectItem value="en_cours">In progress</SelectItem>
               <SelectItem value="termine">Completed</SelectItem>
@@ -169,10 +169,10 @@ export default function StudyListWithFilters({
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes les priorités</SelectItem>
-              <SelectItem value="low">Basse</SelectItem>
-              <SelectItem value="medium">Moyenne</SelectItem>
-              <SelectItem value="high">Haute</SelectItem>
+              <SelectItem value="all">All priorities</SelectItem>
+              <SelectItem value="low">Low</SelectItem>
+              <SelectItem value="medium">Average</SelectItem>
+              <SelectItem value="high">High</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -189,7 +189,7 @@ export default function StudyListWithFilters({
               }}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 underline"
             >
-              Réinitialiser filtres
+              Reset filters
             </button>
           </div>
         )}
@@ -197,18 +197,18 @@ export default function StudyListWithFilters({
 
       <div>
         <p className="text-sm text-gray-500 mb-4">
-          {filteredStudies.length} étude{filteredStudies.length !== 1 ? 's' : ''}
+          {filteredStudies.length} {filteredStudies.length !== 1 ? 'studies' : 'study'}
         </p>
 
         {loading ? (
           <StudyListSkeleton rows={pageSize} />
         ) : !error && filteredStudies.length === 0 ? (
           <EmptyState
-            title={searchQuery.trim() ? 'Aucun résultat' : 'Aucune étude'}
+            title={searchQuery.trim() ? 'No results' : 'No studies'}
             description={
               searchQuery.trim()
-                ? `Aucune étude trouvée pour « ${searchQuery.trim()} ».`
-                : 'Les études soumises apparaîtront ici.'
+                ? `No study found for "${searchQuery.trim()}".`
+                : 'Submitted studies will appear here.'
             }
           />
         ) : (
@@ -229,7 +229,7 @@ export default function StudyListWithFilters({
               onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
             >
-              Précédent
+              Previous
             </Button>
             <p className="text-sm text-gray-500">
               Page {currentPage} sur {totalPages}
@@ -239,7 +239,7 @@ export default function StudyListWithFilters({
               onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
             >
-              Suivant
+              Next
             </Button>
           </div>
         )}
