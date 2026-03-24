@@ -7,20 +7,13 @@ import { StudySearchCombobox } from '@/components/custom/StudySearchCombobox'
 import { useBatchReportUpload } from '@/hooks/useBatchReportUpload'
 import type { StudyMatch } from '@/hooks/useBatchReportUpload'
 import { Upload, AlertCircle, CheckCircle2, RefreshCw, ArchiveX, Link2 } from 'lucide-react'
+import { formatFileSize } from '@/lib/utils'
 
 interface UnassignedReport {
   id: string
   original_filename: string
   file_size: number
   uploaded_at: string
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
 function isPdf(file: File): boolean {

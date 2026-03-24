@@ -20,6 +20,7 @@ import { Button } from '@/components/ui/button'
 import {
   Layers, Upload, CheckCircle2, AlertCircle, Loader2, Link2, ArchiveX
 } from 'lucide-react'
+import { formatFileSize } from '@/lib/utils'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -39,14 +40,6 @@ interface AssignReportPopoverProps {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-}
 
 function isPdf(file: File): boolean {
   return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')

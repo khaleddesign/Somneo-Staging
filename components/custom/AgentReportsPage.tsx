@@ -16,6 +16,7 @@ import type { StudyMatch } from '@/hooks/useBatchReportUpload'
 import {
   ArchiveX, FileText, ExternalLink, RefreshCw, AlertCircle, Loader2, Link2, UploadCloud
 } from 'lucide-react'
+import { formatFileSize } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -36,14 +37,6 @@ interface AssignedStudy {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
-}
 
 // ── Component ──────────────────────────────────────────────────────────────────
 

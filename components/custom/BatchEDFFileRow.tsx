@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle, CheckCircle2, Loader2, X, AlertCircle } from 'lucide-react'
 import type { BatchFileItem, StudyType, Priority } from '@/hooks/useBatchEDFUpload'
+import { formatFileSize } from '@/lib/utils'
 
 interface BatchEDFFileRowProps {
   item: BatchFileItem
@@ -14,14 +15,6 @@ interface BatchEDFFileRowProps {
   onUpdate: (id: string, patch: Partial<Pick<BatchFileItem, 'patientRef' | 'studyType' | 'priority' | 'notes'>>) => void
   onRemove: (id: string) => void
   disabled: boolean
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
 export function BatchEDFFileRow({ item, index, onUpdate, onRemove, disabled }: BatchEDFFileRowProps) {

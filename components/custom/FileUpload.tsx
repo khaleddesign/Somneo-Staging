@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { useFileUpload } from '@/hooks/useFileUpload'
 import { Button } from '@/components/ui/button'
 import { AlertCircle, CheckCircle, Upload } from 'lucide-react'
+import { formatFileSize } from '@/lib/utils'
 
 interface FileUploadProps {
   onUploadComplete?: (data: {
@@ -71,14 +72,6 @@ export function FileUpload({ onUploadComplete }: FileUploadProps) {
     const validExtensions = ['.edf', '.zip']
     const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase()
     return validExtensions.includes(fileExtension) && file.size <= 2 * 1024 * 1024 * 1024 // 2GB
-  }
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B'
-    const k = 1024
-    const sizes = ['B', 'KB', 'MB', 'GB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i]
   }
 
   return (

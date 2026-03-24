@@ -8,6 +8,7 @@ import {
   CheckCircle2, AlertTriangle, AlertCircle, X, Loader2, ArchiveX
 } from 'lucide-react'
 import type { ReportBatchItem, StudyMatch } from '@/hooks/useBatchReportUpload'
+import { formatFileSize } from '@/lib/utils'
 
 interface ReportMatchRowProps {
   item: ReportBatchItem
@@ -17,14 +18,6 @@ interface ReportMatchRowProps {
   onSkipAssignment: (itemId: string, skip: boolean) => void
   onRemove: (itemId: string) => void
   disabled: boolean
-}
-
-function formatFileSize(bytes: number): string {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i]
 }
 
 export function ReportMatchRow({

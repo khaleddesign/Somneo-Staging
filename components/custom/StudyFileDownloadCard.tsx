@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { Download, Loader2 } from 'lucide-react'
+import { formatFileSize } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
@@ -16,17 +17,6 @@ interface DownloadResponse {
   error?: string
 }
 
-function formatFileSize(fileSizeBytes: number | null): string {
-  if (!fileSizeBytes || fileSizeBytes <= 0) return 'Taille inconnue'
-
-  const gb = fileSizeBytes / (1024 ** 3)
-  if (gb >= 1) {
-    return `${gb.toFixed(2)} GB`
-  }
-
-  const mb = fileSizeBytes / (1024 ** 2)
-  return `${mb.toFixed(2)} MB`
-}
 
 export default function StudyFileDownloadCard({ studyId, filePath, fileSizeBytes }: StudyFileDownloadCardProps) {
   const [loading, setLoading] = useState(false)
