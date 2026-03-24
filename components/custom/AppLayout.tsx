@@ -4,7 +4,7 @@ import { ReactNode, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { Menu } from 'lucide-react'
 import Sidebar from './Sidebar'
-import HeaderWrapper from './HeaderWrapper'
+import Header from './Header'
 
 // ssr: false — NotificationBell is purely client-side (Supabase auth, fetch).
 // The SSR pass generates different Radix IDs (Popover) between SSR and RSC passes,
@@ -33,7 +33,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           <NotificationBell />
         </header>
         <div className="hidden lg:block">
-          <HeaderWrapper />
+          <Header />
         </div>
         <main className="bg-[#f0f4f8] flex-1 p-6 overflow-auto ml-0 lg:ml-60">
       {children}
