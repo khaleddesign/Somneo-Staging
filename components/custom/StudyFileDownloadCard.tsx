@@ -61,11 +61,11 @@ export default function StudyFileDownloadCard({ studyId, filePath, fileSizeBytes
           <>
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Nom du fichier</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">File name</p>
                 <p className="text-midnight font-body mt-1 break-all">{fileName}</p>
               </div>
               <div>
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Taille</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Size</p>
                 <p className="text-midnight font-body mt-1">{formatFileSize(fileSizeBytes)}</p>
               </div>
             </div>

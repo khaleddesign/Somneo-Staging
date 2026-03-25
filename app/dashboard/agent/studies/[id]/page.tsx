@@ -106,7 +106,7 @@ export default async function AgentStudyDetail({
                   <div>
                     <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Status</p>
                     <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
-                      {study.status.replace('_', ' ')}
+                      {study.status === 'en_attente' ? 'pending' : study.status === 'en_cours' ? 'in progress' : study.status === 'termine' ? 'completed' : study.status}
                     </span>
                   </div>
                   <div>

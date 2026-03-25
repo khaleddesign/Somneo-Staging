@@ -38,7 +38,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     // Verify access based on role
     const hasAccess =
       role === 'admin' ||
-      (role === 'agent' && study.assigned_agent_id === user.id) ||
+      role === 'agent' ||
       (role === 'client' && study.client_id === user.id)
 
     if (!hasAccess) {
