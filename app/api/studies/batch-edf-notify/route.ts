@@ -50,13 +50,13 @@ export async function POST(req: Request) {
     }
 
     const clientName = clientProfile.full_name || clientProfile.email
-    const subject = `SomnoConnect — ${successCount} nouveau${successCount > 1 ? 'x' : ''} fichier${successCount > 1 ? 's' : ''} EDF reçu${successCount > 1 ? 's' : ''}`
+    const subject = `SomnoConnect — ${successCount} new EDF file${successCount > 1 ? 's' : ''} received`
     const message = `
-      <p>Bonjour,</p>
-      <p><strong>${clientName}</strong> vient de soumettre un batch de <strong>${successCount} fichier${successCount > 1 ? 's' : ''} EDF</strong>
-      ${totalCount > successCount ? ` (${totalCount - successCount} en erreur)` : ''} sur SomnoConnect.</p>
-      <p>Connectez-vous au tableau de bord pour traiter les nouvelles études.</p>
-      <p>— SomnoConnect par SOMNOVENTIS</p>
+      <p>Hello,</p>
+      <p><strong>${clientName}</strong> has submitted a batch of <strong>${successCount} EDF file${successCount > 1 ? 's' : ''}</strong>
+      ${totalCount > successCount ? ` (${totalCount - successCount} failed)` : ''} on SomnoConnect.</p>
+      <p>Log in to the dashboard to process the new studies.</p>
+      <p>— SomnoConnect by SOMNOVENTIS</p>
     `
 
     // Fire-and-forget to all agents

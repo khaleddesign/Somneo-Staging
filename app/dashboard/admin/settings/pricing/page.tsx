@@ -138,7 +138,7 @@ export default function AdminPricingSettingsPage() {
               disabled={saving}
               onClick={() => void save()}
             >
-              {saving ? 'Sauvegarde...' : 'Sauvegarder'}
+              {saving ? 'Saving...' : 'Save'}
             </Button>
           </div>
         </div>
