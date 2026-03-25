@@ -119,6 +119,12 @@ export async function startTusUpload(
       "x-upsert": "true",
     },
     uploadDataDuringCreation: true,
+    removeFingerprintOnSuccess: true,
+    fingerprint: (file: File) => {
+      return Promise.resolve(
+        ["tus", file.name, file.type, file.size, file.lastModified, objectPath].join("-")
+      );
+    },
     metadata: {
       bucketName: BUCKET_NAME,
       objectName: objectPath,
