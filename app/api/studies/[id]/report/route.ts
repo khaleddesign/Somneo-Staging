@@ -35,7 +35,7 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     const hasAccess =
       role === 'admin' ||
       role === 'agent' ||
-      (role === 'client' && study.client_id === user.id)
+      role === 'client'
 
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })

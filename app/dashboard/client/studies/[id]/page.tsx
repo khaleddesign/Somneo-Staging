@@ -1,11 +1,13 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { decrypt } from '@/lib/encryption'
 import ReportDownload from '@/components/custom/ReportDownload'
 import StudyComments from '@/components/custom/StudyComments'
 import SectionErrorBoundary from '@/components/custom/SectionErrorBoundary'
 import AppLayout from '@/components/custom/AppLayout'
 import DeleteStudyButton from '@/components/custom/DeleteStudyButton'
+import StudyFileDownloadCard from '@/components/custom/StudyFileDownloadCard'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 function getStatusBadge(status: string) {
@@ -33,11 +35,11 @@ export default async function ClientStudyDetail({
     .eq('id', user.id)
     .single()
 
-  const { data: study, error } = await supabase
+  const admin = createAdminClient()
+  const { data: study, error } = await admin
     .from('studies')
     .select('*')
     .eq('id', id)
-    .eq('client_id', user.id)
     .single()
 
   if (error || !study) return notFound()
@@ -82,7 +84,7 @@ export default async function ClientStudyDetail({
             <div>
               <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Status</p>
               <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
-                {study.status.replace('_', ' ')}
+                {study.status === 'en_attente' ? 'pending' : study.status === 'en_cours' ? 'in progress' : study.status === 'termine' ? 'completed' : study.status}
               </span>
             </div>
             <div>
@@ -103,6 +105,12 @@ export default async function ClientStudyDetail({
             )}
           </CardContent>
         </Card>
+
+        <StudyFileDownloadCard
+          studyId={study.id}
+          filePath={study.file_path}
+          fileSizeBytes={study.file_size_orig}
+        />
 
         <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
           <CardHeader>

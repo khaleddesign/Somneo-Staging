@@ -36,7 +36,7 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
       })
 
       if (!res.ok) {
-        let errorMsg = 'Une erreur est survenue lors de la suppression'
+        let errorMsg = 'An error occurred while deleting'
         try {
           const data = await res.json()
           if (data.error) errorMsg = data.error
@@ -49,7 +49,7 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
       router.push(redirectUrl)
       router.refresh()
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Une erreur inconnue est survenue')
+      setError(err instanceof Error ? err.message : 'An unknown error occurred')
       setIsDeleting(false)
     }
   }
@@ -59,7 +59,7 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
       <DialogTrigger asChild>
         <Button variant="destructive" className="flex items-center gap-2 font-heading">
           <Trash2 className="h-4 w-4" />
-          Effacer le dossier
+          Delete study
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
@@ -73,9 +73,9 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
             <br /><br />
             This action will permanently delete:
             <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
-              <li>Du fichier complet (EDF / ZIP) des serveurs</li>
-              <li>Du report d'analyse final (s'il existe)</li>
-              <li>De l'historique complet des informations du patient</li>
+              <li>The complete file (EDF / ZIP) from the servers</li>
+              <li>The final analysis report (if any)</li>
+              <li>The complete patient history</li>
             </ul>
           </DialogDescription>
         </DialogHeader>
@@ -95,7 +95,7 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
             {isDeleting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
-              "Oui, supprimer"
+              "Yes, delete"
             )}
           </Button>
         </DialogFooter>
