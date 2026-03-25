@@ -1,79 +1,89 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import Link from 'next/link'
-import dynamic from 'next/dynamic'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Mail, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Mail, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
-const AuthLeftPanel = dynamic(() => import('@/components/custom/AuthLeftPanel'), { ssr: false })
+const AuthLeftPanel = dynamic(
+  () => import("@/components/custom/AuthLeftPanel"),
+  { ssr: false },
+);
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const supabase = createClient()
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
 
   function getLoginErrorMessage(message: string) {
-    const normalized = message.toLowerCase()
-    if (normalized.includes('failed to fetch') || normalized.includes('network')) {
-      return 'Network error. Please check your internet connection and try again.'
+    const normalized = message.toLowerCase();
+    if (
+      normalized.includes("failed to fetch") ||
+      normalized.includes("network")
+    ) {
+      return "Network error. Please check your internet connection and try again.";
     }
-    if (normalized.includes('email not confirmed')) {
-      return 'Your email is not yet confirmed.'
+    if (normalized.includes("email not confirmed")) {
+      return "Your email is not yet confirmed.";
     }
-    if (normalized.includes('invalid login credentials')) {
-      return 'Incorrect email or password.'
+    if (normalized.includes("invalid login credentials")) {
+      return "Incorrect email or password.";
     }
-    return 'Unable to sign in right now. Please try again.'
+    return "Unable to sign in right now. Please try again.";
   }
 
   async function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email: email.trim().toLowerCase(),
-        password,
-      })
+      const { data, error: authError } = await supabase.auth.signInWithPassword(
+        {
+          email: email.trim().toLowerCase(),
+          password,
+        },
+      );
 
       if (authError) {
-        setError(getLoginErrorMessage(authError.message || ''))
-        setLoading(false)
-        return
+        setError(getLoginErrorMessage(authError.message || ""));
+        setLoading(false);
+        return;
       }
 
       const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, is_suspended')
-        .eq('id', data.user.id)
-        .single()
+        .from("profiles")
+        .select("role, is_suspended")
+        .eq("id", data.user.id)
+        .single();
 
       if (profile?.is_suspended) {
-        await supabase.auth.signOut()
-        router.push('/auth/suspended')
-        return
+        await supabase.auth.signOut();
+        router.push("/auth/suspended");
+        return;
       }
 
-      if (profile?.role === 'admin') {
-        router.push('/dashboard/admin')
-      } else if (profile?.role === 'client') {
-        router.push('/dashboard/client')
+      if (profile?.role === "admin") {
+        router.push("/dashboard/admin");
+      } else if (profile?.role === "client") {
+        router.push("/dashboard/client");
       } else {
-        router.push('/dashboard/agent')
+        router.push("/dashboard/agent");
       }
     } catch {
-      setError('Network error. Please check your internet connection and try again.')
-      setLoading(false)
+      setError(
+        "Network error. Please check your internet connection and try again.",
+      );
+      setLoading(false);
     }
   }
 
@@ -95,7 +105,12 @@ export default function LoginPage() {
           <form onSubmit={handleLogin} className="space-y-5">
             {/* Email Input */}
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Email</Label>
+              <Label
+                htmlFor="email"
+                className="text-xs uppercase tracking-wider text-gray-500 font-heading"
+              >
+                Email
+              </Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
@@ -113,12 +128,17 @@ export default function LoginPage() {
 
             {/* Password Input */}
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-xs uppercase tracking-wider text-gray-500 font-heading">Password</Label>
+              <Label
+                htmlFor="password"
+                className="text-xs uppercase tracking-wider text-gray-500 font-heading"
+              >
+                Password
+              </Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <Input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
@@ -143,9 +163,7 @@ export default function LoginPage() {
 
             {/* Error Message */}
             {error && (
-              <div className="text-red-500 text-sm font-body">
-                {error}
-              </div>
+              <div className="text-red-500 text-sm font-body">{error}</div>
             )}
 
             {/* Login Button */}
@@ -160,12 +178,15 @@ export default function LoginPage() {
                   Signing in...
                 </>
               ) : (
-                'Sign in'
+                "Sign in"
               )}
             </Button>
 
             <div className="text-center">
-              <Link href="/auth/forgot-password" className="text-sm text-teal hover:underline font-medium">
+              <Link
+                href="/auth/forgot-password"
+                className="text-sm text-teal hover:underline font-medium"
+              >
                 Forgot password?
               </Link>
             </div>
@@ -173,10 +194,18 @@ export default function LoginPage() {
 
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-gray-600">
-            <p className="font-body">Don't have an account? <a href="/auth/signup" className="text-teal hover:underline font-medium">Create an account</a></p>
+            <p className="font-body">
+              Don't have an account?{" "}
+              <a
+                href="/auth/signup"
+                className="text-teal hover:underline font-medium"
+              >
+                Create an account
+              </a>
+            </p>
           </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

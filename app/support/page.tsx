@@ -1,58 +1,64 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import AppLayout from '@/components/custom/AppLayout'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Textarea } from '@/components/ui/textarea'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import AppLayout from "@/components/custom/AppLayout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 
 const supportSubjects = [
-  'Technical question',
-  'Upload issue',
-  'Billing',
-  'Other',
-] as const
+  "Technical question",
+  "Upload issue",
+  "Billing",
+  "Other",
+] as const;
 
 export default function SupportPage() {
-  const [subject, setSubject] = useState<string>('Technical question')
-  const [message, setMessage] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState<string | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [subject, setSubject] = useState<string>("Technical question");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setSuccess(null)
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
     if (!message.trim()) {
-      setError('Please enter a message.')
-      return
+      setError("Please enter a message.");
+      return;
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await fetch('/api/support', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ subject, message }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || 'Unable to send your request')
+        throw new Error(data.error || "Unable to send your request");
       }
 
-      setSuccess('Your request has been sent successfully.')
-      setMessage('')
-      setSubject('Technical question')
+      setSuccess("Your request has been sent successfully.");
+      setMessage("");
+      setSubject("Technical question");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Unexpected error'
-      setError(msg)
+      const msg = err instanceof Error ? err.message : "Unexpected error";
+      setError(msg);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -60,14 +66,20 @@ export default function SupportPage() {
     <AppLayout>
       <div className="p-5 md:p-8 space-y-6">
         <div>
-          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Support & Contact</h1>
-          <p className="text-gray-500 mt-2 font-body">Our SOMNOVENTIS team is available to help you.</p>
+          <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">
+            Support & Contact
+          </h1>
+          <p className="text-gray-500 mt-2 font-body">
+            Our SOMNOVENTIS team is available to help you.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card className="shadow-sm border-gray-200">
             <CardHeader>
-              <CardTitle className="font-heading text-midnight">Support email</CardTitle>
+              <CardTitle className="font-heading text-midnight">
+                Support email
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-midnight">contact@somnoventis.com</p>
@@ -76,7 +88,9 @@ export default function SupportPage() {
 
           <Card className="shadow-sm border-gray-200">
             <CardHeader>
-              <CardTitle className="font-heading text-midnight">Phone / WhatsApp</CardTitle>
+              <CardTitle className="font-heading text-midnight">
+                Phone / WhatsApp
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <p className="font-body text-midnight">+33 6 12 34 56 78</p>
@@ -86,7 +100,9 @@ export default function SupportPage() {
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="font-heading text-midnight">Contact Form</CardTitle>
+            <CardTitle className="font-heading text-midnight">
+              Contact Form
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,7 +114,9 @@ export default function SupportPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {supportSubjects.map((item) => (
-                      <SelectItem key={item} value={item}>{item}</SelectItem>
+                      <SelectItem key={item} value={item}>
+                        {item}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -115,16 +133,24 @@ export default function SupportPage() {
                 />
               </div>
 
-              {error && <p className="text-sm text-red-600 font-body">{error}</p>}
-              {success && <p className="text-sm text-green-600 font-body">{success}</p>}
+              {error && (
+                <p className="text-sm text-red-600 font-body">{error}</p>
+              )}
+              {success && (
+                <p className="text-sm text-green-600 font-body">{success}</p>
+              )}
 
-              <Button type="submit" disabled={loading} className="bg-teal text-white hover:bg-teal/90">
-                {loading ? 'Sending...' : 'Send'}
+              <Button
+                type="submit"
+                disabled={loading}
+                className="bg-teal text-white hover:bg-teal/90"
+              >
+                {loading ? "Sending..." : "Send"}
               </Button>
             </form>
           </CardContent>
         </Card>
       </div>
     </AppLayout>
-  )
+  );
 }

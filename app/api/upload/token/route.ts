@@ -1,66 +1,77 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { validateMagicBytes } from '@/lib/validation/magicBytes'
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { validateMagicBytes } from "@/lib/validation/magicBytes";
 
-const BUCKET = 'study-files'
-const ALLOWED_EXTENSIONS = ['edf', 'edf+', 'bdf', 'zip']
+const BUCKET = "study-files";
+const ALLOWED_EXTENSIONS = ["edf", "edf+", "bdf", "zip"];
 
 export async function POST(req: Request) {
   try {
     // Auth check with user client
-    const supabase = await createClient()
-    const { data: { user }, error: authErr } = await supabase.auth.getUser()
+    const supabase = await createClient();
+    const {
+      data: { user },
+      error: authErr,
+    } = await supabase.auth.getUser();
     if (authErr || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body = await req.json()
-    const fileExt = String(body?.file_ext ?? '').toLowerCase().replace(/^\./, '')
+    const body = await req.json();
+    const fileExt = String(body?.file_ext ?? "")
+      .toLowerCase()
+      .replace(/^\./, "");
 
     if (!fileExt || !ALLOWED_EXTENSIONS.includes(fileExt)) {
-      return NextResponse.json({ error: 'File extension not allowed' }, { status: 400 })
+      return NextResponse.json(
+        { error: "File extension not allowed" },
+        { status: 400 },
+      );
     }
 
     // Magic bytes validation: client sends first 8 bytes as base64
     // If provided, validate the file signature before issuing the upload token
     if (body?.file_header_b64) {
-      const headerBuffer = Buffer.from(String(body.file_header_b64), 'base64')
-      const magicResult = validateMagicBytes(headerBuffer, `file.${fileExt}`)
+      const headerBuffer = Buffer.from(String(body.file_header_b64), "base64");
+      const magicResult = validateMagicBytes(headerBuffer, `file.${fileExt}`);
       if (!magicResult.valid) {
         return NextResponse.json(
           { error: `File validation failed: ${magicResult.reason}` },
-          { status: 400 }
-        )
+          { status: 400 },
+        );
       }
     }
 
     // Path scoped to the user — enforces ownership even with admin client
-    const objectPath = `${user.id}/${user.id}-${Date.now()}.${fileExt}`
+    const objectPath = `${user.id}/${user.id}-${Date.now()}.${fileExt}`;
 
     // Use admin client to call createSignedUploadUrl — the user client gets
     // 403 from storage RLS since the `createSignedUploadUrl` RPC requires
     // elevated permissions. Security is preserved: the path is locked to
     // user.id above, and Supabase validates the token cryptographically
     // before any upload is allowed to proceed.
-    const admin = createAdminClient()
+    const admin = createAdminClient();
     const { data, error } = await admin.storage
       .from(BUCKET)
-      .createSignedUploadUrl(objectPath)
+      .createSignedUploadUrl(objectPath);
 
     if (error || !data) {
-      console.error('[POST /api/upload/token]', error)
-      return NextResponse.json({ error: 'Unable to create upload token' }, { status: 500 })
+      console.error("[POST /api/upload/token]", error);
+      return NextResponse.json(
+        { error: "Unable to create upload token" },
+        { status: 500 },
+      );
     }
 
     // Return the scoped token and path — never the full user JWT
     return NextResponse.json({
       token: data.token,
       path: objectPath,
-    })
+    });
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    const message =
+      err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
-

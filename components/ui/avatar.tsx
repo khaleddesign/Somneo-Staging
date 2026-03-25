@@ -1,9 +1,9 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
-  name?: string | null
-  src?: string | null
+  name?: string | null;
+  src?: string | null;
 }
 
 function getInitials(name: string = "") {
@@ -11,7 +11,7 @@ function getInitials(name: string = "") {
     .split(" ")
     .map((w) => w[0])
     .join("")
-    .toUpperCase()
+    .toUpperCase();
 }
 
 const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
@@ -21,19 +21,23 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
         ref={ref}
         className={cn(
           "inline-flex h-8 w-8 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-700",
-          className
+          className,
         )}
         {...props}
       >
         {src ? (
-          <img src={src} alt={name || "avatar"} className="h-full w-full rounded-full" />
+          <img
+            src={src}
+            alt={name || "avatar"}
+            className="h-full w-full rounded-full"
+          />
         ) : (
           <span>{getInitials(name || "")}</span>
         )}
       </div>
-    )
-  }
-)
-Avatar.displayName = "Avatar"
+    );
+  },
+);
+Avatar.displayName = "Avatar";
 
-export { Avatar }
+export { Avatar };

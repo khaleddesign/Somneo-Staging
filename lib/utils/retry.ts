@@ -13,24 +13,25 @@
 
 interface RetryOptions {
   /** Total number of attempts (including the first one). Min: 1 */
-  maxAttempts: number
+  maxAttempts: number;
   /** Base delay in milliseconds — doubles on each retry */
-  baseDelayMs: number
+  baseDelayMs: number;
   /**
    * Injectable sleep function for testing.
    * Defaults to a real setTimeout-based delay in production.
    */
-  _sleep?: (ms: number) => Promise<void>
+  _sleep?: (ms: number) => Promise<void>;
 }
 
-const defaultSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
+const defaultSleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /**
  * Returns true if the error is a client error (4xx) that should NOT be retried.
  */
 function isClientError(err: unknown): boolean {
-  const status = (err as { status?: number })?.status
-  return typeof status === 'number' && status >= 400 && status < 500
+  const status = (err as { status?: number })?.status;
+  return typeof status === "number" && status >= 400 && status < 500;
 }
 
 /**
@@ -41,29 +42,29 @@ function isClientError(err: unknown): boolean {
  */
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
-  options: RetryOptions
+  options: RetryOptions,
 ): Promise<T> {
-  const { maxAttempts, baseDelayMs, _sleep = defaultSleep } = options
+  const { maxAttempts, baseDelayMs, _sleep = defaultSleep } = options;
 
-  let lastError: unknown
+  let lastError: unknown;
 
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
-      return await fn()
+      return await fn();
     } catch (err) {
       // Client errors (4xx): immediate rethrow, no retry
-      if (isClientError(err)) throw err
+      if (isClientError(err)) throw err;
 
-      lastError = err
+      lastError = err;
 
       // If this was the last attempt, stop
-      if (attempt >= maxAttempts - 1) break
+      if (attempt >= maxAttempts - 1) break;
 
       // Exponential backoff: baseDelayMs * 2^attempt
-      const delay = baseDelayMs * Math.pow(2, attempt)
-      await _sleep(delay)
+      const delay = baseDelayMs * Math.pow(2, attempt);
+      await _sleep(delay);
     }
   }
 
-  throw lastError
+  throw lastError;
 }

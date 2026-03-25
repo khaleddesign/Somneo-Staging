@@ -1,23 +1,32 @@
-'use client'
+"use client";
 
-import { useRef, useState, useEffect, useCallback } from 'react'
-import { Button } from '@/components/ui/button'
-import { ReportMatchRow } from '@/components/custom/ReportMatchRow'
-import { StudySearchCombobox } from '@/components/custom/StudySearchCombobox'
-import { useBatchReportUpload } from '@/hooks/useBatchReportUpload'
-import type { StudyMatch } from '@/hooks/useBatchReportUpload'
-import { Upload, AlertCircle, CheckCircle2, RefreshCw, ArchiveX, Link2 } from 'lucide-react'
-import { formatFileSize } from '@/lib/utils'
+import { useRef, useState, useEffect, useCallback } from "react";
+import { Button } from "@/components/ui/button";
+import { ReportMatchRow } from "@/components/custom/ReportMatchRow";
+import { StudySearchCombobox } from "@/components/custom/StudySearchCombobox";
+import { useBatchReportUpload } from "@/hooks/useBatchReportUpload";
+import type { StudyMatch } from "@/hooks/useBatchReportUpload";
+import {
+  Upload,
+  AlertCircle,
+  CheckCircle2,
+  RefreshCw,
+  ArchiveX,
+  Link2,
+} from "lucide-react";
+import { formatFileSize } from "@/lib/utils";
 
 interface UnassignedReport {
-  id: string
-  original_filename: string
-  file_size: number
-  uploaded_at: string
+  id: string;
+  original_filename: string;
+  file_size: number;
+  uploaded_at: string;
 }
 
 function isPdf(file: File): boolean {
-  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+  return (
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+  );
 }
 
 export function BatchReportUpload() {
@@ -35,104 +44,128 @@ export function BatchReportUpload() {
     successCount,
     errorCount,
     unassignedCount,
-  } = useBatchReportUpload()
+  } = useBatchReportUpload();
 
-  const [isDragging, setIsDragging] = useState(false)
-  const [validationError, setValidationError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Pending unassigned reports (from previous sessions)
-  const [pendingReports, setPendingReports] = useState<UnassignedReport[]>([])
-  const [pendingLoading, setPendingLoading] = useState(false)
-  const [assigningId, setAssigningId] = useState<string | null>(null)
-  const [assignError, setAssignError] = useState<string | null>(null)
+  const [pendingReports, setPendingReports] = useState<UnassignedReport[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [assigningId, setAssigningId] = useState<string | null>(null);
+  const [assignError, setAssignError] = useState<string | null>(null);
 
   const loadPending = useCallback(async () => {
-    setPendingLoading(true)
+    setPendingLoading(true);
     try {
-      const res = await fetch('/api/reports/unassigned')
+      const res = await fetch("/api/reports/unassigned");
       if (res.ok) {
-        const data = await res.json()
-        setPendingReports(data.reports ?? [])
+        const data = await res.json();
+        setPendingReports(data.reports ?? []);
       }
     } finally {
-      setPendingLoading(false)
+      setPendingLoading(false);
     }
-  }, [])
+  }, []);
 
-  useEffect(() => { loadPending() }, [loadPending])
+  useEffect(() => {
+    loadPending();
+  }, [loadPending]);
 
   async function assignPending(reportId: string, study: StudyMatch) {
-    setAssigningId(reportId)
-    setAssignError(null)
+    setAssigningId(reportId);
+    setAssignError(null);
     try {
       const res = await fetch(`/api/reports/unassigned/${reportId}/assign`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ study_id: study.id }),
-      })
+      });
       if (!res.ok) {
-        const err = await res.json()
-        setAssignError(err.error || 'Assignment error')
+        const err = await res.json();
+        setAssignError(err.error || "Assignment error");
       } else {
-        await loadPending()
+        await loadPending();
       }
     } catch {
-      setAssignError('Network error')
+      setAssignError("Network error");
     } finally {
-      setAssigningId(null)
+      setAssigningId(null);
     }
   }
 
-  const isDone = phase === 'done'
-  const isUploading = phase === 'uploading'
-  const hasErrors = errorCount > 0
+  const isDone = phase === "done";
+  const isUploading = phase === "uploading";
+  const hasErrors = errorCount > 0;
 
   const unmatchedCount = items.filter(
-    it => it.uploadState === 'idle' && !it.matchedStudy && !it.skipAssignment
-  ).length
+    (it) => it.uploadState === "idle" && !it.matchedStudy && !it.skipAssignment,
+  ).length;
   const overwritePending = items.filter(
-    it => it.matchedStudy?.has_report && !it.overwriteConfirmed && it.uploadState === 'idle'
-  ).length
+    (it) =>
+      it.matchedStudy?.has_report &&
+      !it.overwriteConfirmed &&
+      it.uploadState === "idle",
+  ).length;
 
   async function handleFiles(files: FileList | File[]) {
-    setValidationError(null)
-    const arr = Array.from(files)
-    const invalid = arr.filter(f => !isPdf(f))
+    setValidationError(null);
+    const arr = Array.from(files);
+    const invalid = arr.filter((f) => !isPdf(f));
 
     if (invalid.length > 0) {
-      setValidationError(`${invalid.length} file(s) ignored: only PDF files are accepted.`)
+      setValidationError(
+        `${invalid.length} file(s) ignored: only PDF files are accepted.`,
+      );
     }
 
-    const valid = arr.filter(isPdf)
-    if (valid.length > 0) await addFiles(valid)
+    const valid = arr.filter(isPdf);
+    if (valid.length > 0) await addFiles(valid);
   }
 
   function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-    handleFiles(e.dataTransfer.files)
+    e.preventDefault();
+    setIsDragging(false);
+    handleFiles(e.dataTransfer.files);
   }
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files) handleFiles(e.target.files)
-    e.target.value = ''
+    if (e.target.files) handleFiles(e.target.files);
+    e.target.value = "";
   }
 
-  const globalProgress = items.length === 0 ? 0
-    : Math.round((items.filter(it => it.uploadState === 'completed' || it.uploadState === 'skipped').length / items.length) * 100)
+  const globalProgress =
+    items.length === 0
+      ? 0
+      : Math.round(
+          (items.filter(
+            (it) =>
+              it.uploadState === "completed" || it.uploadState === "skipped",
+          ).length /
+            items.length) *
+            100,
+        );
 
   return (
     <div className="space-y-6">
       {/* Drop zone */}
-      {phase === 'idle' && (
+      {phase === "idle" && (
         <div
-          onDragEnter={e => { e.preventDefault(); setIsDragging(true) }}
-          onDragOver={e => e.preventDefault()}
-          onDragLeave={e => { e.preventDefault(); setIsDragging(false) }}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+          }}
           onDrop={handleDrop}
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
-            isDragging ? 'border-teal bg-teal/10' : 'border-teal/30 bg-teal/5 hover:bg-teal/10'
+            isDragging
+              ? "border-teal bg-teal/10"
+              : "border-teal/30 bg-teal/5 hover:bg-teal/10"
           }`}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -140,9 +173,7 @@ export function BatchReportUpload() {
           <p className="text-base font-medium text-gray-900">
             Drop your PDF reports here
           </p>
-          <p className="text-sm text-gray-500 mt-1">
-            or click to browse
-          </p>
+          <p className="text-sm text-gray-500 mt-1">or click to browse</p>
           <p className="text-xs text-gray-400 mt-2">
             PDF only · Automatic matching by patient reference
           </p>
@@ -169,7 +200,14 @@ export function BatchReportUpload() {
       {isUploading && (
         <div className="space-y-1">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>{successCount} / {items.filter(it => it.matchedStudy || it.skipAssignment).length} reports uploaded</span>
+            <span>
+              {successCount} /{" "}
+              {
+                items.filter((it) => it.matchedStudy || it.skipAssignment)
+                  .length
+              }{" "}
+              reports uploaded
+            </span>
             <span>{globalProgress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -182,20 +220,26 @@ export function BatchReportUpload() {
       )}
 
       {/* Hints */}
-      {phase === 'idle' && items.length > 0 && (unmatchedCount > 0 || overwritePending > 0) && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 space-y-1">
-          {unmatchedCount > 0 && (
-            <p><AlertCircle className="inline h-3.5 w-3.5 mr-1" />
-              {unmatchedCount} file{unmatchedCount > 1 ? 's' : ''} without a match — assign manually or upload without assigning.
-            </p>
-          )}
-          {overwritePending > 0 && (
-            <p><AlertCircle className="inline h-3.5 w-3.5 mr-1" />
-              {overwritePending} study{overwritePending > 1 ? 'ies' : ''} with an existing report — confirm overwrite.
-            </p>
-          )}
-        </div>
-      )}
+      {phase === "idle" &&
+        items.length > 0 &&
+        (unmatchedCount > 0 || overwritePending > 0) && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800 space-y-1">
+            {unmatchedCount > 0 && (
+              <p>
+                <AlertCircle className="inline h-3.5 w-3.5 mr-1" />
+                {unmatchedCount} file{unmatchedCount > 1 ? "s" : ""} without a
+                match — assign manually or upload without assigning.
+              </p>
+            )}
+            {overwritePending > 0 && (
+              <p>
+                <AlertCircle className="inline h-3.5 w-3.5 mr-1" />
+                {overwritePending} study{overwritePending > 1 ? "ies" : ""} with
+                an existing report — confirm overwrite.
+              </p>
+            )}
+          </div>
+        )}
 
       {/* File list */}
       {items.length > 0 && (
@@ -209,7 +253,7 @@ export function BatchReportUpload() {
               onOverwriteConfirm={setOverwriteConfirmed}
               onSkipAssignment={markAsSkipAssignment}
               onRemove={removeItem}
-              disabled={phase !== 'idle'}
+              disabled={phase !== "idle"}
             />
           ))}
         </div>
@@ -217,14 +261,18 @@ export function BatchReportUpload() {
 
       {/* Summary when done */}
       {isDone && (
-        <div className={`rounded-xl p-4 border ${hasErrors ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+        <div
+          className={`rounded-xl p-4 border ${hasErrors ? "bg-amber-50 border-amber-200" : "bg-green-50 border-green-200"}`}
+        >
           <div className="flex items-center gap-2">
-            {hasErrors
-              ? <AlertCircle className="h-5 w-5 text-amber-600" />
-              : <CheckCircle2 className="h-5 w-5 text-green-600" />}
+            {hasErrors ? (
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+            ) : (
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+            )}
             <p className="text-sm font-medium">
-              {successCount} report{successCount > 1 ? 's' : ''} uploaded
-              {hasErrors && `, ${errorCount} error${errorCount > 1 ? 's' : ''}`}
+              {successCount} report{successCount > 1 ? "s" : ""} uploaded
+              {hasErrors && `, ${errorCount} error${errorCount > 1 ? "s" : ""}`}
             </p>
           </div>
         </div>
@@ -232,7 +280,7 @@ export function BatchReportUpload() {
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-3 items-start">
-        {phase === 'idle' && items.length > 0 && (
+        {phase === "idle" && items.length > 0 && (
           <div className="space-y-1">
             <Button
               onClick={startBatch}
@@ -241,16 +289,24 @@ export function BatchReportUpload() {
             >
               <Upload className="h-4 w-4 mr-2" />
               {(() => {
-                const assigned = items.filter(it => it.matchedStudy && it.uploadState === 'idle').length
-                const unassigned = items.filter(it => !it.matchedStudy && it.skipAssignment && it.uploadState === 'idle').length
-                const total = assigned + unassigned
-                return `Confirm and upload (${total} report${total > 1 ? 's' : ''})`
+                const assigned = items.filter(
+                  (it) => it.matchedStudy && it.uploadState === "idle",
+                ).length;
+                const unassigned = items.filter(
+                  (it) =>
+                    !it.matchedStudy &&
+                    it.skipAssignment &&
+                    it.uploadState === "idle",
+                ).length;
+                const total = assigned + unassigned;
+                return `Confirm and upload (${total} report${total > 1 ? "s" : ""})`;
               })()}
             </Button>
             {unassignedCount > 0 && (
               <p className="text-xs text-blue-600 flex items-center gap-1">
                 <ArchiveX className="h-3 w-3" />
-                {unassignedCount} report{unassignedCount > 1 ? 's' : ''} will be stored without assignment
+                {unassignedCount} report{unassignedCount > 1 ? "s" : ""} will be
+                stored without assignment
               </p>
             )}
           </div>
@@ -278,11 +334,20 @@ export function BatchReportUpload() {
                 Reports pending assignment
               </h2>
               <p className="text-xs text-gray-500 mt-0.5">
-                These reports were uploaded without a study. Assign them to a study to notify the prescriber.
+                These reports were uploaded without a study. Assign them to a
+                study to notify the prescriber.
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={loadPending} disabled={pendingLoading} className="text-xs">
-              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${pendingLoading ? 'animate-spin' : ''}`} />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadPending}
+              disabled={pendingLoading}
+              className="text-xs"
+            >
+              <RefreshCw
+                className={`h-3.5 w-3.5 mr-1 ${pendingLoading ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
           </div>
@@ -295,19 +360,28 @@ export function BatchReportUpload() {
           )}
 
           <div className="space-y-2">
-            {pendingReports.map(report => (
+            {pendingReports.map((report) => (
               <div
                 key={report.id}
                 className="rounded-xl border border-blue-200 bg-blue-50 p-4 space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{report.original_filename}</p>
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {report.original_filename}
+                    </p>
                     <p className="text-xs text-gray-400">
-                      {formatFileSize(report.file_size)} · uploaded on{' '}
-                      {new Date(report.uploaded_at).toLocaleDateString('en-GB', {
-                        day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'
-                      })}
+                      {formatFileSize(report.file_size)} · uploaded on{" "}
+                      {new Date(report.uploaded_at).toLocaleDateString(
+                        "en-GB",
+                        {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        },
+                      )}
                     </p>
                   </div>
                   <span className="inline-flex items-center gap-1 text-xs font-heading text-blue-700 bg-blue-100 border border-blue-200 px-2 py-0.5 rounded-full shrink-0">
@@ -322,7 +396,7 @@ export function BatchReportUpload() {
                       Assign to a study
                     </p>
                     <StudySearchCombobox
-                      onSelect={study => assignPending(report.id, study)}
+                      onSelect={(study) => assignPending(report.id, study)}
                       initialCandidates={[]}
                       disabled={assigningId === report.id}
                     />
@@ -337,5 +411,5 @@ export function BatchReportUpload() {
         </div>
       )}
     </div>
-  )
+  );
 }

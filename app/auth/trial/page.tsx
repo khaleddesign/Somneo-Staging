@@ -1,5 +1,5 @@
-import AuthLeftPanel from '@/components/custom/AuthLeftPanel'
-import TrialSignupForm from '@/components/custom/TrialSignupForm'
+import AuthLeftPanel from "@/components/custom/AuthLeftPanel";
+import TrialSignupForm from "@/components/custom/TrialSignupForm";
 
 export default function TrialPage() {
   return (
@@ -24,5 +24,5 @@ export default function TrialPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }

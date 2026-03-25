@@ -1,14 +1,22 @@
-"use client"
+"use client";
 
-import AppLayout from '@/components/custom/AppLayout'
-import { StudyList } from '@/components/custom/StudyList'
-import { useStudies } from '@/hooks/useStudies'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import AppLayout from "@/components/custom/AppLayout";
+import { StudyList } from "@/components/custom/StudyList";
+import { useStudies } from "@/hooks/useStudies";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function ClientStudiesPage() {
-  const { studies: myStudies, loading: myLoading, error: myError } = useStudies(100, 'mine')
-  const { studies: instStudies, loading: instLoading, error: instError } = useStudies(100, 'institution')
+  const {
+    studies: myStudies,
+    loading: myLoading,
+    error: myError,
+  } = useStudies(100, "mine");
+  const {
+    studies: instStudies,
+    loading: instLoading,
+    error: instError,
+  } = useStudies(100, "institution");
 
   return (
     <AppLayout>
@@ -81,5 +89,5 @@ export default function ClientStudiesPage() {
         </Tabs>
       </div>
     </AppLayout>
-  )
+  );
 }

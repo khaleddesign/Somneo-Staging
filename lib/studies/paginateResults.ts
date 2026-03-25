@@ -11,8 +11,8 @@
  */
 
 export interface PaginatedResult<T> {
-  items: T[]
-  nextCursor: string | null
+  items: T[];
+  nextCursor: string | null;
 }
 
 /**
@@ -23,15 +23,15 @@ export interface PaginatedResult<T> {
 export function paginateResults<T extends object>(
   rows: T[],
   limit: number,
-  cursorField: keyof T
+  cursorField: keyof T,
 ): PaginatedResult<T> {
-  const hasMore = rows.length > limit
-  const items = hasMore ? rows.slice(0, limit) : rows
+  const hasMore = rows.length > limit;
+  const items = hasMore ? rows.slice(0, limit) : rows;
 
   const nextCursor =
     hasMore && items.length > 0
       ? String(items[items.length - 1][cursorField])
-      : null
+      : null;
 
-  return { items, nextCursor }
+  return { items, nextCursor };
 }

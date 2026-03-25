@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Trash2, Loader2, AlertCircle } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Trash2, Loader2, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,52 +12,60 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+} from "@/components/ui/dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface DeleteStudyButtonProps {
-  studyId: string
-  redirectUrl: string
+  studyId: string;
+  redirectUrl: string;
 }
 
-export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyButtonProps) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function DeleteStudyButton({
+  studyId,
+  redirectUrl,
+}: DeleteStudyButtonProps) {
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleDelete() {
     try {
-      setIsDeleting(true)
-      setError(null)
+      setIsDeleting(true);
+      setError(null);
 
       const res = await fetch(`/api/studies/${studyId}`, {
-        method: 'DELETE',
-      })
+        method: "DELETE",
+      });
 
       if (!res.ok) {
-        let errorMsg = 'An error occurred while deleting'
+        let errorMsg = "An error occurred while deleting";
         try {
-          const data = await res.json()
-          if (data.error) errorMsg = data.error
+          const data = await res.json();
+          if (data.error) errorMsg = data.error;
         } catch {}
-        throw new Error(errorMsg)
+        throw new Error(errorMsg);
       }
 
-      setOpen(false)
+      setOpen(false);
       // Redirect to the dashboard/studies list
-      router.push(redirectUrl)
-      router.refresh()
+      router.push(redirectUrl);
+      router.refresh();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'An unknown error occurred')
-      setIsDeleting(false)
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred",
+      );
+      setIsDeleting(false);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" className="flex items-center gap-2 font-heading">
+        <Button
+          variant="destructive"
+          className="flex items-center gap-2 font-heading"
+        >
           <Trash2 className="h-4 w-4" />
           Delete study
         </Button>
@@ -70,7 +78,8 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
           </DialogTitle>
           <DialogDescription className="font-body pt-2 text-gray-600">
             Are you sure you want to delete this study?
-            <br /><br />
+            <br />
+            <br />
             This action will permanently delete:
             <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
               <li>The complete file (EDF / ZIP) from the servers</li>
@@ -88,10 +97,20 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
         )}
 
         <DialogFooter className="mt-4 gap-2 sm:gap-0">
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={isDeleting} className="font-heading">
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isDeleting}
+            className="font-heading"
+          >
             Cancel
           </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="font-heading min-w-[120px]">
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="font-heading min-w-[120px]"
+          >
             {isDeleting ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
@@ -101,5 +120,5 @@ export default function DeleteStudyButton({ studyId, redirectUrl }: DeleteStudyB
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

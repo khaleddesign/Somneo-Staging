@@ -1,33 +1,33 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 interface Agent {
-  id: string
-  full_name: string | null
-  email: string
+  id: string;
+  full_name: string | null;
+  email: string;
 }
 
 interface AdminReassignDialogProps {
-  studyId: string
-  currentAgentId: string | null
-  agents: Agent[]
+  studyId: string;
+  currentAgentId: string | null;
+  agents: Agent[];
 }
 
 export default function AdminReassignDialog({
@@ -35,37 +35,38 @@ export default function AdminReassignDialog({
   currentAgentId,
   agents,
 }: AdminReassignDialogProps) {
-  const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
   const [selectedAgentId, setSelectedAgentId] = useState<string>(
-    currentAgentId || 'unassigned',
-  )
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+    currentAgentId || "unassigned",
+  );
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleReassign() {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('/api/studies/reassign', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/studies/reassign", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           study_id: studyId,
-          assigned_agent_id: selectedAgentId === 'unassigned' ? null : selectedAgentId,
+          assigned_agent_id:
+            selectedAgentId === "unassigned" ? null : selectedAgentId,
         }),
-      })
-      const data = await res.json().catch(() => null)
+      });
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        setError(data?.error || 'Error lors de la réassignation')
-        return
+        setError(data?.error || "Error lors de la réassignation");
+        return;
       }
-      setOpen(false)
-      router.refresh()
+      setOpen(false);
+      router.refresh();
     } catch {
-      setError('Network error')
+      setError("Network error");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -87,7 +88,10 @@ export default function AdminReassignDialog({
           <div className="space-y-4 pt-2">
             <div>
               <Label className="font-heading">Agent</Label>
-              <Select value={selectedAgentId} onValueChange={setSelectedAgentId}>
+              <Select
+                value={selectedAgentId}
+                onValueChange={setSelectedAgentId}
+              >
                 <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
@@ -107,11 +111,11 @@ export default function AdminReassignDialog({
               disabled={loading}
               onClick={handleReassign}
             >
-              {loading ? 'Reassigning...' : 'Confirm'}
+              {loading ? "Reassigning..." : "Confirm"}
             </Button>
           </div>
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

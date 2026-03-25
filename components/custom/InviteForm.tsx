@@ -1,59 +1,59 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface InviteFormProps {
-  onInvite?: () => void
-  onSuccess?: () => void
+  onInvite?: () => void;
+  onSuccess?: () => void;
 }
 
 export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
-  const [email, setEmail] = useState('')
-  const [fullName, setFullName] = useState('')
-  const [inviteLink, setInviteLink] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleInvite(e: React.FormEvent) {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setInviteLink(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setInviteLink(null);
 
-    const res = await fetch('/api/auth/invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const res = await fetch("/api/auth/invite", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         email,
         full_name: fullName,
-        institution_id: '00000000-0000-0000-0000-000000000001'
+        institution_id: "00000000-0000-0000-0000-000000000001",
       }),
-    })
+    });
 
-    const data = await res.json()
+    const data = await res.json();
 
     if (!res.ok) {
-      setError(data.error || "Error sending invitation")
-      setLoading(false)
-      return
+      setError(data.error || "Error sending invitation");
+      setLoading(false);
+      return;
     }
 
     setInviteLink(
-      `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?token=${data.token}`
-    )
-    setEmail('')
-    setFullName('')
-    setLoading(false)
-    onInvite?.()
+      `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?token=${data.token}`,
+    );
+    setEmail("");
+    setFullName("");
+    setLoading(false);
+    onInvite?.();
     // Auto-close dialog after 2 seconds if onSuccess callback is provided
     if (onSuccess) {
       setTimeout(() => {
-        onSuccess()
-      }, 2000)
+        onSuccess();
+      }, 2000);
     }
   }
 
@@ -86,7 +86,7 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
             />
           </div>
           <Button type="submit" disabled={loading}>
-            {loading ? 'Sending...' : "Send invitation"}
+            {loading ? "Sending..." : "Send invitation"}
           </Button>
         </form>
         {inviteLink && (
@@ -99,11 +99,8 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
             </p>
           </div>
         )}
-        {error && (
-          <p className="mt-4 text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
       </CardContent>
     </Card>
-  )
+  );
 }
-

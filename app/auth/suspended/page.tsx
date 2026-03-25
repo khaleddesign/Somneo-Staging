@@ -1,9 +1,9 @@
-'use client'
+"use client";
 
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { ShieldOff, Mail } from 'lucide-react'
-import AuthLeftPanel from '@/components/custom/AuthLeftPanel'
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ShieldOff, Mail } from "lucide-react";
+import AuthLeftPanel from "@/components/custom/AuthLeftPanel";
 
 export default function SuspendedPage() {
   return (
@@ -21,7 +21,8 @@ export default function SuspendedPage() {
           </h1>
 
           <p className="text-gray-600 mb-8 leading-relaxed font-body">
-            Your access has been temporarily suspended. Please contact SOMNOVENTIS for more information.
+            Your access has been temporarily suspended. Please contact
+            SOMNOVENTIS for more information.
           </p>
 
           <div className="flex flex-col gap-3 w-full max-w-sm mx-auto mb-6">
@@ -33,11 +34,14 @@ export default function SuspendedPage() {
             </a>
           </div>
 
-          <Link href="/" className="text-teal hover:text-teal/80 font-medium transition-colors">
+          <Link
+            href="/"
+            className="text-teal hover:text-teal/80 font-medium transition-colors"
+          >
             ← Back to home
           </Link>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,5 +1,5 @@
 interface Props {
-  rows?: number
+  rows?: number;
 }
 
 export default function StudyListSkeleton({ rows = 5 }: Props) {
@@ -18,5 +18,5 @@ export default function StudyListSkeleton({ rows = 5 }: Props) {
         </div>
       ))}
     </div>
-  )
+  );
 }

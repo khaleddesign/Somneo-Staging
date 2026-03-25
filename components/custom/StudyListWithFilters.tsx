@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import { useEffect, useMemo, useState } from 'react'
-import { Study } from '@/hooks/useStudies'
-import { StudyList } from './StudyList'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { useEffect, useMemo, useState } from "react";
+import { Study } from "@/hooks/useStudies";
+import { StudyList } from "./StudyList";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Search } from 'lucide-react'
-import StudyListSkeleton from '@/components/custom/skeletons/StudyListSkeleton'
-import EmptyState from '@/components/custom/EmptyState'
+} from "@/components/ui/select";
+import { Search } from "lucide-react";
+import StudyListSkeleton from "@/components/custom/skeletons/StudyListSkeleton";
+import EmptyState from "@/components/custom/EmptyState";
 
 interface StudyListWithFiltersProps {
-  studies: Study[]
-  loading: boolean
-  error: string | null
-  role: 'agent' | 'client' | 'admin'
-  currentUserId?: string | null
-  onAssigned?: () => void
-  activeChip?: string | null
-  onChipChange?: (status: string | null) => void
+  studies: Study[];
+  loading: boolean;
+  error: string | null;
+  role: "agent" | "client" | "admin";
+  currentUserId?: string | null;
+  onAssigned?: () => void;
+  activeChip?: string | null;
+  onChipChange?: (status: string | null) => void;
 }
 
 export default function StudyListWithFilters({
@@ -37,74 +37,74 @@ export default function StudyListWithFilters({
   activeChip,
   onChipChange,
 }: StudyListWithFiltersProps) {
-  const [chipFilter, setChipFilter] = useState<string>(activeChip ?? 'all')
+  const [chipFilter, setChipFilter] = useState<string>(activeChip ?? "all");
   const [statusFilter, setStatusFilter] = useState<string>(
-    activeChip && activeChip !== 'all' ? activeChip : 'all'
-  )
-  const [priorityFilter, setPriorityFilter] = useState<string>('all')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const pageSize = 10
+    activeChip && activeChip !== "all" ? activeChip : "all",
+  );
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 10;
 
   useEffect(() => {
     if (activeChip !== undefined && activeChip !== null) {
-      setChipFilter(activeChip)
-      setStatusFilter(activeChip === 'all' ? 'all' : activeChip)
-      setCurrentPage(1)
+      setChipFilter(activeChip);
+      setStatusFilter(activeChip === "all" ? "all" : activeChip);
+      setCurrentPage(1);
     }
-  }, [activeChip])
+  }, [activeChip]);
 
   function handleChipClick(value: string) {
-    setChipFilter(value)
-    setStatusFilter(value === 'all' ? 'all' : value)
-    setCurrentPage(1)
-    onChipChange?.(value === 'all' ? null : value)
+    setChipFilter(value);
+    setStatusFilter(value === "all" ? "all" : value);
+    setCurrentPage(1);
+    onChipChange?.(value === "all" ? null : value);
   }
 
   const filteredStudies = useMemo(() => {
-    let result = studies
+    let result = studies;
 
-    if (statusFilter !== 'all') {
-      result = result.filter((s) => s.status === statusFilter)
+    if (statusFilter !== "all") {
+      result = result.filter((s) => s.status === statusFilter);
     }
 
-    if (priorityFilter !== 'all') {
-      result = result.filter((s) => s.priority === priorityFilter)
+    if (priorityFilter !== "all") {
+      result = result.filter((s) => s.priority === priorityFilter);
     }
 
-    const normalizedQuery = searchQuery.trim().toLowerCase()
+    const normalizedQuery = searchQuery.trim().toLowerCase();
     if (normalizedQuery) {
       result = result.filter((s) =>
-        s.patient_reference.toLowerCase().includes(normalizedQuery)
-      )
+        s.patient_reference.toLowerCase().includes(normalizedQuery),
+      );
     }
 
-    return result
-  }, [studies, statusFilter, priorityFilter, searchQuery])
+    return result;
+  }, [studies, statusFilter, priorityFilter, searchQuery]);
 
-  const totalPages = Math.max(1, Math.ceil(filteredStudies.length / pageSize))
+  const totalPages = Math.max(1, Math.ceil(filteredStudies.length / pageSize));
   const paginatedStudies = useMemo(() => {
-    const safePage = Math.min(currentPage, totalPages)
-    const startIndex = (safePage - 1) * pageSize
-    return filteredStudies.slice(startIndex, startIndex + pageSize)
-  }, [filteredStudies, currentPage, totalPages])
+    const safePage = Math.min(currentPage, totalPages);
+    const startIndex = (safePage - 1) * pageSize;
+    return filteredStudies.slice(startIndex, startIndex + pageSize);
+  }, [filteredStudies, currentPage, totalPages]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
-      setCurrentPage(totalPages)
+      setCurrentPage(totalPages);
     }
-  }, [currentPage, totalPages])
+  }, [currentPage, totalPages]);
 
   return (
     <div className="space-y-4">
       {/* Quick filter chips */}
       <div className="flex flex-wrap gap-2 mb-4">
         {[
-          { label: 'All', value: 'all' },
-          { label: 'Pending', value: 'en_attente' },
-          { label: 'In progress', value: 'en_cours' },
-          { label: 'Completed', value: 'termine' },
-          { label: 'Cancelled', value: 'annule' },
+          { label: "All", value: "all" },
+          { label: "Pending", value: "en_attente" },
+          { label: "In progress", value: "en_cours" },
+          { label: "Completed", value: "termine" },
+          { label: "Cancelled", value: "annule" },
         ].map((chip) => (
           <button
             key={chip.value}
@@ -113,8 +113,8 @@ export default function StudyListWithFilters({
             onClick={() => handleChipClick(chip.value)}
             className={`px-3 py-1.5 rounded-full text-xs font-heading transition-colors ${
               chipFilter === chip.value
-                ? 'bg-teal text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? "bg-teal text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
             {chip.label}
@@ -124,14 +124,16 @@ export default function StudyListWithFilters({
 
       <div className="flex gap-4 flex-wrap">
         <div className="w-full">
-          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Patient search</label>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">
+            Patient search
+          </label>
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               value={searchQuery}
               onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setCurrentPage(1)
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
               }}
               placeholder="Search by patient reference"
               className="pl-9 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"
@@ -140,12 +142,17 @@ export default function StudyListWithFilters({
         </div>
 
         <div className="flex-1 min-w-48">
-          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Status</label>
-          <Select value={statusFilter} onValueChange={(value) => {
-            setStatusFilter(value)
-            setChipFilter(value)
-            setCurrentPage(1)
-          }}>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">
+            Status
+          </label>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value);
+              setChipFilter(value);
+              setCurrentPage(1);
+            }}
+          >
             <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal">
               <SelectValue />
             </SelectTrigger>
@@ -160,11 +167,16 @@ export default function StudyListWithFilters({
         </div>
 
         <div className="flex-1 min-w-48">
-          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">Priority</label>
-          <Select value={priorityFilter} onValueChange={(value) => {
-            setPriorityFilter(value)
-            setCurrentPage(1)
-          }}>
+          <label className="block text-xs uppercase tracking-wider text-gray-500 mb-2 font-heading">
+            Priority
+          </label>
+          <Select
+            value={priorityFilter}
+            onValueChange={(value) => {
+              setPriorityFilter(value);
+              setCurrentPage(1);
+            }}
+          >
             <SelectTrigger className="bg-[#f8fafc] border-2 border-transparent rounded-xl focus:border-teal">
               <SelectValue />
             </SelectTrigger>
@@ -177,15 +189,17 @@ export default function StudyListWithFilters({
           </Select>
         </div>
 
-        {(statusFilter !== 'all' || priorityFilter !== 'all' || searchQuery.trim() !== '') && (
+        {(statusFilter !== "all" ||
+          priorityFilter !== "all" ||
+          searchQuery.trim() !== "") && (
           <div className="flex items-end">
             <button
               onClick={() => {
-                setStatusFilter('all')
-                setChipFilter('all')
-                setPriorityFilter('all')
-                setSearchQuery('')
-                setCurrentPage(1)
+                setStatusFilter("all");
+                setChipFilter("all");
+                setPriorityFilter("all");
+                setSearchQuery("");
+                setCurrentPage(1);
               }}
               className="px-4 py-2 text-sm text-gray-600 hover:text-gray-900 underline"
             >
@@ -197,18 +211,19 @@ export default function StudyListWithFilters({
 
       <div>
         <p className="text-sm text-gray-500 mb-4">
-          {filteredStudies.length} {filteredStudies.length !== 1 ? 'studies' : 'study'}
+          {filteredStudies.length}{" "}
+          {filteredStudies.length !== 1 ? "studies" : "study"}
         </p>
 
         {loading ? (
           <StudyListSkeleton rows={pageSize} />
         ) : !error && filteredStudies.length === 0 ? (
           <EmptyState
-            title={searchQuery.trim() ? 'No results' : 'No studies'}
+            title={searchQuery.trim() ? "No results" : "No studies"}
             description={
               searchQuery.trim()
                 ? `No study found for "${searchQuery.trim()}".`
-                : 'Submitted studies will appear here.'
+                : "Submitted studies will appear here."
             }
           />
         ) : (
@@ -236,7 +251,9 @@ export default function StudyListWithFilters({
             </p>
             <Button
               variant="outline"
-              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
             >
               Next
@@ -245,5 +262,5 @@ export default function StudyListWithFilters({
         )}
       </div>
     </div>
-  )
+  );
 }

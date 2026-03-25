@@ -1,21 +1,21 @@
 export interface ReportTemplateData {
-  studyType: 'PSG' | 'PV' | 'MSLT' | 'MWT'
-  patientReference: string
-  agentName: string
-  generatedAt: string
-  values: Record<string, Record<string, string>>
+  studyType: "PSG" | "PV" | "MSLT" | "MWT";
+  patientReference: string;
+  agentName: string;
+  generatedAt: string;
+  values: Record<string, Record<string, string>>;
 }
 
-type BadgeType = 'ok' | 'warn' | 'mod' | 'bad' | 'neutral'
+type BadgeType = "ok" | "warn" | "mod" | "bad" | "neutral";
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function esc(s: string): string {
   return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
 /** Lire une valeur depuis plusieurs IDs de section possibles */
@@ -23,13 +23,14 @@ function v(
   values: Record<string, Record<string, string>>,
   sections: string[],
   key: string,
-  unit = '',
+  unit = "",
 ): string {
   for (const s of sections) {
-    const val = values[s]?.[key]
-    if (val !== undefined && val !== '') return `${esc(val)}${unit ? `\u00a0${unit}` : ''}`
+    const val = values[s]?.[key];
+    if (val !== undefined && val !== "")
+      return `${esc(val)}${unit ? `\u00a0${unit}` : ""}`;
   }
-  return '—'
+  return "—";
 }
 
 /** Lire une valeur numérique */
@@ -39,148 +40,156 @@ function num(
   key: string,
 ): number | null {
   for (const s of sections) {
-    const val = values[s]?.[key]
-    if (val !== undefined && val !== '') {
-      const n = parseFloat(val)
-      return isNaN(n) ? null : n
+    const val = values[s]?.[key];
+    if (val !== undefined && val !== "") {
+      const n = parseFloat(val);
+      return isNaN(n) ? null : n;
     }
   }
-  return null
+  return null;
 }
 
 // ─── badges ───────────────────────────────────────────────────────────────────
 
 const BADGE: Record<BadgeType, { bg: string; color: string; label: string }> = {
-  ok:      { bg: '#dcfce7', color: '#14532d', label: 'Normal'  },
-  warn:    { bg: '#fef9c3', color: '#713f12', label: 'Limite'  },
-  mod:     { bg: '#ffedd5', color: '#7c2d12', label: 'Modéré'  },
-  bad:     { bg: '#fee2e2', color: '#7f1d1d', label: 'Élevé'   },
-  neutral: { bg: '#f1f5f9', color: '#475569', label: '—'       },
-}
+  ok: { bg: "#dcfce7", color: "#14532d", label: "Normal" },
+  warn: { bg: "#fef9c3", color: "#713f12", label: "Limite" },
+  mod: { bg: "#ffedd5", color: "#7c2d12", label: "Modéré" },
+  bad: { bg: "#fee2e2", color: "#7f1d1d", label: "Élevé" },
+  neutral: { bg: "#f1f5f9", color: "#475569", label: "—" },
+};
 
 function badge(type: BadgeType, label?: string): string {
-  const c = BADGE[type]
-  const lbl = label ?? c.label
-  return `<span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:'DM Sans',Arial,sans-serif;background:${c.bg};color:${c.color};letter-spacing:0.3px;white-space:nowrap">${lbl}</span>`
+  const c = BADGE[type];
+  const lbl = label ?? c.label;
+  return `<span style="display:inline-block;padding:2px 10px;border-radius:20px;font-size:10px;font-weight:700;font-family:'DM Sans',Arial,sans-serif;background:${c.bg};color:${c.color};letter-spacing:0.3px;white-space:nowrap">${lbl}</span>`;
 }
 
 // ─── classification par valeur ─────────────────────────────────────────────────
 
 function iahType(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n < 5)  return 'ok'
-  if (n < 15) return 'warn'
-  if (n < 30) return 'mod'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n < 5) return "ok";
+  if (n < 15) return "warn";
+  if (n < 30) return "mod";
+  return "bad";
 }
 
 function effType(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n >= 85) return 'ok'
-  if (n >= 75) return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n >= 85) return "ok";
+  if (n >= 75) return "warn";
+  return "bad";
 }
 
 function latencyType(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n < 20)  return 'ok'
-  if (n <= 30) return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n < 20) return "ok";
+  if (n <= 30) return "warn";
+  return "bad";
 }
 
 function arousalType(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n < 10)  return 'ok'
-  if (n < 15)  return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n < 10) return "ok";
+  if (n < 15) return "warn";
+  return "bad";
 }
 
 function apneaDurType(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n < 30)  return 'ok'
-  if (n < 60)  return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n < 30) return "ok";
+  if (n < 60) return "warn";
+  return "bad";
 }
 
 function spo2MeanType(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n >= 95) return 'ok'
-  if (n >= 90) return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n >= 95) return "ok";
+  if (n >= 90) return "warn";
+  return "bad";
 }
 
 function spo2MinType(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n > 88)  return 'ok'
-  if (n >= 80) return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n > 88) return "ok";
+  if (n >= 80) return "warn";
+  return "bad";
 }
 
 function ct90Type(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n < 1)  return 'ok'
-  if (n < 10) return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n < 1) return "ok";
+  if (n < 10) return "warn";
+  return "bad";
 }
 
 function timeUnder88Type(n: number | null): BadgeType {
-  if (n === null) return 'neutral'
-  if (n < 1) return 'ok'
-  if (n < 5) return 'warn'
-  return 'bad'
+  if (n === null) return "neutral";
+  if (n < 1) return "ok";
+  if (n < 5) return "warn";
+  return "bad";
 }
 
 // ─── sévérité IAH ─────────────────────────────────────────────────────────────
 
 interface Severity {
-  label: string
-  textColor: string
-  accentColor: string
-  chipBg: string
-  chipBorder: string
+  label: string;
+  textColor: string;
+  accentColor: string;
+  chipBg: string;
+  chipBorder: string;
 }
 
 function severityFromIah(iah: number | null): Severity {
-  if (iah === null || iah < 5) return {
-    label: 'Normal',
-    textColor: '#14532d',
-    accentColor: '#22c55e',
-    chipBg: '#dcfce7',
-    chipBorder: '#86efac',
-  }
-  if (iah < 15) return {
-    label: 'SAOS Léger',
-    textColor: '#713f12',
-    accentColor: '#eab308',
-    chipBg: '#fef9c3',
-    chipBorder: '#fde047',
-  }
-  if (iah < 30) return {
-    label: 'SAOS Modéré',
-    textColor: '#7c2d12',
-    accentColor: '#f97316',
-    chipBg: '#ffedd5',
-    chipBorder: '#fdba74',
-  }
+  if (iah === null || iah < 5)
+    return {
+      label: "Normal",
+      textColor: "#14532d",
+      accentColor: "#22c55e",
+      chipBg: "#dcfce7",
+      chipBorder: "#86efac",
+    };
+  if (iah < 15)
+    return {
+      label: "SAOS Léger",
+      textColor: "#713f12",
+      accentColor: "#eab308",
+      chipBg: "#fef9c3",
+      chipBorder: "#fde047",
+    };
+  if (iah < 30)
+    return {
+      label: "SAOS Modéré",
+      textColor: "#7c2d12",
+      accentColor: "#f97316",
+      chipBg: "#ffedd5",
+      chipBorder: "#fdba74",
+    };
   return {
-    label: 'SAOS Sévère',
-    textColor: '#7f1d1d',
-    accentColor: '#ef4444',
-    chipBg: '#fee2e2',
-    chipBorder: '#fca5a5',
-  }
+    label: "SAOS Sévère",
+    textColor: "#7f1d1d",
+    accentColor: "#ef4444",
+    chipBg: "#fee2e2",
+    chipBorder: "#fca5a5",
+  };
 }
 
 // ─── composants HTML ──────────────────────────────────────────────────────────
 
-function tableRow(param: string, value: string, norm: string, bdg: string): string {
+function tableRow(
+  param: string,
+  value: string,
+  norm: string,
+  bdg: string,
+): string {
   return `
         <tr>
           <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;font-family:'DM Sans',Arial,sans-serif;font-size:12px;color:#334155">${param}</td>
           <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;font-family:'Syne',Arial,sans-serif;font-size:12px;font-weight:600;color:#0f172a;text-align:center">${value}</td>
           <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;font-family:'DM Sans',Arial,sans-serif;font-size:11px;color:#94a3b8;text-align:center">${norm}</td>
           <td style="padding:9px 14px;border-bottom:1px solid #f1f5f9;text-align:center">${bdg}</td>
-        </tr>`
+        </tr>`;
 }
 
 function metricsTable(title: string, rows: string): string {
@@ -202,70 +211,155 @@ function metricsTable(title: string, rows: string): string {
         <tbody>${rows}
         </tbody>
       </table>
-    </div>`
+    </div>`;
 }
 
 // ─── template principal ───────────────────────────────────────────────────────
 
 const STUDY_TYPE_LABEL: Record<string, string> = {
-  PSG:  'Polysomnographie Complète',
-  PV:   'Polygraphie Ventilatoire',
-  MSLT: 'Test de Latence Multiples Endormissements',
-  MWT:  'Test de Maintien de l\'Éveil',
-}
+  PSG: "Polysomnographie Complète",
+  PV: "Polygraphie Ventilatoire",
+  MSLT: "Test de Latence Multiples Endormissements",
+  MWT: "Test de Maintien de l'Éveil",
+};
 
 export function buildReportHtml(data: ReportTemplateData): string {
-  const { studyType, patientReference, agentName, generatedAt, values } = data
+  const { studyType, patientReference, agentName, generatedAt, values } = data;
 
   // Alias sections (accept both EN and FR keys)
-  const SLEEP = ['sommeil', 'sleep', 'sleep_architecture', 'architecture']
-  const RESP  = ['respiratoire', 'respiratory', 'respiration']
-  const OXY   = ['oximetrie', 'oxymetry', 'oximetry', 'saturation']
-  const CONC  = ['conclusion']
+  const SLEEP = ["sommeil", "sleep", "sleep_architecture", "architecture"];
+  const RESP = ["respiratoire", "respiratory", "respiration"];
+  const OXY = ["oximetrie", "oxymetry", "oximetry", "saturation"];
+  const CONC = ["conclusion"];
 
   // IAH + severity
-  const iahN = num(values, RESP, 'iah')
-  const sev  = severityFromIah(iahN)
+  const iahN = num(values, RESP, "iah");
+  const sev = severityFromIah(iahN);
 
   // Technical notes (optional section)
-  const techText = (values.technical?.text ?? '').trim()
+  const techText = (values.technical?.text ?? "").trim();
 
   // Conclusion
   const conclusionText = (
     values[CONC[0]]?.richtext ??
     values[CONC[0]]?.text ??
-    ''
-  ).trim()
+    ""
+  ).trim();
 
   // ── Sleep architecture rows
   const sleepRows = [
-    tableRow('Temps au lit',            v(values, SLEEP, 'temps_lit', 'min'),              '—',            badge('neutral')),
-    tableRow('Temps de sommeil total',  v(values, SLEEP, 'temps_sommeil', 'min'),          '&gt; 360 min', badge(num(values, SLEEP, 'temps_sommeil') !== null && num(values, SLEEP, 'temps_sommeil')! >= 360 ? 'ok' : 'warn')),
-    tableRow('Efficacité du sommeil',   v(values, SLEEP, 'efficacite', '%'),               '≥ 85 %',       badge(effType(num(values, SLEEP, 'efficacite')))),
-    tableRow("Latence d'endormissement", v(values, SLEEP, 'latence_endormissement', 'min'), '&lt; 30 min',  badge(latencyType(num(values, SLEEP, 'latence_endormissement')))),
-    tableRow("Index d'éveil",           v(values, SLEEP, 'index_eveil', '/h'),             '&lt; 15 /h',   badge(arousalType(num(values, SLEEP, 'index_eveil')))),
-  ].join('')
+    tableRow(
+      "Temps au lit",
+      v(values, SLEEP, "temps_lit", "min"),
+      "—",
+      badge("neutral"),
+    ),
+    tableRow(
+      "Temps de sommeil total",
+      v(values, SLEEP, "temps_sommeil", "min"),
+      "&gt; 360 min",
+      badge(
+        num(values, SLEEP, "temps_sommeil") !== null &&
+          num(values, SLEEP, "temps_sommeil")! >= 360
+          ? "ok"
+          : "warn",
+      ),
+    ),
+    tableRow(
+      "Efficacité du sommeil",
+      v(values, SLEEP, "efficacite", "%"),
+      "≥ 85 %",
+      badge(effType(num(values, SLEEP, "efficacite"))),
+    ),
+    tableRow(
+      "Latence d'endormissement",
+      v(values, SLEEP, "latence_endormissement", "min"),
+      "&lt; 30 min",
+      badge(latencyType(num(values, SLEEP, "latence_endormissement"))),
+    ),
+    tableRow(
+      "Index d'éveil",
+      v(values, SLEEP, "index_eveil", "/h"),
+      "&lt; 15 /h",
+      badge(arousalType(num(values, SLEEP, "index_eveil"))),
+    ),
+  ].join("");
 
   // ── Respiratory rows
   const respRows = [
-    tableRow('IAH Total',                  v(values, RESP, 'iah', '/h'),             '&lt; 5 /h',  badge(iahType(iahN))),
-    tableRow('IAH (position dorsale)',     v(values, RESP, 'iah_supin', '/h'),       '—',          badge(iahType(num(values, RESP, 'iah_supin')))),
-    tableRow('IAH (autres positions)',     v(values, RESP, 'iah_non_supin', '/h'),   '—',          badge(iahType(num(values, RESP, 'iah_non_supin')))),
-    tableRow('IAH REM',                    v(values, RESP, 'iah_rem', '/h'),         '—',          badge(iahType(num(values, RESP, 'iah_rem')))),
-    tableRow('IAH NREM',                   v(values, RESP, 'iah_nrem', '/h'),        '—',          badge(iahType(num(values, RESP, 'iah_nrem')))),
-    tableRow("Durée apnée la plus longue", v(values, RESP, 'longest_apnea_sec', 'sec'), '&lt; 30 sec', badge(apneaDurType(num(values, RESP, 'longest_apnea_sec')))),
-  ].join('')
+    tableRow(
+      "IAH Total",
+      v(values, RESP, "iah", "/h"),
+      "&lt; 5 /h",
+      badge(iahType(iahN)),
+    ),
+    tableRow(
+      "IAH (position dorsale)",
+      v(values, RESP, "iah_supin", "/h"),
+      "—",
+      badge(iahType(num(values, RESP, "iah_supin"))),
+    ),
+    tableRow(
+      "IAH (autres positions)",
+      v(values, RESP, "iah_non_supin", "/h"),
+      "—",
+      badge(iahType(num(values, RESP, "iah_non_supin"))),
+    ),
+    tableRow(
+      "IAH REM",
+      v(values, RESP, "iah_rem", "/h"),
+      "—",
+      badge(iahType(num(values, RESP, "iah_rem"))),
+    ),
+    tableRow(
+      "IAH NREM",
+      v(values, RESP, "iah_nrem", "/h"),
+      "—",
+      badge(iahType(num(values, RESP, "iah_nrem"))),
+    ),
+    tableRow(
+      "Durée apnée la plus longue",
+      v(values, RESP, "longest_apnea_sec", "sec"),
+      "&lt; 30 sec",
+      badge(apneaDurType(num(values, RESP, "longest_apnea_sec"))),
+    ),
+  ].join("");
 
   // ── Oximetry rows
   const oxyRows = [
-    tableRow('SpO₂ moyenne nocturne',    v(values, OXY, 'spo2_moyenne', '%'),    '≥ 95 %',     badge(spo2MeanType(num(values, OXY, 'spo2_moyenne')))),
-    tableRow('SpO₂ minimale',            v(values, OXY, 'spo2_min', '%'),        '&gt; 88 %',  badge(spo2MinType(num(values, OXY, 'spo2_min')))),
-    tableRow('Temps &lt; 90 % SpO₂ (CT90)', v(values, OXY, 'ct90', '%'),         '&lt; 1 %',   badge(ct90Type(num(values, OXY, 'ct90')))),
-    tableRow('SpO₂ de base (éveil)',     v(values, OXY, 'spo2_base_awake', '%'), '≥ 95 %',     badge(spo2MeanType(num(values, OXY, 'spo2_base_awake')))),
-    tableRow('Temps passé &lt; 88 % SpO₂', v(values, OXY, 'time_under_88', '%'), '&lt; 1 %',   badge(timeUnder88Type(num(values, OXY, 'time_under_88')))),
-  ].join('')
+    tableRow(
+      "SpO₂ moyenne nocturne",
+      v(values, OXY, "spo2_moyenne", "%"),
+      "≥ 95 %",
+      badge(spo2MeanType(num(values, OXY, "spo2_moyenne"))),
+    ),
+    tableRow(
+      "SpO₂ minimale",
+      v(values, OXY, "spo2_min", "%"),
+      "&gt; 88 %",
+      badge(spo2MinType(num(values, OXY, "spo2_min"))),
+    ),
+    tableRow(
+      "Temps &lt; 90 % SpO₂ (CT90)",
+      v(values, OXY, "ct90", "%"),
+      "&lt; 1 %",
+      badge(ct90Type(num(values, OXY, "ct90"))),
+    ),
+    tableRow(
+      "SpO₂ de base (éveil)",
+      v(values, OXY, "spo2_base_awake", "%"),
+      "≥ 95 %",
+      badge(spo2MeanType(num(values, OXY, "spo2_base_awake"))),
+    ),
+    tableRow(
+      "Temps passé &lt; 88 % SpO₂",
+      v(values, OXY, "time_under_88", "%"),
+      "&lt; 1 %",
+      badge(timeUnder88Type(num(values, OXY, "time_under_88"))),
+    ),
+  ].join("");
 
-  const iahDisplay = iahN !== null ? iahN.toFixed(1) : '—'
+  const iahDisplay = iahN !== null ? iahN.toFixed(1) : "—";
 
   return `<!DOCTYPE html>
 <html lang="fr">
@@ -388,7 +482,7 @@ export function buildReportHtml(data: ReportTemplateData): string {
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center">
             <span style="font-family:'DM Sans',Arial,sans-serif;font-size:11px;color:#64748b">Statut</span>
-            ${badge('ok', 'Validé ✓')}
+            ${badge("ok", "Validé ✓")}
           </div>
         </div>
       </div>
@@ -422,12 +516,14 @@ export function buildReportHtml(data: ReportTemplateData): string {
     </div>
 
     <!-- ── Tableaux métriques ── -->
-    ${metricsTable('Architecture du Sommeil', sleepRows)}
-    ${metricsTable('Analyse Respiratoire', respRows)}
-    ${metricsTable('Analyse Oxymétrique', oxyRows)}
+    ${metricsTable("Architecture du Sommeil", sleepRows)}
+    ${metricsTable("Analyse Respiratoire", respRows)}
+    ${metricsTable("Analyse Oxymétrique", oxyRows)}
 
     <!-- ── Notes techniques (si renseignées) ── -->
-    ${techText ? `
+    ${
+      techText
+        ? `
     <div style="margin-bottom:22px">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
         <div style="width:3px;height:18px;background:#f59e0b;border-radius:2px;flex-shrink:0"></div>
@@ -436,7 +532,9 @@ export function buildReportHtml(data: ReportTemplateData): string {
       <div style="background:#fefce8;border:1px solid #fde047;border-left:3px solid #f59e0b;border-radius:0 8px 8px 0;padding:14px 18px">
         <p style="font-family:'DM Sans',Arial,sans-serif;font-size:12px;color:#713f12;line-height:1.6;white-space:pre-wrap">${esc(techText)}</p>
       </div>
-    </div>` : ''}
+    </div>`
+        : ""
+    }
 
     <!-- ── Conclusion ── -->
     <div style="margin-bottom:26px">
@@ -485,5 +583,5 @@ export function buildReportHtml(data: ReportTemplateData): string {
 
 </div><!-- /page -->
 </body>
-</html>`
+</html>`;
 }

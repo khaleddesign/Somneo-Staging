@@ -20,18 +20,18 @@ const PATTERNS: RegExp[] = [
   /\b(\d{4}[-_][A-Z]{2,}(?:[-_][A-Z0-9]*)?)\b/i,
   // Short code at start of filename (e.g. "A12B_rapport")
   /^([A-Z0-9]{3,12})[-_ ]/i,
-]
+];
 
 export function extractPatientRef(filename: string): string | null {
   // Strip extension
-  const stem = filename.replace(/\.[^.]+$/, '')
+  const stem = filename.replace(/\.[^.]+$/, "");
 
   for (const pattern of PATTERNS) {
-    const match = stem.match(pattern)
+    const match = stem.match(pattern);
     if (match?.[1]) {
-      return match[1].toUpperCase()
+      return match[1].toUpperCase();
     }
   }
 
-  return null
+  return null;
 }

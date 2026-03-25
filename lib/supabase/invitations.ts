@@ -1,103 +1,122 @@
-import { createAdminClient } from './admin'
-import { createClient as createServerClient } from './server'
-import type { Database } from '@/types/database'
+import { createAdminClient } from "./admin";
+import { createClient as createServerClient } from "./server";
+import type { Database } from "@/types/database";
 
-export type InvitationRow = Database['public']['Tables']['invitations']['Row']
+export type InvitationRow = Database["public"]["Tables"]["invitations"]["Row"];
 
 export async function createInvitation(params: {
-  email: string
-  institution_id: string | null
-  created_by: string
-  full_name?: string | null
-  role_invited?: 'admin' | 'agent' | 'client'
+  email: string;
+  institution_id: string | null;
+  created_by: string;
+  full_name?: string | null;
+  role_invited?: "admin" | "agent" | "client";
 }) {
-  const { email, institution_id, created_by, full_name = null, role_invited = 'client' } = params
+  const {
+    email,
+    institution_id,
+    created_by,
+    full_name = null,
+    role_invited = "client",
+  } = params;
 
-  const server = await createServerClient()
+  const server = await createServerClient();
 
-  const token = crypto.randomUUID()
-  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+  const token = crypto.randomUUID();
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
 
   const { data, error } = await server
-    .from('invitations')
-    .insert({ email, full_name, token, role_invited, created_by, institution_id, expires_at: expiresAt })
+    .from("invitations")
+    .insert({
+      email,
+      full_name,
+      token,
+      role_invited,
+      created_by,
+      institution_id,
+      expires_at: expiresAt,
+    })
     .select()
-    .single()
+    .single();
 
-  if (error) throw error
-  const invitation = data as InvitationRow
-  return { token: invitation.token }
+  if (error) throw error;
+  const invitation = data as InvitationRow;
+  return { token: invitation.token };
 }
 
 export async function getInvitationByToken(token: string) {
-  const admin = createAdminClient()
+  const admin = createAdminClient();
   const { data, error } = await admin
-    .from('invitations')
-    .select('*')
-    .eq('token', token)
-    .is('used_at', null)
-    .maybeSingle()
+    .from("invitations")
+    .select("*")
+    .eq("token", token)
+    .is("used_at", null)
+    .maybeSingle();
 
-  if (error) throw error
-  if (!data) return null
+  if (error) throw error;
+  if (!data) return null;
 
   if (data.expires_at && new Date(data.expires_at) < new Date()) {
-    throw new Error('Invitation expired')
+    throw new Error("Invitation expired");
   }
 
-  return data as InvitationRow
+  return data as InvitationRow;
 }
 
 export async function markInvitationUsed(id: string) {
-  const admin = createAdminClient()
+  const admin = createAdminClient();
   const { data, error } = await admin
-    .from('invitations')
+    .from("invitations")
     .update({ used_at: new Date().toISOString() })
-    .eq('id', id)
+    .eq("id", id)
     .select()
-    .single()
+    .single();
 
-  if (error) throw error
-  return data as InvitationRow
+  if (error) throw error;
+  return data as InvitationRow;
 }
 
-export async function createUserAndProfileFromInvitation(token: string, password: string) {
-  const admin = createAdminClient()
+export async function createUserAndProfileFromInvitation(
+  token: string,
+  password: string,
+) {
+  const admin = createAdminClient();
 
   // Fetch invitation
   const { data: invitation, error: invErr } = await admin
-    .from('invitations')
-    .select('*')
-    .eq('token', token)
-    .maybeSingle()
+    .from("invitations")
+    .select("*")
+    .eq("token", token)
+    .maybeSingle();
 
-  if (invErr) throw invErr
-  if (!invitation) throw new Error('Invalid token')
-  if (invitation.used_at) throw new Error('Token already used')
+  if (invErr) throw invErr;
+  if (!invitation) throw new Error("Invalid token");
+  if (invitation.used_at) throw new Error("Token already used");
   if (invitation.expires_at && new Date(invitation.expires_at) < new Date()) {
-    throw new Error('Invitation expired')
+    throw new Error("Invitation expired");
   }
 
   // Create user via admin client
-  const { data: userData, error: createErr } = await admin.auth.admin.createUser({
-    email: invitation.email,
-    password,
-    email_confirm: true,
-  })
+  const { data: userData, error: createErr } =
+    await admin.auth.admin.createUser({
+      email: invitation.email,
+      password,
+      email_confirm: true,
+    });
 
-  if (createErr) throw createErr
+  if (createErr) throw createErr;
 
-  const userId = userData.user?.id
-  if (!userId) throw new Error('Unable to create user')
-
+  const userId = userData.user?.id;
+  if (!userId) throw new Error("Unable to create user");
 
   // Insert profile into public.profiles
-  const invitedRole = ['admin', 'agent', 'client'].includes(invitation.role_invited)
+  const invitedRole = ["admin", "agent", "client"].includes(
+    invitation.role_invited,
+  )
     ? invitation.role_invited
-    : 'client'
+    : "client";
 
   const { data: profileData, error: profileErr } = await admin
-    .from('profiles')
+    .from("profiles")
     .insert({
       id: userId,
       email: invitation.email,
@@ -107,19 +126,23 @@ export async function createUserAndProfileFromInvitation(token: string, password
       is_active: true,
     })
     .select()
-    .single()
+    .single();
 
-  if (profileErr) throw profileErr
+  if (profileErr) throw profileErr;
 
   // Mark invitation as used
   const { error: usedErr } = await admin
-    .from('invitations')
+    .from("invitations")
     .update({ used_at: new Date().toISOString() })
-    .eq('id', invitation.id)
+    .eq("id", invitation.id)
     .select()
-    .single()
+    .single();
 
-  if (usedErr) throw usedErr
+  if (usedErr) throw usedErr;
 
-  return { userId, profile: profileData, role: invitedRole as 'admin' | 'agent' | 'client' }
+  return {
+    userId,
+    profile: profileData,
+    role: invitedRole as "admin" | "agent" | "client",
+  };
 }

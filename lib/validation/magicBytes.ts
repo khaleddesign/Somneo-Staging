@@ -11,14 +11,14 @@
  */
 
 export interface MagicBytesResult {
-  valid: boolean
-  reason?: string
+  valid: boolean;
+  reason?: string;
 }
 
 interface Signature {
   /** Expected bytes at the given offset */
-  bytes: number[]
-  offset: number
+  bytes: number[];
+  offset: number;
 }
 
 /**
@@ -29,10 +29,10 @@ interface Signature {
 const SIGNATURES: Record<string, Signature[]> = {
   edf: [{ bytes: [0x30, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20], offset: 0 }],
   bdf: [{ bytes: [0x30, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20], offset: 0 }],
-  zip: [{ bytes: [0x50, 0x4B, 0x03, 0x04], offset: 0 }],
-}
+  zip: [{ bytes: [0x50, 0x4b, 0x03, 0x04], offset: 0 }],
+};
 
-const MIN_BUFFER_SIZE = 4
+const MIN_BUFFER_SIZE = 4;
 
 /**
  * Validates the magic bytes of a file buffer against its declared extension.
@@ -40,24 +40,33 @@ const MIN_BUFFER_SIZE = 4
  * @param buffer - At least the first 8 bytes of the file
  * @param filename - Original filename including extension
  */
-export function validateMagicBytes(buffer: Buffer, filename: string): MagicBytesResult {
-  const ext = filename.split('.').pop()?.toLowerCase() ?? ''
+export function validateMagicBytes(
+  buffer: Buffer,
+  filename: string,
+): MagicBytesResult {
+  const ext = filename.split(".").pop()?.toLowerCase() ?? "";
 
-  const sigs = SIGNATURES[ext]
+  const sigs = SIGNATURES[ext];
   if (!sigs) {
-    return { valid: false, reason: `Extension .${ext} not allowed` }
+    return { valid: false, reason: `Extension .${ext} not allowed` };
   }
 
   if (buffer.length < MIN_BUFFER_SIZE) {
-    return { valid: false, reason: `File header too short (${buffer.length} bytes, min ${MIN_BUFFER_SIZE})` }
+    return {
+      valid: false,
+      reason: `File header too short (${buffer.length} bytes, min ${MIN_BUFFER_SIZE})`,
+    };
   }
 
   for (const sig of sigs) {
-    const slice = buffer.slice(sig.offset, sig.offset + sig.bytes.length)
-    if (sig.bytes.length <= slice.length && sig.bytes.every((b, i) => slice[i] === b)) {
-      return { valid: true }
+    const slice = buffer.slice(sig.offset, sig.offset + sig.bytes.length);
+    if (
+      sig.bytes.length <= slice.length &&
+      sig.bytes.every((b, i) => slice[i] === b)
+    ) {
+      return { valid: true };
     }
   }
 
-  return { valid: false, reason: `Invalid file signature for .${ext}` }
+  return { valid: false, reason: `Invalid file signature for .${ext}` };
 }

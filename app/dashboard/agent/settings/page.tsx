@@ -1,92 +1,94 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import AppLayout from '@/components/custom/AppLayout'
-import { Loader2 } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import AppLayout from "@/components/custom/AppLayout";
+import { Loader2 } from "lucide-react";
 
 interface UserProfile {
-  id: string
-  email: string
-  full_name: string
+  id: string;
+  email: string;
+  full_name: string;
 }
 
 export default function SettingsPage() {
-  const [profile, setProfile] = useState<UserProfile | null>(null)
-  const [currentPassword, setCurrentPassword] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [passwordLoading, setPasswordLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [success, setSuccess] = useState<string | null>(null)
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+      const supabase = createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       if (user) {
         const { data: profileData } = await supabase
-          .from('profiles')
-          .select('id, full_name')
-          .eq('id', user.id)
-          .single()
+          .from("profiles")
+          .select("id, full_name")
+          .eq("id", user.id)
+          .single();
 
         setProfile({
           id: user.id,
-          email: user.email || '',
-          full_name: profileData?.full_name || '',
-        })
+          email: user.email || "",
+          full_name: profileData?.full_name || "",
+        });
       }
-      setLoading(false)
-    }
+      setLoading(false);
+    };
 
-    fetchProfile()
-  }, [])
+    fetchProfile();
+  }, []);
 
   async function handlePasswordChange(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    setSuccess(null)
+    e.preventDefault();
+    setError(null);
+    setSuccess(null);
 
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match')
-      return
+      setError("Passwords do not match");
+      return;
     }
 
     if (newPassword.length < 8) {
-      setError('New password must be at least 8 characters')
-      return
+      setError("New password must be at least 8 characters");
+      return;
     }
 
-    setPasswordLoading(true)
+    setPasswordLoading(true);
 
     try {
-      const supabase = createClient()
+      const supabase = createClient();
 
       // Update password using updateUser
       const { error: updateError } = await supabase.auth.updateUser({
         password: newPassword,
-      })
+      });
 
       if (updateError) {
-        setError(updateError.message)
-        return
+        setError(updateError.message);
+        return;
       }
 
-      setSuccess('Password updated successfully')
-      setCurrentPassword('')
-      setNewPassword('')
-      setConfirmPassword('')
+      setSuccess("Password updated successfully");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Error updating profile')
+      setError(err instanceof Error ? err.message : "Error updating profile");
     } finally {
-      setPasswordLoading(false)
+      setPasswordLoading(false);
     }
   }
 
@@ -97,15 +99,13 @@ export default function SettingsPage() {
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-teal-600" />
         </div>
       </AppLayout>
-    )
+    );
   }
 
   return (
     <AppLayout>
       <div className="p-8 max-w-2xl bg-[#f0f4f8]">
-        <h1 className="text-4xl text-midnight font-display mb-8">
-          Settings
-        </h1>
+        <h1 className="text-4xl text-midnight font-display mb-8">Settings</h1>
 
         {/* Account Information */}
         <Card className="mb-8 rounded-2xl border border-gray-100 shadow-sm bg-white">
@@ -114,12 +114,16 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-                <Label className="text-gray-600 font-heading">Name</Label>
-              <p className="mt-1 text-lg text-gray-900 font-body">{profile?.full_name}</p>
+              <Label className="text-gray-600 font-heading">Name</Label>
+              <p className="mt-1 text-lg text-gray-900 font-body">
+                {profile?.full_name}
+              </p>
             </div>
             <div>
               <Label className="text-gray-600 font-heading">Email</Label>
-              <p className="mt-1 text-lg text-gray-900 font-body">{profile?.email}</p>
+              <p className="mt-1 text-lg text-gray-900 font-body">
+                {profile?.email}
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -132,7 +136,12 @@ export default function SettingsPage() {
           <CardContent>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="current-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Current password</Label>
+                <Label
+                  htmlFor="current-password"
+                  className="font-heading text-xs uppercase tracking-wider text-gray-500"
+                >
+                  Current password
+                </Label>
                 <Input
                   id="current-password"
                   type="password"
@@ -145,7 +154,12 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="new-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">New password</Label>
+                <Label
+                  htmlFor="new-password"
+                  className="font-heading text-xs uppercase tracking-wider text-gray-500"
+                >
+                  New password
+                </Label>
                 <Input
                   id="new-password"
                   type="password"
@@ -159,7 +173,12 @@ export default function SettingsPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="confirm-password" className="font-heading text-xs uppercase tracking-wider text-gray-500">Confirm password</Label>
+                <Label
+                  htmlFor="confirm-password"
+                  className="font-heading text-xs uppercase tracking-wider text-gray-500"
+                >
+                  Confirm password
+                </Label>
                 <Input
                   id="confirm-password"
                   type="password"
@@ -183,7 +202,7 @@ export default function SettingsPage() {
                     Updating...
                   </>
                 ) : (
-                  'Update password'
+                  "Update password"
                 )}
               </Button>
             </form>
@@ -203,5 +222,5 @@ export default function SettingsPage() {
         </Card>
       </div>
     </AppLayout>
-  )
+  );
 }

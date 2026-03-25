@@ -1,24 +1,32 @@
-'use client'
+"use client";
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from "react";
 
 export default function AuthLeftPanel() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
     // Set canvas size
-    canvas.width = canvas.offsetWidth
-    canvas.height = canvas.offsetHeight
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
 
     // Create stars
-    const stars: Array<{ x: number; y: number; radius: number; opacity: number; speed: number; dx: number; dy: number }> = []
-    const starCount = 50
+    const stars: Array<{
+      x: number;
+      y: number;
+      radius: number;
+      opacity: number;
+      speed: number;
+      dx: number;
+      dy: number;
+    }> = [];
+    const starCount = 50;
 
     for (let i = 0; i < starCount; i++) {
       stars.push({
@@ -29,56 +37,53 @@ export default function AuthLeftPanel() {
         speed: Math.random() * 0.02 + 0.01,
         dx: (Math.random() - 0.5) * 0.06,
         dy: (Math.random() - 0.5) * 0.06,
-      })
+      });
     }
 
-    let animationId: number
+    let animationId: number;
 
     function animate() {
-      if (!ctx || !canvas) return
-      
-      ctx.fillStyle = '#06111f'
-      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      if (!ctx || !canvas) return;
+
+      ctx.fillStyle = "#06111f";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       stars.forEach((star) => {
         // Update opacity (twinkling effect)
-        star.opacity += star.speed
+        star.opacity += star.speed;
         if (star.opacity >= 1 || star.opacity <= 0.3) {
-          star.speed *= -1
+          star.speed *= -1;
         }
 
-        star.x += star.dx
-        star.y += star.dy
+        star.x += star.dx;
+        star.y += star.dy;
 
-        if (star.x < 0) star.x = canvas.width
-        if (star.x > canvas.width) star.x = 0
-        if (star.y < 0) star.y = canvas.height
-        if (star.y > canvas.height) star.y = 0
+        if (star.x < 0) star.x = canvas.width;
+        if (star.x > canvas.width) star.x = 0;
+        if (star.y < 0) star.y = canvas.height;
+        if (star.y > canvas.height) star.y = 0;
 
         // Draw star
-        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`
-        ctx.beginPath()
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2)
-        ctx.fill()
-      })
+        ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
+        ctx.beginPath();
+        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
 
-      animationId = requestAnimationFrame(animate)
+      animationId = requestAnimationFrame(animate);
     }
 
-    animate()
+    animate();
 
     return () => {
-      cancelAnimationFrame(animationId)
-    }
-  }, [])
+      cancelAnimationFrame(animationId);
+    };
+  }, []);
 
   return (
     <div className="flex w-full lg:basis-[45%] bg-midnight flex-col justify-between p-8 lg:p-12 text-white relative overflow-hidden min-h-[40vh] lg:min-h-screen">
       {/* Canvas for stars */}
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 z-0"
-      />
+      <canvas ref={canvasRef} className="absolute inset-0 z-0" />
 
       {/* Content */}
       <div className="relative z-10">
@@ -86,7 +91,9 @@ export default function AuthLeftPanel() {
           <h1 className="text-4xl lg:text-5xl text-teal mb-2 font-display leading-tight">
             SomnoConnect
           </h1>
-          <p className="text-sand/40 text-[9px] tracking-[3px] uppercase font-heading">BY SOMNOVENTIS</p>
+          <p className="text-sand/40 text-[9px] tracking-[3px] uppercase font-heading">
+            BY SOMNOVENTIS
+          </p>
         </div>
 
         <div className="max-w-md">
@@ -94,7 +101,8 @@ export default function AuthLeftPanel() {
             Secure sleep analysis platform
           </h2>
           <p className="text-sand/60 italic text-sm leading-relaxed font-body max-w-sm">
-            Secure medical infrastructure to centralize your studies, clinical exchanges and reports in full confidentiality.
+            Secure medical infrastructure to centralize your studies, clinical
+            exchanges and reports in full confidentiality.
           </p>
         </div>
       </div>
@@ -105,5 +113,5 @@ export default function AuthLeftPanel() {
         <span>GDPR Badge · Encrypted medical data</span>
       </div>
     </div>
-  )
+  );
 }

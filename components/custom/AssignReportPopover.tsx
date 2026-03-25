@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 /**
  * AssignReportPopover
@@ -13,36 +13,48 @@
  *   onSuccess       — Callback appelé après succès (refresh du parent)
  */
 
-import { useRef, useState, useEffect } from 'react'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Button } from '@/components/ui/button'
+import { useRef, useState, useEffect } from "react";
 import {
-  Layers, Upload, CheckCircle2, AlertCircle, Loader2, Link2, ArchiveX
-} from 'lucide-react'
-import { formatFileSize } from '@/lib/utils'
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import {
+  Layers,
+  Upload,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Link2,
+  ArchiveX,
+} from "lucide-react";
+import { formatFileSize } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface UnassignedReport {
-  id: string
-  original_filename: string
-  file_size: number
-  uploaded_at: string
+  id: string;
+  original_filename: string;
+  file_size: number;
+  uploaded_at: string;
 }
 
-type UploadPhase = 'idle' | 'uploading' | 'done' | 'error'
+type UploadPhase = "idle" | "uploading" | "done" | "error";
 
 interface AssignReportPopoverProps {
-  studyId: string
-  studyPatientRef: string
-  onSuccess: () => void
+  studyId: string;
+  studyPatientRef: string;
+  onSuccess: () => void;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isPdf(file: File): boolean {
-  return file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+  return (
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")
+  );
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -52,121 +64,123 @@ export function AssignReportPopover({
   studyPatientRef,
   onSuccess,
 }: AssignReportPopoverProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
 
   // ── Onglet Upload ──────────────────────────────────────────────────────────
-  const [isDragging, setIsDragging] = useState(false)
-  const [uploadPhase, setUploadPhase] = useState<UploadPhase>('idle')
-  const [uploadProgress, setUploadProgress] = useState(0)
-  const [uploadError, setUploadError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadPhase, setUploadPhase] = useState<UploadPhase>("idle");
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   async function runUpload(file: File) {
     if (!isPdf(file)) {
-      setUploadError('Only PDF files are accepted')
-      setUploadPhase('error')
-      return
+      setUploadError("Only PDF files are accepted");
+      setUploadPhase("error");
+      return;
     }
-    setUploadPhase('uploading')
-    setUploadProgress(30)
-    setUploadError(null)
+    setUploadPhase("uploading");
+    setUploadProgress(30);
+    setUploadError(null);
 
     try {
-      const formData = new FormData()
-      formData.append('file', file)
+      const formData = new FormData();
+      formData.append("file", file);
 
       const res = await fetch(`/api/studies/${studyId}/report`, {
-        method: 'POST',
+        method: "POST",
         body: formData,
-      })
+      });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'PDF upload error')
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "PDF upload error");
       }
 
-      setUploadProgress(70)
+      setUploadProgress(70);
 
       await fetch(`/api/studies/${studyId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'termine' }),
-      })
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "termine" }),
+      });
 
-      fetch(`/api/studies/${studyId}/report-notify`, { method: 'POST' }).catch(() => {})
+      fetch(`/api/studies/${studyId}/report-notify`, { method: "POST" }).catch(
+        () => {},
+      );
 
-      setUploadProgress(100)
-      setUploadPhase('done')
+      setUploadProgress(100);
+      setUploadPhase("done");
       setTimeout(() => {
-        setOpen(false)
-        onSuccess()
-      }, 800)
+        setOpen(false);
+        onSuccess();
+      }, 800);
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : 'Unknown error')
-      setUploadPhase('error')
+      setUploadError(err instanceof Error ? err.message : "Unknown error");
+      setUploadPhase("error");
     }
   }
 
   function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-    const file = e.dataTransfer.files[0]
-    if (file) runUpload(file)
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) runUpload(file);
   }
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0]
-    e.target.value = ''
-    if (file) runUpload(file)
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (file) runUpload(file);
   }
 
   function handleOpenChange(next: boolean) {
-    setOpen(next)
+    setOpen(next);
     if (!next) {
-      setUploadPhase('idle')
-      setUploadProgress(0)
-      setUploadError(null)
+      setUploadPhase("idle");
+      setUploadProgress(0);
+      setUploadError(null);
     }
   }
 
   // ── Onglet "En attente" ────────────────────────────────────────────────────
-  const [pending, setPending] = useState<UnassignedReport[]>([])
-  const [pendingLoading, setPendingLoading] = useState(false)
-  const [linkingId, setLinkingId] = useState<string | null>(null)
-  const [linkError, setLinkError] = useState<string | null>(null)
+  const [pending, setPending] = useState<UnassignedReport[]>([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [linkingId, setLinkingId] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) return
-    setPendingLoading(true)
-    setLinkError(null)
-    fetch('/api/reports/unassigned')
-      .then(r => r.ok ? r.json() : Promise.reject())
-      .then(data => setPending(data.reports ?? []))
+    if (!open) return;
+    setPendingLoading(true);
+    setLinkError(null);
+    fetch("/api/reports/unassigned")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((data) => setPending(data.reports ?? []))
       .catch(() => setPending([]))
-      .finally(() => setPendingLoading(false))
-  }, [open])
+      .finally(() => setPendingLoading(false));
+  }, [open]);
 
   async function handleLink(reportId: string) {
-    setLinkingId(reportId)
-    setLinkError(null)
+    setLinkingId(reportId);
+    setLinkError(null);
     try {
       const res = await fetch(`/api/reports/unassigned/${reportId}/assign`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ study_id: studyId }),
-      })
+      });
       if (!res.ok) {
-        const err = await res.json().catch(() => ({}))
-        throw new Error(err.error || 'Assignment error')
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Assignment error");
       }
-      setPending(prev => prev.filter(r => r.id !== reportId))
+      setPending((prev) => prev.filter((r) => r.id !== reportId));
       setTimeout(() => {
-        setOpen(false)
-        onSuccess()
-      }, 400)
+        setOpen(false);
+        onSuccess();
+      }, 400);
     } catch (err) {
-      setLinkError(err instanceof Error ? err.message : 'Network error')
+      setLinkError(err instanceof Error ? err.message : "Network error");
     } finally {
-      setLinkingId(null)
+      setLinkingId(null);
     }
   }
 
@@ -188,7 +202,9 @@ export function AssignReportPopover({
         {/* Header */}
         <div className="px-4 py-3 border-b bg-gray-50 rounded-t-md">
           <p className="text-sm font-semibold text-gray-900">Assign a report</p>
-          <p className="text-xs text-gray-500 mt-0.5">Study: {studyPatientRef}</p>
+          <p className="text-xs text-gray-500 mt-0.5">
+            Study: {studyPatientRef}
+          </p>
         </div>
 
         <Tabs defaultValue="upload" className="w-full">
@@ -199,7 +215,7 @@ export function AssignReportPopover({
             </TabsTrigger>
             <TabsTrigger value="pending" className="flex-1 text-xs h-7">
               <ArchiveX className="h-3 w-3 mr-1.5" />
-              Pending{pending.length > 0 ? ` (${pending.length})` : ''}
+              Pending{pending.length > 0 ? ` (${pending.length})` : ""}
             </TabsTrigger>
           </TabsList>
 
@@ -213,24 +229,36 @@ export function AssignReportPopover({
               className="hidden"
             />
 
-            {(uploadPhase === 'idle' || uploadPhase === 'error') && (
+            {(uploadPhase === "idle" || uploadPhase === "error") && (
               <div
-                onDragEnter={e => { e.preventDefault(); setIsDragging(true) }}
-                onDragOver={e => e.preventDefault()}
-                onDragLeave={e => { e.preventDefault(); setIsDragging(false) }}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                }}
                 onDrop={handleDrop}
                 onClick={() => fileInputRef.current?.click()}
                 className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition ${
-                  isDragging ? 'border-teal bg-teal/10' : 'border-teal/30 bg-teal/5 hover:bg-teal/10'
+                  isDragging
+                    ? "border-teal bg-teal/10"
+                    : "border-teal/30 bg-teal/5 hover:bg-teal/10"
                 }`}
               >
                 <Upload className="h-6 w-6 mx-auto mb-2 text-teal" />
-                <p className="text-sm font-medium text-gray-800">Drop your PDF here</p>
-                <p className="text-xs text-gray-400 mt-0.5">or click to browse</p>
+                <p className="text-sm font-medium text-gray-800">
+                  Drop your PDF here
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  or click to browse
+                </p>
               </div>
             )}
 
-            {uploadPhase === 'uploading' && (
+            {uploadPhase === "uploading" && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-sm text-gray-700">
                   <Loader2 className="h-4 w-4 animate-spin text-teal" />
@@ -245,14 +273,14 @@ export function AssignReportPopover({
               </div>
             )}
 
-            {uploadPhase === 'done' && (
+            {uploadPhase === "done" && (
               <div className="flex items-center gap-2 text-sm text-green-700 bg-green-50 border border-green-200 rounded-lg p-3">
                 <CheckCircle2 className="h-4 w-4 shrink-0" />
                 Report assigned — study marked as completed
               </div>
             )}
 
-            {uploadPhase === 'error' && uploadError && (
+            {uploadPhase === "error" && uploadError && (
               <div className="flex items-start gap-2 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg p-3">
                 <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
                 {uploadError}
@@ -284,7 +312,7 @@ export function AssignReportPopover({
 
             {!pendingLoading && pending.length > 0 && (
               <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
-                {pending.map(report => (
+                {pending.map((report) => (
                   <div
                     key={report.id}
                     className="flex items-start justify-between gap-3 border border-gray-100 rounded-lg p-2.5 bg-gray-50"
@@ -294,8 +322,10 @@ export function AssignReportPopover({
                         {report.original_filename}
                       </p>
                       <p className="text-xs text-gray-400">
-                        {formatFileSize(report.file_size)} ·{' '}
-                        {new Date(report.uploaded_at).toLocaleDateString('en-GB')}
+                        {formatFileSize(report.file_size)} ·{" "}
+                        {new Date(report.uploaded_at).toLocaleDateString(
+                          "en-GB",
+                        )}
                       </p>
                     </div>
                     <Button
@@ -305,10 +335,14 @@ export function AssignReportPopover({
                       onClick={() => handleLink(report.id)}
                       disabled={linkingId === report.id}
                     >
-                      {linkingId === report.id
-                        ? <Loader2 className="h-3 w-3 animate-spin" />
-                        : <><Link2 className="h-3 w-3 mr-1" />Link</>
-                      }
+                      {linkingId === report.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <>
+                          <Link2 className="h-3 w-3 mr-1" />
+                          Link
+                        </>
+                      )}
                     </Button>
                   </div>
                 ))}
@@ -318,5 +352,5 @@ export function AssignReportPopover({
         </Tabs>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

@@ -9,8 +9,8 @@
  */
 
 export interface BucketObject {
-  name: string
-  created_at: string // ISO 8601
+  name: string;
+  created_at: string; // ISO 8601
 }
 
 /**
@@ -23,16 +23,16 @@ export interface BucketObject {
 export function findOrphanPaths(
   bucketObjects: BucketObject[],
   studyFilePaths: string[],
-  ttlHours: number
+  ttlHours: number,
 ): string[] {
-  const linkedPaths = new Set(studyFilePaths)
-  const cutoff = new Date(Date.now() - ttlHours * 60 * 60 * 1000)
+  const linkedPaths = new Set(studyFilePaths);
+  const cutoff = new Date(Date.now() - ttlHours * 60 * 60 * 1000);
 
   return bucketObjects
     .filter((obj) => {
-      const isLinked = linkedPaths.has(obj.name)
-      const isOldEnough = new Date(obj.created_at) < cutoff
-      return !isLinked && isOldEnough
+      const isLinked = linkedPaths.has(obj.name);
+      const isOldEnough = new Date(obj.created_at) < cutoff;
+      return !isLinked && isOldEnough;
     })
-    .map((obj) => obj.name)
+    .map((obj) => obj.name);
 }

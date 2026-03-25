@@ -1,9 +1,9 @@
-import { type ReactNode } from 'react'
+import { type ReactNode } from "react";
 
 interface Props {
-  title: string
-  description?: string
-  children?: ReactNode
+  title: string;
+  description?: string;
+  children?: ReactNode;
 }
 
 export default function EmptyState({ title, description, children }: Props) {
@@ -26,8 +26,10 @@ export default function EmptyState({ title, description, children }: Props) {
         </svg>
       </div>
       <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-      {description && <p className="mt-1 text-sm text-gray-500">{description}</p>}
+      {description && (
+        <p className="mt-1 text-sm text-gray-500">{description}</p>
+      )}
       {children && <div className="mt-4">{children}</div>}
     </div>
-  )
+  );
 }

@@ -1,18 +1,18 @@
-'use client'
+"use client";
 
-import { useRef, useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { BatchEDFFileRow } from '@/components/custom/BatchEDFFileRow'
-import { useBatchEDFUpload } from '@/hooks/useBatchEDFUpload'
-import { Upload, AlertCircle, CheckCircle2, RefreshCw } from 'lucide-react'
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { BatchEDFFileRow } from "@/components/custom/BatchEDFFileRow";
+import { useBatchEDFUpload } from "@/hooks/useBatchEDFUpload";
+import { Upload, AlertCircle, CheckCircle2, RefreshCw } from "lucide-react";
 
-const VALID_EXTENSIONS = ['.edf', '.edf+', '.bdf', '.zip']
-const MAX_FILES = 20
-const MAX_FILE_SIZE = 500 * 1024 * 1024  // 500 MB
+const VALID_EXTENSIONS = [".edf", ".edf+", ".bdf", ".zip"];
+const MAX_FILES = 20;
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB
 
 function isValidFile(file: File): boolean {
-  const ext = '.' + (file.name.split('.').pop()?.toLowerCase() ?? '')
-  return VALID_EXTENSIONS.includes(ext) && file.size <= MAX_FILE_SIZE
+  const ext = "." + (file.name.split(".").pop()?.toLowerCase() ?? "");
+  return VALID_EXTENSIONS.includes(ext) && file.size <= MAX_FILE_SIZE;
 }
 
 export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
@@ -26,72 +26,84 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
     startBatch,
     retryErrors,
     canStart,
-  } = useBatchEDFUpload()
+  } = useBatchEDFUpload();
 
-  const [isDragging, setIsDragging] = useState(false)
-  const [validationError, setValidationError] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDragging, setIsDragging] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const successCount = items.filter(it => it.uploadState === 'completed').length
-  const errorCount = items.filter(it => it.uploadState === 'error').length
-  const hasErrors = errorCount > 0
-  const isDone = phase === 'done'
+  const successCount = items.filter(
+    (it) => it.uploadState === "completed",
+  ).length;
+  const errorCount = items.filter((it) => it.uploadState === "error").length;
+  const hasErrors = errorCount > 0;
+  const isDone = phase === "done";
 
   function handleFiles(files: FileList | File[]) {
-    setValidationError(null)
-    const arr = Array.from(files)
+    setValidationError(null);
+    const arr = Array.from(files);
 
     if (items.length >= MAX_FILES) {
-      setValidationError(`Maximum ${MAX_FILES} files per batch.`)
-      return
+      setValidationError(`Maximum ${MAX_FILES} files per batch.`);
+      return;
     }
 
-    const invalid = arr.filter(f => !isValidFile(f))
+    const invalid = arr.filter((f) => !isValidFile(f));
     if (invalid.length > 0) {
       setValidationError(
-        `${invalid.length} file(s) skipped: invalid format or size > 500 MB.`
-      )
+        `${invalid.length} file(s) skipped: invalid format or size > 500 MB.`,
+      );
     }
 
-    const valid = arr.filter(isValidFile)
-    if (valid.length > 0) addFiles(valid)
+    const valid = arr.filter(isValidFile);
+    if (valid.length > 0) addFiles(valid);
   }
 
   function handleDrop(e: React.DragEvent) {
-    e.preventDefault()
-    setIsDragging(false)
-    handleFiles(e.dataTransfer.files)
+    e.preventDefault();
+    setIsDragging(false);
+    handleFiles(e.dataTransfer.files);
   }
 
   function handleFileInput(e: React.ChangeEvent<HTMLInputElement>) {
-    if (e.target.files) handleFiles(e.target.files)
-    e.target.value = ''
+    if (e.target.files) handleFiles(e.target.files);
+    e.target.value = "";
   }
 
   async function handleStart() {
     if (!canStart) {
-      setValidationError('Please fill in the patient reference and type for each study.')
-      return
+      setValidationError(
+        "Please fill in the patient reference and type for each study.",
+      );
+      return;
     }
-    setValidationError(null)
-    await startBatch()
-    onComplete?.()
+    setValidationError(null);
+    await startBatch();
+    onComplete?.();
   }
 
   return (
     <div className="space-y-6">
       {/* Drop zone — shown when we can still add files */}
-      {phase === 'idle' && items.length < MAX_FILES && (
+      {phase === "idle" && items.length < MAX_FILES && (
         <div
-          onDragEnter={e => { e.preventDefault(); setIsDragging(true) }}
-          onDragOver={e => e.preventDefault()}
-          onDragLeave={e => { e.preventDefault(); setIsDragging(false) }}
+          onDragEnter={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragOver={(e) => e.preventDefault()}
+          onDragLeave={(e) => {
+            e.preventDefault();
+            setIsDragging(false);
+          }}
           onDrop={handleDrop}
           role="button"
           tabIndex={0}
           aria-label="File drop zone — click or drop EDF files"
           className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition ${
-            isDragging ? 'border-teal bg-teal/10' : 'border-teal/30 bg-teal/5 hover:bg-teal/10'
+            isDragging
+              ? "border-teal bg-teal/10"
+              : "border-teal/30 bg-teal/5 hover:bg-teal/10"
           }`}
           onClick={() => fileInputRef.current?.click()}
         >
@@ -101,7 +113,8 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
           </p>
           <p className="text-sm text-gray-500 mt-1">or click to browse</p>
           <p className="text-xs text-gray-400 mt-2">
-            .edf, .edf+, .bdf, .zip · max 500 MB par fichier · max {MAX_FILES} fichiers
+            .edf, .edf+, .bdf, .zip · max 500 MB par fichier · max {MAX_FILES}{" "}
+            fichiers
           </p>
           <input
             ref={fileInputRef}
@@ -123,10 +136,12 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
       )}
 
       {/* Global progress bar */}
-      {phase === 'uploading' && (
+      {phase === "uploading" && (
         <div className="space-y-1">
           <div className="flex justify-between text-sm text-gray-600">
-            <span>{successCount} / {items.length} studies uploaded</span>
+            <span>
+              {successCount} / {items.length} studies uploaded
+            </span>
             <span>{globalProgress}%</span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -148,7 +163,7 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
               index={index}
               onUpdate={updateItem}
               onRemove={removeItem}
-              disabled={phase !== 'idle'}
+              disabled={phase !== "idle"}
             />
           ))}
         </div>
@@ -156,14 +171,19 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
 
       {/* Summary when done */}
       {isDone && (
-        <div className={`rounded-xl p-4 border ${hasErrors ? 'bg-amber-50 border-amber-200' : 'bg-green-50 border-green-200'}`}>
+        <div
+          className={`rounded-xl p-4 border ${hasErrors ? "bg-amber-50 border-amber-200" : "bg-green-50 border-green-200"}`}
+        >
           <div className="flex items-center gap-2">
-            {hasErrors
-              ? <AlertCircle className="h-5 w-5 text-amber-600" />
-              : <CheckCircle2 className="h-5 w-5 text-green-600" />}
+            {hasErrors ? (
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+            ) : (
+              <CheckCircle2 className="h-5 w-5 text-green-600" />
+            )}
             <p className="text-sm font-medium">
-              {successCount} {successCount > 1 ? 'studies' : 'study'} created
-              {hasErrors && `, ${errorCount} ${errorCount > 1 ? 'errors' : 'error'}`}
+              {successCount} {successCount > 1 ? "studies" : "study"} created
+              {hasErrors &&
+                `, ${errorCount} ${errorCount > 1 ? "errors" : "error"}`}
             </p>
           </div>
           {hasErrors && (
@@ -176,14 +196,14 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-3">
-        {phase === 'idle' && items.length > 0 && (
+        {phase === "idle" && items.length > 0 && (
           <Button
             onClick={handleStart}
             disabled={!canStart}
             className="bg-teal text-white hover:bg-teal/90"
           >
             <Upload className="h-4 w-4 mr-2" />
-            Start upload ({items.length} {items.length > 1 ? 'files' : 'file'})
+            Start upload ({items.length} {items.length > 1 ? "files" : "file"})
           </Button>
         )}
 
@@ -199,5 +219,5 @@ export function BatchEDFUpload({ onComplete }: { onComplete?: () => void }) {
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -1,38 +1,46 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Loader2, Package } from 'lucide-react'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Package } from "lucide-react";
 
 export default function ArchiveButton() {
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<{ archived: number; errors: string[]; message: string } | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{
+    archived: number;
+    errors: string[];
+    message: string;
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleArchive = async () => {
-    if (!window.confirm('Archiver les fichiers EDF de plus de 30 jours ? Cette action est irréversible.')) {
-      return
+    if (
+      !window.confirm(
+        "Archiver les fichiers EDF de plus de 30 jours ? Cette action est irréversible.",
+      )
+    ) {
+      return;
     }
 
-    setLoading(true)
-    setError(null)
-    setResult(null)
+    setLoading(true);
+    setError(null);
+    setResult(null);
 
     try {
-      const res = await fetch('/api/archive', { method: 'POST' })
+      const res = await fetch("/api/archive", { method: "POST" });
       if (!res.ok) {
-        const data = await res.json()
-        throw new Error(data.error || 'Error lors de l\'archivage')
+        const data = await res.json();
+        throw new Error(data.error || "Error lors de l'archivage");
       }
-      const data = await res.json()
-      setResult(data)
+      const data = await res.json();
+      setResult(data);
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : String(e)
-      setError(message)
+      const message = e instanceof Error ? e.message : String(e);
+      setError(message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-3">
@@ -61,7 +69,9 @@ export default function ArchiveButton() {
             <div className="mt-2 text-xs text-green-600">
               <p className="font-medium">Errors :</p>
               <ul className="list-disc pl-4">
-                {result.errors.map((err, i) => <li key={i}>{err}</li>)}
+                {result.errors.map((err, i) => (
+                  <li key={i}>{err}</li>
+                ))}
               </ul>
             </div>
           )}
@@ -74,5 +84,5 @@ export default function ArchiveButton() {
         </div>
       )}
     </div>
-  )
+  );
 }

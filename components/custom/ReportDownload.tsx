@@ -1,40 +1,43 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Loader2, Download } from 'lucide-react'
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Download } from "lucide-react";
 
 interface ReportDownloadProps {
-  studyId: string
-  reportPath: string
+  studyId: string;
+  reportPath: string;
 }
 
-export default function ReportDownload({ studyId, reportPath }: ReportDownloadProps) {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+export default function ReportDownload({
+  studyId,
+  reportPath,
+}: ReportDownloadProps) {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleDownload = async () => {
-    if (!reportPath) return
-    setLoading(true)
-    setError(null)
+    if (!reportPath) return;
+    setLoading(true);
+    setError(null);
 
     try {
       // Call to server route that generates a signed URL via admin client (bypass RLS)
-      const res = await fetch(`/api/studies/${studyId}/report`)
-      const payload = await res.json() as { url?: string; error?: string }
+      const res = await fetch(`/api/studies/${studyId}/report`);
+      const payload = (await res.json()) as { url?: string; error?: string };
 
       if (!res.ok || !payload.url) {
-        throw new Error(payload.error || 'Unable to generate download URL')
+        throw new Error(payload.error || "Unable to generate download URL");
       }
 
-      window.open(payload.url, '_blank', 'noopener,noreferrer')
+      window.open(payload.url, "_blank", "noopener,noreferrer");
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Download error'
-      setError(message)
+      const message = e instanceof Error ? e.message : "Download error";
+      setError(message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="mt-4">
@@ -58,5 +61,5 @@ export default function ReportDownload({ studyId, reportPath }: ReportDownloadPr
       </Button>
       {error && <p className="text-red-600 text-sm mt-2">{error}</p>}
     </div>
-  )
+  );
 }

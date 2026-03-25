@@ -1,28 +1,32 @@
-'use client'
+"use client";
 
-import AdminLayout from '@/components/custom/AdminLayout'
-import { Card } from '@/components/ui/card'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import Link from 'next/link'
-import { useState } from 'react'
+import AdminLayout from "@/components/custom/AdminLayout";
+import { Card } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useState } from "react";
 
 export default function AdminSettingsPage() {
-  const [platformName, setPlatformName] = useState('SomnoConnect')
-  const [supportEmail, setSupportEmail] = useState('contact@somnoventis.com')
+  const [platformName, setPlatformName] = useState("SomnoConnect");
+  const [supportEmail, setSupportEmail] = useState("contact@somnoventis.com");
 
   return (
     <AdminLayout>
       <div className="p-2 md:p-4 space-y-6 max-w-3xl">
         <div>
           <h1 className="text-4xl text-midnight">Platform settings</h1>
-          <p className="text-gray-500 font-body">Configuration globale de SomnoConnect</p>
+          <p className="text-gray-500 font-body">
+            Configuration globale de SomnoConnect
+          </p>
         </div>
 
         <Card className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-4">
           <div className="space-y-2">
-            <Label className="font-heading text-sm text-gray-700">Nom de la plateforme</Label>
+            <Label className="font-heading text-sm text-gray-700">
+              Nom de la plateforme
+            </Label>
             <Input
               value={platformName}
               onChange={(e) => setPlatformName(e.target.value)}
@@ -31,7 +35,9 @@ export default function AdminSettingsPage() {
           </div>
 
           <div className="space-y-2">
-            <Label className="font-heading text-sm text-gray-700">Email support</Label>
+            <Label className="font-heading text-sm text-gray-700">
+              Email support
+            </Label>
             <Input
               value={supportEmail}
               onChange={(e) => setSupportEmail(e.target.value)}
@@ -45,7 +51,10 @@ export default function AdminSettingsPage() {
 
           <div className="pt-4 border-t border-gray-100">
             <Link href="/dashboard/admin/settings/pricing">
-              <Button variant="outline" className="border-teal text-teal hover:bg-teal/5">
+              <Button
+                variant="outline"
+                className="border-teal text-teal hover:bg-teal/5"
+              >
                 Tarification
               </Button>
             </Link>
@@ -53,5 +62,5 @@ export default function AdminSettingsPage() {
         </Card>
       </div>
     </AdminLayout>
-  )
+  );
 }

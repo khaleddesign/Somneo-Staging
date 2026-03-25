@@ -1,62 +1,66 @@
-import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 interface Body {
-  study_id?: string
-  assigned_agent_id?: string | null
+  study_id?: string;
+  assigned_agent_id?: string | null;
 }
 
 export async function PATCH(req: Request) {
   try {
-    const body: Body = await req.json()
-    const { study_id, assigned_agent_id } = body
+    const body: Body = await req.json();
+    const { study_id, assigned_agent_id } = body;
 
     if (!study_id) {
-      return NextResponse.json({ error: 'study_id is required' }, { status: 400 })
+      return NextResponse.json(
+        { error: "study_id is required" },
+        { status: 400 },
+      );
     }
 
-    const supabase = await createClient()
+    const supabase = await createClient();
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
-    if (!profile || profile.role !== 'admin') {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    if (!profile || profile.role !== "admin") {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    const admin = createAdminClient()
+    const admin = createAdminClient();
 
-    const newAgentId = assigned_agent_id || null
+    const newAgentId = assigned_agent_id || null;
 
     const { error: updateError } = await admin
-      .from('studies')
+      .from("studies")
       .update({
         assigned_agent_id: newAgentId,
-        status: newAgentId ? 'en_cours' : 'en_attente',
+        status: newAgentId ? "en_cours" : "en_attente",
         updated_at: new Date().toISOString(),
       })
-      .eq('id', study_id)
+      .eq("id", study_id);
 
     if (updateError) {
-      return NextResponse.json({ error: updateError.message }, { status: 500 })
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true })
+    return NextResponse.json({ success: true });
   } catch (err: unknown) {
-    console.error('[PATCH /api/studies/reassign]', err)
-    const message = err instanceof Error ? err.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error("[PATCH /api/studies/reassign]", err);
+    const message =
+      err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,13 +1,13 @@
-import { getInvitationByToken } from '@/lib/supabase/invitations'
-import SignupForm from '@/components/custom/SignupForm'
-import AuthLeftPanel from '@/components/custom/AuthLeftPanel'
+import { getInvitationByToken } from "@/lib/supabase/invitations";
+import SignupForm from "@/components/custom/SignupForm";
+import AuthLeftPanel from "@/components/custom/AuthLeftPanel";
 
 export default async function SignUpPage({
-  searchParams
+  searchParams,
 }: {
-  searchParams: Promise<{ token?: string }>
+  searchParams: Promise<{ token?: string }>;
 }) {
-  const { token } = await searchParams
+  const { token } = await searchParams;
 
   if (!token) {
     return (
@@ -18,20 +18,22 @@ export default async function SignUpPage({
             <h1 className="text-5xl text-red-600 mb-2 leading-tight font-display">
               Lien invalide
             </h1>
-            <p className="text-gray-500 font-body">Token manquant dans l&apos;URL.</p>
+            <p className="text-gray-500 font-body">
+              Token manquant dans l&apos;URL.
+            </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
-  let invitation = null
-  let errorMsg = null
+  let invitation = null;
+  let errorMsg = null;
 
   try {
-    invitation = await getInvitationByToken(token)
+    invitation = await getInvitationByToken(token);
   } catch (err: unknown) {
-    errorMsg = err instanceof Error ? err.message : 'Unknown error'
+    errorMsg = err instanceof Error ? err.message : "Unknown error";
   }
 
   if (errorMsg) {
@@ -47,7 +49,7 @@ export default async function SignUpPage({
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!invitation) {
@@ -59,11 +61,13 @@ export default async function SignUpPage({
             <h1 className="text-5xl text-red-600 mb-2 leading-tight font-display">
               Invitation expired
             </h1>
-            <p className="text-gray-500 font-body">This link is invalid or has already been used.</p>
+            <p className="text-gray-500 font-body">
+              This link is invalid or has already been used.
+            </p>
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -75,15 +79,17 @@ export default async function SignUpPage({
             <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">
               Create your account
             </h1>
-            <p className="text-gray-500 font-body">An invitation is required to access the platform</p>
+            <p className="text-gray-500 font-body">
+              An invitation is required to access the platform
+            </p>
           </div>
           <SignupForm
             token={token}
             email={invitation.email}
-            fullName={invitation.full_name ?? ''}
+            fullName={invitation.full_name ?? ""}
           />
         </div>
       </div>
     </div>
-  )
+  );
 }

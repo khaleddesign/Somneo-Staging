@@ -1,86 +1,101 @@
-import { notFound } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
-import { decrypt } from '@/lib/encryption'
-import AdminLayout from '@/components/custom/AdminLayout'
-import StudyActions from '@/components/custom/StudyActions'
-import StudyComments from '@/components/custom/StudyComments'
-import AdminReassignDialog from '@/components/custom/AdminReassignDialog'
-import DeleteStudyButton from '@/components/custom/DeleteStudyButton'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { decrypt } from "@/lib/encryption";
+import AdminLayout from "@/components/custom/AdminLayout";
+import StudyActions from "@/components/custom/StudyActions";
+import StudyComments from "@/components/custom/StudyComments";
+import AdminReassignDialog from "@/components/custom/AdminReassignDialog";
+import DeleteStudyButton from "@/components/custom/DeleteStudyButton";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function getStatusBadge(status: string) {
-  if (status === 'en_attente') return 'bg-teal/10 text-midnight border border-teal/30'
-  if (status === 'en_cours') return 'bg-midnight text-sand border border-midnight/70'
-  if (status === 'termine') return 'bg-gold/15 text-midnight border border-gold/40'
-  return 'bg-gray-50 text-gray-700 border border-gray-200'
+  if (status === "en_attente")
+    return "bg-teal/10 text-midnight border border-teal/30";
+  if (status === "en_cours")
+    return "bg-midnight text-sand border border-midnight/70";
+  if (status === "termine")
+    return "bg-gold/15 text-midnight border border-gold/40";
+  return "bg-gray-50 text-gray-700 border border-gray-200";
 }
 
 export default async function AdminStudyDetailPage({
   params,
 }: {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }) {
-  const { id } = await params
+  const { id } = await params;
 
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return notFound()
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return notFound();
 
   const { data: profile } = await supabase
-    .from('profiles')
-    .select('role, full_name')
-    .eq('id', user.id)
-    .single()
+    .from("profiles")
+    .select("role, full_name")
+    .eq("id", user.id)
+    .single();
 
-  if (!profile || profile.role !== 'admin') return notFound()
+  if (!profile || profile.role !== "admin") return notFound();
 
-  const admin = createAdminClient()
+  const admin = createAdminClient();
 
   const { data: study, error } = await admin
-    .from('studies')
-    .select('*, profiles!studies_client_id_fkey(full_name, email)')
-    .eq('id', id)
-    .single()
+    .from("studies")
+    .select("*, profiles!studies_client_id_fkey(full_name, email)")
+    .eq("id", id)
+    .single();
 
-  if (error || !study) return notFound()
+  if (error || !study) return notFound();
 
   // Decryption
-  study.patient_reference = decrypt(study.patient_reference)
+  study.patient_reference = decrypt(study.patient_reference);
 
   // Retrieve assigned agent
-  let assignedAgent: { full_name: string | null; email: string } | null = null
+  let assignedAgent: { full_name: string | null; email: string } | null = null;
   if (study.assigned_agent_id) {
     const { data } = await admin
-      .from('profiles')
-      .select('full_name, email')
-      .eq('id', study.assigned_agent_id)
-      .single()
-    assignedAgent = data
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", study.assigned_agent_id)
+      .single();
+    assignedAgent = data;
   }
 
   // List of agents for the reassignment dialog
   const { data: agents } = await admin
-    .from('profiles')
-    .select('id, full_name, email')
-    .in('role', ['agent', 'admin'])
-    .eq('is_suspended', false)
-    .order('full_name', { ascending: true })
+    .from("profiles")
+    .select("id, full_name, email")
+    .in("role", ["agent", "admin"])
+    .eq("is_suspended", false)
+    .order("full_name", { ascending: true });
 
   return (
     <AdminLayout>
       <div className="p-6 lg:p-8 max-w-5xl mx-auto space-y-6">
-        <a href="/dashboard/admin/studies" className="text-teal hover:underline font-body text-sm">
+        <a
+          href="/dashboard/admin/studies"
+          className="text-teal hover:underline font-body text-sm"
+        >
           &larr; Back to studies
         </a>
 
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div>
-            <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">Dossier Patient</h1>
-            <p className="text-gray-500 font-body mt-1">Admin view — full access</p>
+            <h1 className="text-4xl lg:text-5xl text-midnight font-display leading-tight">
+              Dossier Patient
+            </h1>
+            <p className="text-gray-500 font-body mt-1">
+              Admin view — full access
+            </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <DeleteStudyButton studyId={study.id} redirectUrl="/dashboard/admin/studies" />
+            <DeleteStudyButton
+              studyId={study.id}
+              redirectUrl="/dashboard/admin/studies"
+            />
             <AdminReassignDialog
               studyId={study.id}
               currentAgentId={study.assigned_agent_id}
@@ -91,49 +106,73 @@ export default async function AdminStudyDetailPage({
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="text-2xl text-midnight font-heading">Informations</CardTitle>
+            <CardTitle className="text-2xl text-midnight font-heading">
+              Informations
+            </CardTitle>
           </CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Patient ID</p>
-              <p className="text-midnight font-body mt-1">{study.patient_reference}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Client</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                Patient ID
+              </p>
               <p className="text-midnight font-body mt-1">
-                {study.profiles?.full_name || '—'}{' '}
-                {study.profiles?.email ? `(${study.profiles.email})` : ''}
+                {study.patient_reference}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Type</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                Client
+              </p>
+              <p className="text-midnight font-body mt-1">
+                {study.profiles?.full_name || "—"}{" "}
+                {study.profiles?.email ? `(${study.profiles.email})` : ""}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                Type
+              </p>
               <p className="text-midnight font-body mt-1">{study.study_type}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Priority</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                Priority
+              </p>
               <p className="text-midnight font-body mt-1">{study.priority}</p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Status</p>
-              <span className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}>
-                {study.status.replace('_', ' ')}
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                Status
+              </p>
+              <span
+                className={`inline-flex mt-1 px-3 py-1 rounded-full text-sm font-medium ${getStatusBadge(study.status)}`}
+              >
+                {study.status.replace("_", " ")}
               </span>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Assigned agent</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                Assigned agent
+              </p>
               <p className="text-midnight font-body mt-1">
                 {assignedAgent
                   ? `${assignedAgent.full_name || assignedAgent.email}`
-                  : 'Unassigned'}
+                  : "Unassigned"}
               </p>
             </div>
             <div>
-              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Date de soumission</p>
-              <p className="text-midnight font-body mt-1">{new Date(study.submitted_at).toLocaleDateString('en-GB')}</p>
+              <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                Date de soumission
+              </p>
+              <p className="text-midnight font-body mt-1">
+                {new Date(study.submitted_at).toLocaleDateString("en-GB")}
+              </p>
             </div>
             {study.notes && (
               <div className="sm:col-span-2">
-                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">Notes</p>
+                <p className="text-xs text-gray-500 uppercase tracking-wider font-heading">
+                  Notes
+                </p>
                 <p className="text-midnight font-body mt-1">{study.notes}</p>
               </div>
             )}
@@ -142,16 +181,24 @@ export default async function AdminStudyDetailPage({
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="text-xl text-midnight font-heading">Actions</CardTitle>
+            <CardTitle className="text-xl text-midnight font-heading">
+              Actions
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
+            <StudyActions
+              studyId={study.id}
+              currentStatus={study.status}
+              reportPath={study.report_path}
+            />
           </CardContent>
         </Card>
 
         <Card className="shadow-sm border-gray-200">
           <CardHeader>
-            <CardTitle className="text-xl text-midnight font-heading">Discussion</CardTitle>
+            <CardTitle className="text-xl text-midnight font-heading">
+              Discussion
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <StudyComments
@@ -162,5 +209,5 @@ export default async function AdminStudyDetailPage({
         </Card>
       </div>
     </AdminLayout>
-  )
+  );
 }

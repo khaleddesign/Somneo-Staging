@@ -1,93 +1,118 @@
-import { NextResponse, type NextRequest } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
-import { createAdminClient } from '@/lib/supabase/admin'
+import { NextResponse, type NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
-export async function PATCH(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+export async function PATCH(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const { id } = await params;
 
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
     const {
       data: { user },
       error: userError,
-    } = await supabase.auth.getUser()
+    } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const admin = createAdminClient()
+    const admin = createAdminClient();
 
     const { data: profile, error: profileError } = await admin
-      .from('profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
     if (profileError || !profile) {
-      console.error('[PATCH /api/studies/[id]/assign] profile error', profileError)
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+      console.error(
+        "[PATCH /api/studies/[id]/assign] profile error",
+        profileError,
+      );
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    if (!['agent', 'admin'].includes(profile.role)) {
-      return NextResponse.json({ error: 'Access denied' }, { status: 403 })
+    if (!["agent", "admin"].includes(profile.role)) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
     const { data: study, error: studyError } = await admin
-      .from('studies')
-      .select('id, assigned_agent_id, status')
-      .eq('id', id)
-      .single()
+      .from("studies")
+      .select("id, assigned_agent_id, status")
+      .eq("id", id)
+      .single();
 
     if (studyError || !study) {
-      return NextResponse.json({ error: 'Study not found' }, { status: 404 })
+      return NextResponse.json({ error: "Study not found" }, { status: 404 });
     }
 
     if (study.assigned_agent_id) {
-      return NextResponse.json({ error: 'This study is already assigned' }, { status: 409 })
+      return NextResponse.json(
+        { error: "This study is already assigned" },
+        { status: 409 },
+      );
     }
 
-    const now = new Date().toISOString()
+    const now = new Date().toISOString();
 
     // Atomic check: only update if still unassigned (prevents race condition)
     const { data: updated, error: updateError } = await admin
-      .from('studies')
+      .from("studies")
       .update({
         assigned_agent_id: user.id,
-        status: 'en_cours',
+        status: "en_cours",
         updated_at: now,
       })
-      .eq('id', id)
-      .is('assigned_agent_id', null)
-      .select('id, assigned_agent_id, status')
-      .maybeSingle()
+      .eq("id", id)
+      .is("assigned_agent_id", null)
+      .select("id, assigned_agent_id, status")
+      .maybeSingle();
 
     if (updateError) {
-      console.error('[PATCH /api/studies/[id]/assign] update error', updateError)
-      return NextResponse.json({ error: 'Impossible de prendre en charge cette study' }, { status: 500 })
+      console.error(
+        "[PATCH /api/studies/[id]/assign] update error",
+        updateError,
+      );
+      return NextResponse.json(
+        { error: "Impossible de prendre en charge cette study" },
+        { status: 500 },
+      );
     }
 
     if (!updated) {
-      return NextResponse.json({ error: 'This study was just assigned to another agent' }, { status: 409 })
+      return NextResponse.json(
+        { error: "This study was just assigned to another agent" },
+        { status: 409 },
+      );
     }
 
-    const { error: historyError } = await admin.from('study_history').insert({
+    const { error: historyError } = await admin.from("study_history").insert({
       study_id: id,
-      old_status: 'en_attente',
-      new_status: 'en_cours',
+      old_status: "en_attente",
+      new_status: "en_cours",
       changed_by: user.id,
       changed_at: now,
-    })
+    });
 
     if (historyError) {
-      console.error('[PATCH /api/studies/[id]/assign] history error', historyError)
-      return NextResponse.json({ error: 'Assignment complete but history unavailable' }, { status: 500 })
+      console.error(
+        "[PATCH /api/studies/[id]/assign] history error",
+        historyError,
+      );
+      return NextResponse.json(
+        { error: "Assignment complete but history unavailable" },
+        { status: 500 },
+      );
     }
 
-    return NextResponse.json({ success: true, study: updated })
+    return NextResponse.json({ success: true, study: updated });
   } catch (err: unknown) {
-    console.error('[PATCH /api/studies/[id]/assign]', err)
-    const message = err instanceof Error ? err.message : 'Internal server error'
-    return NextResponse.json({ error: message }, { status: 500 })
+    console.error("[PATCH /api/studies/[id]/assign]", err);
+    const message =
+      err instanceof Error ? err.message : "Internal server error";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

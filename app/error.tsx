@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { AlertCircle, RefreshCw } from 'lucide-react'
+import { useEffect } from "react";
+import { AlertCircle, RefreshCw } from "lucide-react";
 
 export default function ErrorBoundary({
   error,
   reset,
 }: {
-  error: Error & { digest?: string }
-  reset: () => void
+  error: Error & { digest?: string };
+  reset: () => void;
 }) {
   useEffect(() => {
     // Log error to a tracking service
-    console.error('[Route Error]', error)
-  }, [error])
+    console.error("[Route Error]", error);
+  }, [error]);
 
   return (
     <div className="flex h-[80vh] w-full flex-col items-center justify-center bg-[#f0f4f8] p-4 text-center font-body">
@@ -21,13 +21,16 @@ export default function ErrorBoundary({
         <div className="h-16 w-16 bg-red-50 rounded-full flex items-center justify-center mb-6">
           <AlertCircle className="h-8 w-8 text-red-500" />
         </div>
-        
-        <h2 className="text-2xl font-display text-midnight mb-3">Error de loading</h2>
-        
+
+        <h2 className="text-2xl font-display text-midnight mb-3">
+          Error de loading
+        </h2>
+
         <p className="text-gray-600 mb-8 leading-relaxed">
-          We could not load this page properly. The issue has been reported to our technical team.
+          We could not load this page properly. The issue has been reported to
+          our technical team.
         </p>
-        
+
         <button
           onClick={() => reset()}
           className="flex w-full items-center justify-center gap-2 rounded-xl bg-teal px-4 py-3 font-heading text-white hover:bg-teal/90 transition-all active:scale-95 shadow-sm"
@@ -36,13 +39,17 @@ export default function ErrorBoundary({
           Retry
         </button>
 
-        {process.env.NODE_ENV === 'development' && (
+        {process.env.NODE_ENV === "development" && (
           <div className="mt-8 mx-auto w-full rounded-md bg-red-50 p-4 text-left text-xs text-red-900 overflow-auto max-h-40 border border-red-100">
-            <p className="font-bold">{error.name}: {error.message}</p>
-            {error.digest && <p className="mt-1 opacity-70">Digest: {error.digest}</p>}
+            <p className="font-bold">
+              {error.name}: {error.message}
+            </p>
+            {error.digest && (
+              <p className="mt-1 opacity-70">Digest: {error.digest}</p>
+            )}
           </div>
         )}
       </div>
     </div>
-  )
+  );
 }

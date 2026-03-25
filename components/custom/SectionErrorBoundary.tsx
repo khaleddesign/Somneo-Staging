@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { Component, type ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
-import { AlertTriangle } from 'lucide-react'
+import { Component, type ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { AlertTriangle } from "lucide-react";
 
 interface Props {
-  children: ReactNode
+  children: ReactNode;
   /** Display name of the section — shown in the fallback UI */
-  sectionName?: string
+  sectionName?: string;
 }
 
 interface State {
-  hasError: boolean
+  hasError: boolean;
 }
 
 /**
@@ -26,29 +26,29 @@ interface State {
  *   </SectionErrorBoundary>
  */
 export default class SectionErrorBoundary extends Component<Props, State> {
-  state: State = { hasError: false }
+  state: State = { hasError: false };
 
   static getDerivedStateFromError(): State {
-    return { hasError: true }
+    return { hasError: true };
   }
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
     // Log to console — will be replaced by Sentry in Batch 4
     console.error(
-      `[SectionErrorBoundary] "${this.props.sectionName ?? 'Section'}" crashed:`,
+      `[SectionErrorBoundary] "${this.props.sectionName ?? "Section"}" crashed:`,
       error.message,
-      info.componentStack
-    )
+      info.componentStack,
+    );
   }
 
   private handleRetry = () => {
-    this.setState({ hasError: false })
-  }
+    this.setState({ hasError: false });
+  };
 
   render() {
-    if (!this.state.hasError) return this.props.children
+    if (!this.state.hasError) return this.props.children;
 
-    const name = this.props.sectionName ?? 'Cette section'
+    const name = this.props.sectionName ?? "Cette section";
 
     return (
       <div
@@ -73,6 +73,6 @@ export default class SectionErrorBoundary extends Component<Props, State> {
           Réessayer
         </Button>
       </div>
-    )
+    );
   }
 }

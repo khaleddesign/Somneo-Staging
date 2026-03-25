@@ -1,57 +1,89 @@
-'use client'
+"use client";
 
-import { useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { logoutAndRedirect } from '@/lib/auth/logout'
-import { useTranslations } from 'next-intl'
-import { LayoutDashboard, Users, FileText, Building2, Settings, LogOut, X, CreditCard } from 'lucide-react'
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { logoutAndRedirect } from "@/lib/auth/logout";
+import { useTranslations } from "next-intl";
+import {
+  LayoutDashboard,
+  Users,
+  FileText,
+  Building2,
+  Settings,
+  LogOut,
+  X,
+  CreditCard,
+} from "lucide-react";
 
 interface SidebarProps {
-  isOpen: boolean
-  onClose: () => void
+  isOpen: boolean;
+  onClose: () => void;
 }
 
 interface NavItem {
-  label: string
-  href: string
-  icon: React.ComponentType<{ className?: string }>
+  label: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
 }
 
 export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
-  const pathname = usePathname()
-  const t = useTranslations('navigation')
-  const [email, setEmail] = useState<string | null>(null)
+  const pathname = usePathname();
+  const t = useTranslations("navigation");
+  const [email, setEmail] = useState<string | null>(null);
 
-  const navItems = useMemo<NavItem[]>(() => [
-    { label: t('dashboard'), href: '/dashboard/admin', icon: LayoutDashboard },
-    { label: t('agents'), href: '/dashboard/admin/agents', icon: Users },
-    { label: t('studies'), href: '/dashboard/admin/studies', icon: FileText },
-    { label: t('invoices'), href: '/dashboard/admin/invoices', icon: FileText },
-    { label: t('pricing'), href: '/dashboard/admin/settings/pricing', icon: CreditCard },
-    { label: t('clients'), href: '/dashboard/admin/clients', icon: Building2 },
-    { label: t('settings'), href: '/dashboard/admin/settings', icon: Settings },
-  ], [t])
+  const navItems = useMemo<NavItem[]>(
+    () => [
+      {
+        label: t("dashboard"),
+        href: "/dashboard/admin",
+        icon: LayoutDashboard,
+      },
+      { label: t("agents"), href: "/dashboard/admin/agents", icon: Users },
+      { label: t("studies"), href: "/dashboard/admin/studies", icon: FileText },
+      {
+        label: t("invoices"),
+        href: "/dashboard/admin/invoices",
+        icon: FileText,
+      },
+      {
+        label: t("pricing"),
+        href: "/dashboard/admin/settings/pricing",
+        icon: CreditCard,
+      },
+      {
+        label: t("clients"),
+        href: "/dashboard/admin/clients",
+        icon: Building2,
+      },
+      {
+        label: t("settings"),
+        href: "/dashboard/admin/settings",
+        icon: Settings,
+      },
+    ],
+    [t],
+  );
 
   useEffect(() => {
-    const supabase = createClient()
+    const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => {
-      setEmail(user?.email || null)
-    })
-  }, [])
+      setEmail(user?.email || null);
+    });
+  }, []);
 
   return (
     <>
       <div
         className={`fixed inset-0 bg-black/50 z-40 transition-opacity lg:hidden ${
-          isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         onClick={onClose}
       />
       <aside
         className={`fixed top-0 left-0 h-full w-64 bg-midnight text-white z-50 transform transition-transform lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between px-6 py-4 lg:hidden">
@@ -63,15 +95,22 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
 
         <div className="px-6 py-4 hidden lg:block border-b border-white/10">
           <div className="flex items-center gap-2">
-            <span className="text-teal text-2xl font-display">SomnoConnect</span>
-            <span className="text-[9px] tracking-[3px] bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded-full font-heading">ADMIN</span>
+            <span className="text-teal text-2xl font-display">
+              SomnoConnect
+            </span>
+            <span className="text-[9px] tracking-[3px] bg-gold/10 text-gold border border-gold/20 px-2 py-0.5 rounded-full font-heading">
+              ADMIN
+            </span>
           </div>
-          <p className="text-sand/40 text-[9px] tracking-[3px] uppercase font-heading mt-1">BY SOMNOVENTIS</p>
+          <p className="text-sand/40 text-[9px] tracking-[3px] uppercase font-heading mt-1">
+            BY SOMNOVENTIS
+          </p>
         </div>
 
         <nav className="mt-6 px-2">
           {navItems.map((item) => {
-            const active = pathname === item.href || pathname?.startsWith(`${item.href}/`)
+            const active =
+              pathname === item.href || pathname?.startsWith(`${item.href}/`);
             return (
               <Link
                 key={item.href}
@@ -79,14 +118,16 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
                 onClick={onClose}
                 className={`flex items-center gap-3 px-4 py-2 my-1 rounded-lg transition-colors ${
                   active
-                    ? 'bg-teal/10 text-teal border-l-2 border-teal'
-                    : 'text-sand/50 hover:text-sand hover:bg-white/4'
+                    ? "bg-teal/10 text-teal border-l-2 border-teal"
+                    : "text-sand/50 hover:text-sand hover:bg-white/4"
                 }`}
               >
                 <item.icon className="h-5 w-5" />
-                <span className="text-sm font-heading tracking-wide">{item.label}</span>
+                <span className="text-sm font-heading tracking-wide">
+                  {item.label}
+                </span>
               </Link>
-            )
+            );
           })}
         </nav>
 
@@ -96,20 +137,22 @@ export default function AdminSidebar({ isOpen, onClose }: SidebarProps) {
               <div className="w-8 h-8 bg-teal/20 rounded-full flex items-center justify-center text-teal font-heading">
                 {email.charAt(0).toUpperCase()}
               </div>
-              <span className="text-sm text-sand/60 break-all font-body">{email}</span>
+              <span className="text-sm text-sand/60 break-all font-body">
+                {email}
+              </span>
             </div>
           )}
           <button
             onClick={async () => {
-              await logoutAndRedirect()
+              await logoutAndRedirect();
             }}
             className="flex items-center gap-2 text-sm text-sand/50 hover:text-red-400 font-body"
           >
             <LogOut className="h-4 w-4" />
-            {t('signOut')}
+            {t("signOut")}
           </button>
         </div>
       </aside>
     </>
-  )
+  );
 }

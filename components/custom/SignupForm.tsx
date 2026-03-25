@@ -1,78 +1,86 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { User, Lock, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { User, Lock, Eye, EyeOff, Loader2 } from "lucide-react";
 
 interface SignupFormProps {
-  token: string
-  email: string
-  fullName?: string | null
+  token: string;
+  email: string;
+  fullName?: string | null;
 }
 
-function getPasswordStrength(password: string): { score: number; label: string; color: string } {
-  if (!password) return { score: 0, label: '', color: '' }
-  
-  let score = 0
-  if (password.length >= 8) score++
-  if (password.length >= 12) score++
-  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++
-  if (/\d/.test(password)) score++
-  if (/[^a-zA-Z\d]/.test(password)) score++
+function getPasswordStrength(password: string): {
+  score: number;
+  label: string;
+  color: string;
+} {
+  if (!password) return { score: 0, label: "", color: "" };
 
-  if (score <= 1) return { score: 1, label: 'Weak', color: 'bg-red-500' }
-  if (score <= 2) return { score: 2, label: 'Fair', color: 'bg-orange-500' }
-  if (score <= 3) return { score: 3, label: 'Good', color: 'bg-yellow-500' }
-  return { score: 4, label: 'Strong', color: 'bg-green-500' }
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (password.length >= 12) score++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) score++;
+  if (/\d/.test(password)) score++;
+  if (/[^a-zA-Z\d]/.test(password)) score++;
+
+  if (score <= 1) return { score: 1, label: "Weak", color: "bg-red-500" };
+  if (score <= 2) return { score: 2, label: "Fair", color: "bg-orange-500" };
+  if (score <= 3) return { score: 3, label: "Good", color: "bg-yellow-500" };
+  return { score: 4, label: "Strong", color: "bg-green-500" };
 }
 
-export default function SignupForm({ token, email, fullName }: SignupFormProps) {
-  const [name, setName] = useState(fullName ?? '')
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+export default function SignupForm({
+  token,
+  email,
+  fullName,
+}: SignupFormProps) {
+  const [name, setName] = useState(fullName ?? "");
+  const [password, setPassword] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const passwordStrength = getPasswordStrength(password)
+  const passwordStrength = getPasswordStrength(password);
 
   async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    setError(null)
-    
+    e.preventDefault();
+    setError(null);
+
     if (password.length < 8) {
-      return setError('Password too short (minimum 8 characters)')
+      return setError("Password too short (minimum 8 characters)");
     }
     if (password !== confirm) {
-      return setError('Passwords do not match')
+      return setError("Passwords do not match");
     }
 
-    setLoading(true)
+    setLoading(true);
     try {
-      const res = await fetch('/api/auth/signup', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
-      })
+      });
 
-      const data = await res.json()
+      const data = await res.json();
       if (!res.ok) {
-        setError(data?.error || 'Error creating account')
-        setLoading(false)
-        return
+        setError(data?.error || "Error creating account");
+        setLoading(false);
+        return;
       }
 
-      router.push(data.redirect)
+      router.push(data.redirect);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Network error'
-      setError(message)
+      const message = err instanceof Error ? err.message : "Network error";
+      setError(message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -80,7 +88,12 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
     <form onSubmit={handleSubmit} className="space-y-5">
       {/* Name Input */}
       <div className="space-y-2">
-        <Label htmlFor="name" className="text-gray-700 font-medium font-heading">Full name</Label>
+        <Label
+          htmlFor="name"
+          className="text-gray-700 font-medium font-heading"
+        >
+          Full name
+        </Label>
         <div className="relative">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
@@ -97,7 +110,12 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       {/* Email Input (Read-only) */}
       <div className="space-y-2">
-        <Label htmlFor="email" className="text-gray-700 font-medium font-heading">Email</Label>
+        <Label
+          htmlFor="email"
+          className="text-gray-700 font-medium font-heading"
+        >
+          Email
+        </Label>
         <div className="relative">
           <Input
             id="email"
@@ -111,12 +129,17 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       {/* Password Input */}
       <div className="space-y-2">
-        <Label htmlFor="password" className="text-gray-700 font-medium font-heading">Password</Label>
+        <Label
+          htmlFor="password"
+          className="text-gray-700 font-medium font-heading"
+        >
+          Password
+        </Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             id="password"
-            type={showPassword ? 'text' : 'password'}
+            type={showPassword ? "text" : "password"}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
@@ -145,7 +168,7 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
               <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div
                   className={`h-full ${passwordStrength.color} transition-all duration-300`}
-                  style={{ width: `${(passwordStrength.score * 25)}%` }}
+                  style={{ width: `${passwordStrength.score * 25}%` }}
                 />
               </div>
               <span className="text-xs font-medium text-gray-600">
@@ -153,7 +176,8 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
               </span>
             </div>
             <p className="text-xs text-gray-500">
-              Use at least 8 characters, including uppercase, lowercase and numbers
+              Use at least 8 characters, including uppercase, lowercase and
+              numbers
             </p>
           </div>
         )}
@@ -161,12 +185,17 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
 
       {/* Confirm Password Input */}
       <div className="space-y-2">
-        <Label htmlFor="confirm" className="text-gray-700 font-medium font-heading">Confirm password</Label>
+        <Label
+          htmlFor="confirm"
+          className="text-gray-700 font-medium font-heading"
+        >
+          Confirm password
+        </Label>
         <div className="relative">
           <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           <Input
             id="confirm"
-            type={showConfirm ? 'text' : 'password'}
+            type={showConfirm ? "text" : "password"}
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="••••••••"
@@ -208,9 +237,9 @@ export default function SignupForm({ token, email, fullName }: SignupFormProps) 
             Création...
           </>
         ) : (
-          'Create my account'
+          "Create my account"
         )}
       </Button>
     </form>
-  )
+  );
 }

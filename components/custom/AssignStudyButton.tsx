@@ -1,34 +1,35 @@
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface AssignStudyButtonProps {
-  studyId: string
+  studyId: string;
 }
 
 export default function AssignStudyButton({ studyId }: AssignStudyButtonProps) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleAssign() {
-    setLoading(true)
-    setError(null)
+    setLoading(true);
+    setError(null);
     try {
       const res = await fetch(`/api/studies/${studyId}/assign`, {
-        method: 'PATCH',
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || 'Unable to take on this study')
-      router.refresh()
+        method: "PATCH",
+      });
+      const data = await res.json();
+      if (!res.ok)
+        throw new Error(data.error || "Unable to take on this study");
+      router.refresh();
     } catch (e: unknown) {
-      const message = e instanceof Error ? e.message : 'Error'
-      setError(message)
+      const message = e instanceof Error ? e.message : "Error";
+      setError(message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -46,10 +47,10 @@ export default function AssignStudyButton({ studyId }: AssignStudyButtonProps) {
             Assignation en cours...
           </>
         ) : (
-          'Take on this study'
+          "Take on this study"
         )}
       </Button>
       {error && <p className="text-sm text-red-600 font-body">{error}</p>}
     </div>
-  )
+  );
 }

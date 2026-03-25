@@ -1,55 +1,62 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from 'react'
-import { useComments } from '@/hooks/useComments'
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
-import { Avatar } from '@/components/ui/avatar'
-import { Send } from 'lucide-react'
-import { toast } from 'sonner'
+import { useEffect, useRef, useState } from "react";
+import { useComments } from "@/hooks/useComments";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Avatar } from "@/components/ui/avatar";
+import { Send } from "lucide-react";
+import { toast } from "sonner";
 
 interface StudyCommentsProps {
-  studyId: string
+  studyId: string;
   currentUser: {
-    id: string
-    name?: string | null
-  }
+    id: string;
+    name?: string | null;
+  };
 }
 
-export default function StudyComments({ studyId, currentUser }: StudyCommentsProps) {
-  const { comments, loading, sending, error, sendComment } = useComments(studyId)
-  const [text, setText] = useState('')
-  const containerRef = useRef<HTMLDivElement>(null)
+export default function StudyComments({
+  studyId,
+  currentUser,
+}: StudyCommentsProps) {
+  const { comments, loading, sending, error, sendComment } =
+    useComments(studyId);
+  const [text, setText] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // scroll to bottom when comments change
   useEffect(() => {
     if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight
+      containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
-  }, [comments])
+  }, [comments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    const msg = text.trim()
-    if (!msg) return
+    e.preventDefault();
+    const msg = text.trim();
+    if (!msg) return;
     try {
-      await sendComment(msg)
-      setText('')
+      await sendComment(msg);
+      setText("");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Network error'
-      toast.error('Message non envoyé', {
+      const message = err instanceof Error ? err.message : "Network error";
+      toast.error("Message non envoyé", {
         description: message,
         action: {
-          label: 'Réessayer',
+          label: "Réessayer",
           onClick: () => handleSubmit(e),
         },
-      })
+      });
     }
-  }
+  };
 
   const formatTime = (iso: string) =>
-    new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    new Date(iso).toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
 
   return (
     <Card className="w-full border border-gray-100 rounded-2xl shadow-sm">
@@ -65,39 +72,44 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
           {error && <p className="text-sm text-red-600">{error}</p>}
           {!loading && comments.length === 0 && (
             <div className="h-full flex items-center justify-center">
-              <p className="text-gray-400">No messages for this study. Start the conversation.</p>
+              <p className="text-gray-400">
+                No messages for this study. Start the conversation.
+              </p>
             </div>
           )}
           {comments.map((c) => {
-            const mine = c.user_id === currentUser.id
+            const mine = c.user_id === currentUser.id;
             return (
               <div
                 key={c.id}
-                className={`flex items-end ${mine ? 'justify-end' : 'justify-start'}`}
+                className={`flex items-end ${mine ? "justify-end" : "justify-start"}`}
               >
                 {!mine && (
-                  <Avatar name={c.profiles?.full_name || "Unknown user"} className="mr-2 bg-midnight text-sand font-heading" />
+                  <Avatar
+                    name={c.profiles?.full_name || "Unknown user"}
+                    className="mr-2 bg-midnight text-sand font-heading"
+                  />
                 )}
                 <div
                   className={`p-2 rounded-lg max-w-[70%] wrap-break-word ${
-                    mine
-                      ? 'bg-teal text-white'
-                      : 'bg-gray-100 text-midnight'
+                    mine ? "bg-teal text-white" : "bg-gray-100 text-midnight"
                   }`}
                 >
                   <div className="text-sm whitespace-pre-wrap">{c.message}</div>
-                  <div className={`text-xs mt-1 text-right font-body ${mine ? 'text-white/80' : 'text-gray-400'}`}>
+                  <div
+                    className={`text-xs mt-1 text-right font-body ${mine ? "text-white/80" : "text-gray-400"}`}
+                  >
                     {formatTime(c.created_at)}
                   </div>
                 </div>
                 {mine && (
                   <Avatar
-                    name={currentUser.name || 'You'}
+                    name={currentUser.name || "You"}
                     className="ml-2 bg-midnight text-sand font-heading"
                   />
                 )}
               </div>
-            )
+            );
           })}
         </div>
 
@@ -121,5 +133,5 @@ export default function StudyComments({ studyId, currentUser }: StudyCommentsPro
         </form>
       </CardContent>
     </Card>
-  )
+  );
 }
