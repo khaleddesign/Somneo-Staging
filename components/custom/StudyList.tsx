@@ -43,8 +43,10 @@ export const StudyList: FC<StudyListProps> = ({
   // États pour l'export
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [exportPeriod, setExportPeriod] = useState<"selection" | "month" | "year" | "all" | "custom">("selection")
-  // Format HTML5 month type: "YYYY-MM"
-  const [customMonth, setCustomMonth] = useState<string>("")
+  const [customYear, setCustomYear] = useState<string>('')
+  const [customMonthNum, setCustomMonthNum] = useState<string>('')
+  // Derived "YYYY-MM" string — only set when both selects are filled
+  const customMonth = customYear && customMonthNum ? `${customYear}-${customMonthNum}` : ''
 
   function isSlaBreached(study: Study) {
     if (study.priority !== 'high' || study.status !== 'en_attente') return false
@@ -312,12 +314,37 @@ export const StudyList: FC<StudyListProps> = ({
           </select>
 
           {exportPeriod === 'custom' && (
-            <input 
-              type="month" 
-              className="text-sm border-gray-300 rounded-lg font-body focus:ring-teal focus:border-teal p-1.5 border"
-              value={customMonth}
-              onChange={(e) => setCustomMonth(e.target.value)}
-            />
+            <div className="flex items-center gap-1">
+              <select
+                className="text-sm border-gray-300 rounded-lg font-body focus:ring-teal focus:border-teal p-1.5 border"
+                value={customMonthNum}
+                onChange={(e) => setCustomMonthNum(e.target.value)}
+              >
+                <option value="">Month</option>
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+              <select
+                className="text-sm border-gray-300 rounded-lg font-body focus:ring-teal focus:border-teal p-1.5 border"
+                value={customYear}
+                onChange={(e) => setCustomYear(e.target.value)}
+              >
+                <option value="">Year</option>
+                {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(y => (
+                  <option key={y} value={String(y)}>{y}</option>
+                ))}
+              </select>
+            </div>
           )}
 
           <div className="flex items-center gap-2">
