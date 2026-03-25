@@ -87,7 +87,7 @@ export default function LoginPage() {
         <div className="w-full max-w-md">
           <div className="mb-10">
             <h1 className="text-5xl text-midnight mb-2 leading-tight font-display">
-              Bon retour
+              Welcome back
             </h1>
             <p className="text-gray-500 font-body">Sign in to your account</p>
           </div>
@@ -103,7 +103,7 @@ export default function LoginPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre.email@example.com"
+                  placeholder="your.email@example.com"
                   required
                   disabled={loading}
                   className="pl-10 bg-[#f8fafc] border-2 border-transparent rounded-xl focus-visible:border-teal focus-visible:bg-white focus-visible:ring-4 focus-visible:ring-teal/6"

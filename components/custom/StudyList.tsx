@@ -20,6 +20,12 @@ const statusColors = {
   termine: 'bg-green-50 text-green-700 border border-green-100',
   annule: 'bg-red-200 text-red-800',
 }
+const statusLabels: Record<string, string> = {
+  en_attente: 'pending',
+  en_cours: 'in progress',
+  termine: 'completed',
+  annule: 'cancelled',
+}
 
 interface StudyListProps {
   studies: Study[]
@@ -428,7 +434,7 @@ export const StudyList: FC<StudyListProps> = ({
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2">
-                    <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{study.status.replace('_', ' ')}</span>
+                    <span className={`px-2 py-1 rounded text-xs font-semibold ${statusColors[study.status]}`}>{statusLabels[study.status] ?? study.status}</span>
                     {study.is_stale && (
                       <span className="inline-flex items-center gap-1 text-xs text-orange-600 font-medium animate-pulse">
                         ⚠ Delayed
