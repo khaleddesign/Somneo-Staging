@@ -1,10 +1,9 @@
 "use client"
 import { useState, useRef } from 'react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { createClient } from '@/lib/supabase/client'
-import { Loader2, RefreshCw, Download } from 'lucide-react'
+import { Loader2, RefreshCw, Download, Upload } from 'lucide-react'
 import { toast } from 'sonner'
 
 interface StudyActionsProps {
@@ -239,14 +238,20 @@ export default function StudyActions({ studyId, currentStatus, reportPath }: Stu
         <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 space-y-3">
           <p className="text-sm text-blue-900 font-medium">Upload PDF report</p>
           <form onSubmit={handleReportUpload} className="flex items-center gap-3">
-            <Input
-              ref={fileInputRef}
-              type="file"
-              accept=".pdf,application/pdf"
-              onChange={e => setFile(e.target.files?.[0] || null)}
-              disabled={uploading}
-              className="flex-1"
-            />
+            <label className="flex-1 cursor-pointer">
+              <div className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 text-sm text-gray-600">
+                <Upload className="h-4 w-4" />
+                <span>{file ? file.name : 'Choose PDF file...'}</span>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={e => setFile(e.target.files?.[0] || null)}
+                disabled={uploading}
+                className="hidden"
+              />
+            </label>
             <Button 
               type="submit" 
               disabled={uploading || !file}

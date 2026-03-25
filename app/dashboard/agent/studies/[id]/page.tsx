@@ -4,7 +4,6 @@ import { decrypt } from '@/lib/encryption'
 import StudyActions from '@/components/custom/StudyActions'
 import StudyComments from '@/components/custom/StudyComments'
 import AppLayout from '@/components/custom/AppLayout'
-import AssignStudyButton from '@/components/custom/AssignStudyButton'
 import ReportEditor from '@/components/custom/ReportEditor'
 import StudyFileDownloadCard from '@/components/custom/StudyFileDownloadCard'
 import ClientOnly from '@/components/custom/ClientOnly'
@@ -51,10 +50,8 @@ export default async function AgentStudyDetail({
 
   const isAdmin = profile.role === 'admin'
 
-  // Tab visible if active status AND (assigned agent OR admin)
-  const canWriteReport =
-    ['en_cours', 'en_attente'].includes(study.status) &&
-    (study.assigned_agent_id === user.id || isAdmin)
+  // Tab visible if active status
+  const canWriteReport = ['en_cours', 'en_attente'].includes(study.status)
 
   return (
     <AppLayout>
@@ -128,19 +125,7 @@ export default async function AgentStudyDetail({
                 fileSizeBytes={study.file_size_orig}
               />
 
-              {study.assigned_agent_id === null && (
-                <Card className="shadow-sm border-teal/30 bg-teal/5 rounded-2xl">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-midnight font-heading">Assignation</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <AssignStudyButton studyId={study.id} />
-                  </CardContent>
-                </Card>
-              )}
-
-              {study.assigned_agent_id === user.id && (
-                <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
+              <Card className="shadow-sm border-gray-100 rounded-2xl bg-white">
                   <CardHeader>
                     <CardTitle className="text-xl text-midnight font-heading inline-flex items-center gap-3">
                       <span className="text-3xl font-display text-teal/30">02</span>
@@ -149,11 +134,10 @@ export default async function AgentStudyDetail({
                   </CardHeader>
                   <CardContent>
                     <SectionErrorBoundary sectionName="Actions">
-                    <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
-                  </SectionErrorBoundary>
+                      <StudyActions studyId={study.id} currentStatus={study.status} reportPath={study.report_path} />
+                    </SectionErrorBoundary>
                   </CardContent>
                 </Card>
-              )}
             </TabsContent>
 
             <TabsContent value="report">
