@@ -116,11 +116,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: 'Study not found' }, { status: 404 })
     }
 
-    // Agent: verify they are assigned to this study
-    if (role === 'agent' && studyResult.data.assigned_agent_id !== user.id) {
-      return NextResponse.json({ error: 'You are not assigned to this study' }, { status: 403 })
-    }
-
     const form = await req.formData()
     const file = form.get('file') as File | null
     if (!file || file.type !== 'application/pdf') {
