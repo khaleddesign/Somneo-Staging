@@ -205,7 +205,7 @@ export function ReportMatchRow({
       {/* Completed summary */}
       {isCompleted && item.matchedStudy && (
         <p className="text-xs text-green-700">
-          Rapport uploadé → {item.matchedStudy.patient_reference} · étude passée en <strong>terminé</strong>
+          Report uploaded → {item.matchedStudy.patient_reference} · study marked as <strong>completed</strong>
         </p>
       )}
       {isCompleted && !item.matchedStudy && (

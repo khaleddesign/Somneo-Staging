@@ -223,8 +223,8 @@ export function BatchReportUpload() {
               ? <AlertCircle className="h-5 w-5 text-amber-600" />
               : <CheckCircle2 className="h-5 w-5 text-green-600" />}
             <p className="text-sm font-medium">
-              {successCount} rapport{successCount > 1 ? 's' : ''} uploadé{successCount > 1 ? 's' : ''}
-              {hasErrors && `, ${errorCount} erreur${errorCount > 1 ? 's' : ''}`}
+              {successCount} report{successCount > 1 ? 's' : ''} uploaded
+              {hasErrors && `, ${errorCount} error${errorCount > 1 ? 's' : ''}`}
             </p>
           </div>
         </div>

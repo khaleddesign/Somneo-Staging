@@ -34,8 +34,8 @@ export async function GET(_req: NextRequest, { params }: { params: Promise<{ id:
     // Verify access based on role
     const hasAccess =
       role === 'admin' ||
-      (role === 'client' && study.client_id === user.id) ||
-      (role === 'agent' && study.assigned_agent_id === user.id)
+      role === 'agent' ||
+      (role === 'client' && study.client_id === user.id)
 
     if (!hasAccess) {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 })
@@ -132,11 +132,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return NextResponse.json({ error: uploadError.message }, { status: 500 })
     }
 
-    // Update the study avec le chemin du report
+    // Update study: set report path, mark as completed
     const reportPath = `reports-files/${id}/report.pdf`
+    const now = new Date().toISOString()
     const { error: updateError } = await admin
       .from('studies')
-      .update({ report_path: reportPath, updated_at: new Date().toISOString() })
+      .update({ report_path: reportPath, status: 'termine', completed_at: now, updated_at: now })
       .eq('id', id)
 
     if (updateError) {
