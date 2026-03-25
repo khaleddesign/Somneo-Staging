@@ -65,10 +65,10 @@ export async function GET(
       .createSignedUrl(storagePath, 15 * 60);
 
     if (signedError || !signed?.signedUrl) {
-      return NextResponse.json(
-        { error: signedError?.message || "Failed to generate signed URL" },
-        { status: 500 },
-      );
+      if (signedError?.message?.toLowerCase().includes('not found')) {
+        return NextResponse.json({ error: "The EDF file cannot be found in storage (it may have been deleted or the upload was incomplete)." }, { status: 404 })
+      }
+      return NextResponse.json({ error: signedError?.message || 'Failed to generate signed URL' }, { status: 500 })
     }
 
     // --- Trace d'Audit ---
