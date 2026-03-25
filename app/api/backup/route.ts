@@ -3,7 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { r2Client, R2_BUCKET } from '@/lib/backup/r2-client'
 import { HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3'
 
-const BUCKETS = ['reports-files', 'invoices-files', 'studies-files']
+const BUCKETS = ['reports-files', 'invoices-files', 'study-files']
 
 async function listAllFiles(adminClient: any, bucket: string, path: string = ''): Promise<string[]> {
   const { data, error } = await adminClient.storage.from(bucket).list(path, { limit: 1000 })
