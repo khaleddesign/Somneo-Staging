@@ -1,7 +1,7 @@
 "use client"
 import { Study } from '@/hooks/useStudies'
 import { FC, useState } from 'react'
-import { AlertTriangle, Package, Download, FileText } from 'lucide-react'
+import { AlertTriangle, Package, Download, FileText, Eye } from 'lucide-react'
 import { toast } from 'sonner'
 import { AssignReportPopover } from '@/components/custom/AssignReportPopover'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -447,31 +447,28 @@ export const StudyList: FC<StudyListProps> = ({
                   )}
                 </td>
                 <td className="px-3 py-3">
-                  {role === 'agent' ? (
-                    (study.status === 'en_attente' || study.status === 'en_cours') ? (
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={
+                        role === 'client'
+                          ? `/dashboard/client/studies/${study.id}`
+                          : role === 'admin'
+                          ? `/dashboard/admin/studies/${study.id}`
+                          : `/dashboard/agent/studies/${study.id}`
+                      }
+                      className="inline-flex items-center gap-1 text-xs border border-gray-200 text-gray-600 px-2.5 py-1 rounded-lg hover:bg-gray-50"
+                    >
+                      <Eye className="h-3 w-3" />
+                      View
+                    </a>
+                    {(role === 'agent' || role === 'admin') && study.status !== 'termine' && (
                       <AssignReportPopover
                         studyId={study.id}
                         studyPatientRef={study.patient_reference}
                         onSuccess={() => onAssigned?.()}
                       />
-                    ) : null
-                  ) : role === 'client' ? (
-                    <a
-                      href={`/dashboard/client/studies/${study.id}`}
-                      className="px-2 py-1 bg-gray-200 rounded text-xs text-gray-700 hover:bg-gray-300"
-                    >
-                      View
-                    </a>
-                  ) : role === 'admin' ? (
-                    <a
-                      href={`/dashboard/admin/studies/${study.id}`}
-                      className="border border-teal text-teal text-sm px-3 py-1 rounded-lg hover:bg-teal/5"
-                    >
-                      View
-                    </a>
-                  ) : (
-                    <span className="text-xs text-gray-400">—</span>
-                  )}
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
