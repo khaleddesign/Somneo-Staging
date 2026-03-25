@@ -295,7 +295,7 @@ export function AssignReportPopover({
                       </p>
                       <p className="text-xs text-gray-400">
                         {formatFileSize(report.file_size)} ·{' '}
-                        {new Date(report.uploaded_at).toLocaleDateString('fr-FR')}
+                        {new Date(report.uploaded_at).toLocaleDateString('en-GB')}
                       </p>
                     </div>
                     <Button

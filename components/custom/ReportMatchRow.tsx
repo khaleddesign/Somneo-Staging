@@ -134,7 +134,7 @@ export function ReportMatchRow({
         <div className="bg-white rounded-lg border border-gray-100 px-3 py-2 text-xs text-gray-700">
           <span className="font-medium">{item.matchedStudy.patient_reference}</span>
           <span className="text-gray-400 ml-2">
-            {item.matchedStudy.study_type} · {new Date(item.matchedStudy.submitted_at).toLocaleDateString('fr-FR')}
+            {item.matchedStudy.study_type} · {new Date(item.matchedStudy.submitted_at).toLocaleDateString('en-GB')}
           </span>
         </div>
       )}
