@@ -82,53 +82,47 @@ export const StudyList: FC<StudyListProps> = ({
     setSelectedIds(newSet);
   }
 
-  // Fonction utilitaire pour préparer les données d'export
-  function getExportData() {
-    let toExport = studies;
-    const now = new Date();
-
+  // Fonction utilitaire pour préparer les données d'export en asynchrone
+  async function fetchAllExportData() {
     if (exportPeriod === "selection") {
-      toExport = studies.filter((s) => selectedIds.has(s.id));
+      const toExport = studies.filter((s) => selectedIds.has(s.id));
       if (toExport.length === 0) {
         toast.error("Please select at least one study.");
         return null;
       }
-    } else if (exportPeriod === "month") {
-      toExport = studies.filter((s) => {
-        const d = new Date(s.submitted_at);
-        return (
-          d.getMonth() === now.getMonth() &&
-          d.getFullYear() === now.getFullYear()
-        );
-      });
-    } else if (exportPeriod === "custom") {
-      if (!customMonth) {
-        toast.error("Please select a month.");
-        return null;
-      }
-      const [yearStr, monthStr] = customMonth.split("-");
-      const targetYear = parseInt(yearStr, 10);
-      const targetMonth = parseInt(monthStr, 10) - 1; // JS months are 0-indexed
-      toExport = studies.filter((s) => {
-        const d = new Date(s.submitted_at);
-        return d.getMonth() === targetMonth && d.getFullYear() === targetYear;
-      });
-    } else if (exportPeriod === "year") {
-      toExport = studies.filter(
-        (s) => new Date(s.submitted_at).getFullYear() === now.getFullYear(),
-      );
+      return toExport;
     }
 
-    if (toExport.length === 0) {
-      toast.error("No studies to export for this period.");
+    if (exportPeriod === "custom" && !customMonth) {
+      toast.error("Please select a month.");
       return null;
     }
-    return toExport;
+
+    const toastId = toast.loading("Fetching all studies for export...");
+    try {
+      const res = await fetch(
+        `/api/studies/export?period=${exportPeriod}&customMonth=${customMonth}`
+      );
+      if (!res.ok) throw new Error("Failed to fetch studies");
+      const data = await res.json();
+      const toExport = data.studies;
+
+      if (!toExport || toExport.length === 0) {
+        toast.error("No studies to export for this period.", { id: toastId });
+        return null;
+      }
+
+      toast.success("Ready to export!", { id: toastId });
+      return toExport as Study[];
+    } catch (e) {
+      toast.error("Error fetching studies for export", { id: toastId });
+      return null;
+    }
   }
 
   // Export CSV
-  function handleExportCSV() {
-    const toExport = getExportData();
+  async function handleExportCSV() {
+    const toExport = await fetchAllExportData();
     if (!toExport) return;
 
     const headers = [
@@ -165,8 +159,8 @@ export const StudyList: FC<StudyListProps> = ({
   }
 
   // Export PDF
-  function handleExportPDF() {
-    const toExport = getExportData();
+  async function handleExportPDF() {
+    const toExport = await fetchAllExportData();
     if (!toExport) return;
 
     const doc = new jsPDF();
