@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { encrypt } from "@/lib/encryption";
 
 const ALLOWED_STUDY_TYPES = ["PSG", "PV", "MSLT", "MWT"];
 const ALLOWED_PRIORITIES = ["low", "medium", "high"];
@@ -49,11 +50,13 @@ export async function POST(req: Request) {
       );
     }
 
+    const encryptedPatientReference = encrypt(patient_reference);
+
     const { data, error: insertError } = await supabase
       .from("studies")
       .insert({
         client_id: user.id,
-        patient_reference,
+        patient_reference: encryptedPatientReference,
         study_type,
         priority,
         status: "en_attente",

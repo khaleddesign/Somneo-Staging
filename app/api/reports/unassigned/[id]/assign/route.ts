@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { sendEmail } from "@/lib/mail";
+import { decrypt } from "@/lib/encryption";
 
 /**
  * PATCH /api/reports/unassigned/{id}/assign
@@ -129,12 +130,26 @@ export async function PATCH(
       .maybeSingle()
       .then(({ data: clientProfile }) => {
         if (!clientProfile?.email) return;
+
+        const maskPatientReference = (ref: string): string => {
+          if (!ref || ref.length < 4) return "****";
+          return "***" + ref.slice(-4);
+        };
+
+        let maskedRef = "****";
+        try {
+          const decryptedRef = decrypt(study.patient_reference);
+          maskedRef = maskPatientReference(decryptedRef);
+        } catch (e) {
+          console.error("Failed to decrypt patient reference for email", e);
+        }
+
         sendEmail({
           to: clientProfile.email,
           subject: "SomnoConnect — Votre rapport d'analyse est disponible",
           html: `
             <p>Bonjour${clientProfile.full_name ? ` ${clientProfile.full_name}` : ""},</p>
-            <p>Le rapport d'analyse de votre étude (<strong>${study.patient_reference}</strong>)
+            <p>Le rapport d'analyse de votre étude (<strong>${maskedRef}</strong>)
             est maintenant disponible dans votre espace client SomnoConnect.</p>
             <p>Merci de votre confiance.</p>
             <p>— L'équipe SOMNOVENTIS</p>
