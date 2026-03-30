@@ -83,20 +83,23 @@ export async function PATCH(req: NextRequest) {
     if ("error" in auth) return auth.error;
     const { admin } = auth;
 
-    for (const item of updates) {
-      if (!item.study_type || Number.isNaN(Number(item.price_ht))) continue;
+    const upsertData = updates
+      .filter((item) => item.study_type && !Number.isNaN(Number(item.price_ht)))
+      .map((item) => ({
+        study_type: item.study_type,
+        price_ht: Number(item.price_ht),
+        updated_at: new Date().toISOString(),
+      }));
+
+    if (upsertData.length > 0) {
       const { error } = await admin
         .from("invoice_settings")
-        .update({
-          price_ht: Number(item.price_ht),
-          updated_at: new Date().toISOString(),
-        })
-        .eq("study_type", item.study_type);
+        .upsert(upsertData, { onConflict: "study_type" });
 
       if (error) {
-        console.error("[invoices/settings] Refresh Error:", error);
+        console.error("[invoices/settings] Upsert Error:", error);
         return NextResponse.json(
-          { error: "Error refreshing settings" },
+          { error: "Error updating settings" },
           { status: 500 },
         );
       }

@@ -145,6 +145,8 @@ export const limiters = {
     window: "1 h",
     windowMs: 60 * 60 * 1000,
   }),
+  /** 10 upload tokens per IP per minute */
+  upload: makeLimiter({ requests: 10, window: "1 m", windowMs: 60 * 1000 }),
   /** 30 comments per authenticated user per minute */
   comment: makeLimiter({ requests: 30, window: "1 m", windowMs: 60 * 1000 }),
   /** 10 PDF generations per authenticated user per hour (concurrency/cost control) */

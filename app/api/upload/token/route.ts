@@ -2,12 +2,19 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { validateMagicBytes } from "@/lib/validation/magicBytes";
+import { limiters } from "@/lib/rateLimit";
 
 const BUCKET = "study-files";
 const ALLOWED_EXTENSIONS = ["edf", "edf+", "bdf", "zip"];
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "127.0.0.1";
+    const { allowed, headers } = await limiters.upload.check(`upload:${ip}`);
+    if (!allowed) {
+      return NextResponse.json({ error: "Too many requests" }, { status: 429, headers });
+    }
+
     // Auth check with user client
     const supabase = await createClient();
     const {
