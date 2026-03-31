@@ -13,11 +13,11 @@ function toDateYmd(date: Date): string {
 
 async function generateInvoiceNumber(admin: any): Promise<string> {
   const year = new Date().getFullYear();
-  const prefix = \`FAC-\${year}-\`;
+  const prefix = `FAC-${year}-`;
   const { data: latest, error } = await admin
     .from("invoices")
     .select("invoice_number")
-    .like("invoice_number", \`\${prefix}%\`)
+    .like("invoice_number", `${prefix}%`)
     .order("invoice_number", { ascending: false })
     .limit(1)
     .maybeSingle();
@@ -29,7 +29,7 @@ async function generateInvoiceNumber(admin: any): Promise<string> {
     const lastPart = latest.invoice_number.split("-").pop();
     if (lastPart) nextNum = parseInt(lastPart, 10) + 1;
   }
-  return \`\${prefix}\${nextNum.toString().padStart(4, "0")}\`;
+  return `${prefix}${nextNum.toString().padStart(4, "0")}`;
 }
 
 export const GET = withErrorHandler(
@@ -117,7 +117,7 @@ export const POST = withErrorHandler(
         }) as any
       );
 
-      const fileName = \`\${created.invoice_number}.pdf\`;
+      const fileName = `${created.invoice_number}.pdf`;
       await adminClient.storage.from("invoices-files").upload(fileName, pdfBuffer, { contentType: "application/pdf", upsert: true });
       
       const { data: updatedInvoice } = await adminClient.from("invoices").update({ pdf_path: fileName, updated_at: new Date().toISOString() }).eq("id", created.id).select("*").single();
