@@ -14,6 +14,7 @@ export interface AuthContext {
     is_suspended: boolean;
   };
   adminClient: ReturnType<typeof createAdminClient>;
+  params: any; // Inject route params here
 }
 
 /**
@@ -21,7 +22,7 @@ export interface AuthContext {
  * Accepts both standard Request and Next.js NextRequest.
  */
 export type AuthenticatedHandler = (
-  req: any, // Use any to bypass strict NextRequest vs Request check in the wrapper
+  req: any,
   context: AuthContext,
 ) => Promise<NextResponse> | NextResponse;
 
@@ -35,7 +36,7 @@ export function requireAuth(
   allowedRoles: UserRole[],
   handler: AuthenticatedHandler,
 ) {
-  return async (req: Request | NextRequest): Promise<NextResponse> => {
+  return async (req: Request | NextRequest, context: { params: any }): Promise<NextResponse> => {
     const supabase = await createClient();
     const {
       data: { user },
@@ -71,11 +72,12 @@ export function requireAuth(
       );
     }
 
-    // Inject context into the handler
+    // Inject context AND params into the handler
     return handler(req, {
       user,
       profile: profile as AuthContext["profile"],
       adminClient,
+      params: context?.params || {},
     });
   };
 }
