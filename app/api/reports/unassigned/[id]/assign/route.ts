@@ -9,8 +9,10 @@ const assignReportSchema = z.object({
   study_id: z.string().min(1, "study_id requis"),
 });
 
-export const POST = withErrorHandler(
-  requireAuth(["agent", "admin"], { schema: assignReportSchema }, async (req, { adminClient, params, validatedData }) => {
+const handler = requireAuth(
+  ["agent", "admin"],
+  { schema: assignReportSchema },
+  async (req, { adminClient, params, validatedData }) => {
     const { id } = await params;
     const { study_id: studyId } = validatedData!;
 
@@ -129,5 +131,8 @@ export const POST = withErrorHandler(
       study_id: studyId,
       report_path: reportPath,
     });
-  })
+  }
 );
+
+export const POST = withErrorHandler(handler);
+export const PATCH = withErrorHandler(handler);
