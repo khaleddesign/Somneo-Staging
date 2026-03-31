@@ -7,56 +7,73 @@ export const GET = withErrorHandler(
   requireAuth(["admin", "agent"], async (req, { user, profile, adminClient }) => {
     const { searchParams } = new URL(req.url);
     const period = searchParams.get("period") || "all";
-    const customMonth = searchParams.get("customMonth"); // YYYY-MM
+    const customMonth = searchParams.get("customMonth");
     
     const isAdmin = profile.role === "admin";
-    
-    // Utilisation de created_at car submitted_at n'existe peut-être pas dans toutes les versions
-    let query = adminClient
+    console.log(`[EXPORT_DEBUG] UserID: ${user.id}, Role: ${profile.role}, Period: ${period}`);
+
+    // ÉTAPE 1 : Requête la plus simple possible sans aucun filtre ni jointure
+    // On utilise adminClient qui contourne normalement le RLS
+    const { data: allStudies, error: dbError } = await adminClient
       .from("studies")
-      .select("*, profiles!studies_client_id_fkey(full_name, email)")
-      .order("created_at", { ascending: false });
+      .select("*");
+
+    if (dbError) {
+      console.error("[EXPORT_DEBUG] Database Error:", dbError);
+      throw dbError;
+    }
+
+    console.log(`[EXPORT_DEBUG] Total studies in DB: ${allStudies?.length || 0}`);
+
+    // ÉTAPE 2 : Filtrage manuel en JS pour être sûr de ce qu'on fait
+    let filtered = allStudies || [];
 
     if (!isAdmin) {
-      query = query.eq("assigned_agent_id", user.id);
+      // On filtre manuellement par agent_id pour être sûr
+      filtered = filtered.filter(s => s.assigned_agent_id === user.id);
+      console.log(`[EXPORT_DEBUG] After Agent Filter (${user.id}): ${filtered.length}`);
     }
 
-    // Filtrage par période
+    // Filtrage par période (manuel pour éviter les erreurs de format SQL)
     const now = new Date();
     if (period === "month") {
-      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-      query = query.gte("created_at", startOfMonth);
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      filtered = filtered.filter(s => new Date(s.created_at) >= startOfMonth);
     } else if (period === "year") {
-      const startOfYear = new Date(now.getFullYear(), 0, 1).toISOString();
-      query = query.gte("created_at", startOfYear);
+      const startOfYear = new Date(now.getFullYear(), 0, 1);
+      filtered = filtered.filter(s => new Date(s.created_at) >= startOfYear);
     } else if (period === "custom" && customMonth) {
       const [year, month] = customMonth.split("-").map(Number);
-      const startOfMonth = new Date(year, month - 1, 1).toISOString();
-      const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999).toISOString();
-      query = query.gte("created_at", startOfMonth).lte("created_at", endOfMonth);
+      const start = new Date(year, month - 1, 1);
+      const end = new Date(year, month, 0, 23, 59, 59, 999);
+      filtered = filtered.filter(s => {
+        const d = new Date(s.created_at);
+        return d >= start && d <= end;
+      });
     }
 
-    const { data, error } = await query;
-    if (error) throw error;
+    console.log(`[EXPORT_DEBUG] Final count to return: ${filtered.length}`);
 
-    const decrypted = (data ?? []).map((s: any) => {
-      let patientRef = "Error";
+    // ÉTAPE 3 : Préparation des données avec sécurité
+    const studies = filtered.map((s: any) => {
+      let patientRef = s.patient_reference || "—";
       try {
-        // Tentative de décryptage, sinon on garde la valeur brute si elle n'est pas cryptée
-        patientRef = decrypt(s.patient_reference);
+        // On ne décrypte que si ça ressemble à du crypté (contient un point ou est long)
+        if (s.patient_reference && s.patient_reference.includes(".")) {
+          patientRef = decrypt(s.patient_reference);
+        }
       } catch (e) {
-        patientRef = s.patient_reference || "—";
+        console.warn(`[EXPORT_DEBUG] Decrypt failed for ${s.id}, using raw.`);
       }
       
       return {
         ...s,
         patient_reference: patientRef,
-        // submitted_at est utilisé par le frontend, on s'assure qu'il existe
         submitted_at: s.submitted_at || s.created_at,
-        client_name: s.profiles?.full_name || s.profiles?.email || "—",
+        client_name: "—", // On simplifie pour garantir le retour
       };
     });
 
-    return NextResponse.json({ studies: decrypted });
+    return NextResponse.json({ studies });
   })
 );
