@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { formatFileSize } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { decrypt } from "@/lib/encryption";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -368,7 +369,7 @@ export function AgentReportsPage() {
                     className="bg-white hover:bg-gray-50 transition-colors"
                   >
                     <td className="px-4 py-3 font-medium text-gray-900">
-                      {study.patient_reference}
+                      {decrypt(study.patient_reference)}
                     </td>
                     <td className="px-4 py-3">
                       <span className="inline-flex items-center text-xs font-heading bg-gray-100 text-gray-700 px-2 py-0.5 rounded-full">

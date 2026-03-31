@@ -31,6 +31,7 @@ import {
   ArchiveX,
 } from "lucide-react";
 import { formatFileSize } from "@/lib/utils";
+import { decrypt } from "@/lib/encryption";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -203,7 +204,7 @@ export function AssignReportPopover({
         <div className="px-4 py-3 border-b bg-gray-50 rounded-t-md">
           <p className="text-sm font-semibold text-gray-900">Assign a report</p>
           <p className="text-xs text-gray-500 mt-0.5">
-            Study: {studyPatientRef}
+            Study: {decrypt(studyPatientRef)}
           </p>
         </div>
 
