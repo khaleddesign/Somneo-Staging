@@ -10,10 +10,12 @@ export const GET = withErrorHandler(
     const customMonth = searchParams.get("customMonth"); // YYYY-MM
     
     const isAdmin = profile.role === "admin";
+    console.log(`[EXPORT] User: ${user.id}, Role: ${profile.role}, Period: ${period}, CustomMonth: ${customMonth}`);
     
+    // On simplifie la requête pour éviter les erreurs de jointure potentielles au début
     let query = adminClient
       .from("studies")
-      .select("*, profiles!studies_client_id_fkey(full_name, email)")
+      .select("*")
       .order("submitted_at", { ascending: false });
 
     if (!isAdmin) {
@@ -36,13 +38,27 @@ export const GET = withErrorHandler(
     }
 
     const { data, error } = await query;
-    if (error) throw error;
+    if (error) {
+      console.error("[EXPORT] Supabase Error:", error);
+      throw error;
+    }
 
-    const decrypted = (data ?? []).map((s: any) => ({
-      ...s,
-      patient_reference: decrypt(s.patient_reference),
-      client_name: s.profiles?.full_name || s.profiles?.email || "—",
-    }));
+    console.log(`[EXPORT] Found ${data?.length || 0} studies before decryption`);
+
+    const decrypted = (data ?? []).map((s: any) => {
+      let patientRef = "Error";
+      try {
+        patientRef = decrypt(s.patient_reference);
+      } catch (e) {
+        console.error(`[EXPORT] Decryption failed for study ${s.id}:`, e);
+        patientRef = "Decryption Error";
+      }
+      return {
+        ...s,
+        patient_reference: patientRef,
+        client_name: "—", // On simplifie pour le moment
+      };
+    });
 
     return NextResponse.json({ studies: decrypted });
   })
