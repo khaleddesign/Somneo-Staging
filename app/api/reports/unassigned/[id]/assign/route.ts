@@ -1,61 +1,21 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
-import { sendEmail } from "@/lib/mail";
+import { NextResponse } from "next/server";
+import { withErrorHandler } from "@/lib/api/withErrorHandler";
+import { requireAuth } from "@/lib/api/auth";
 import { decrypt } from "@/lib/encryption";
+import { sendEmail } from "@/lib/mail";
+import { z } from "zod";
 
-/**
- * PATCH /api/reports/unassigned/{id}/assign
- *
- * Assigns a previously unassigned PDF report to a study.
- * Body: { study_id: string }
- *
- * Flow (Option B — identical to direct upload):
- *   1. Copy PDF from unassigned/{agent_id}/{id}.pdf → {study_id}/report.pdf
- *   2. Update studies.report_path
- *   3. Set study status → 'termine'
- *   4. Send email to client
- *   5. Delete unassigned_reports row + original storage file
- */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
+const assignReportSchema = z.object({
+  study_id: z.string().min(1, "study_id requis"),
+});
+
+export const POST = withErrorHandler(
+  requireAuth(["agent", "admin"], { schema: assignReportSchema }, async (req, { adminClient, params, validatedData }) => {
     const { id } = await params;
+    const { study_id: studyId } = validatedData!;
 
-    const supabase = await createClient();
-    const {
-      data: { user },
-      error: authErr,
-    } = await supabase.auth.getUser();
-    if (authErr || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const admin = createAdminClient();
-
-    // Verify caller is agent or admin
-    const { data: callerProfile } = await admin
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .maybeSingle();
-
-    if (!callerProfile || !["agent", "admin"].includes(callerProfile.role)) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    // Parse body
-    const body = await req.json();
-    const studyId = String(body?.study_id ?? "").trim();
-    if (!studyId) {
-      return NextResponse.json({ error: "study_id requis" }, { status: 400 });
-    }
-
-    // Load the unassigned report (RLS will filter by agent_id for non-admins,
-    // but we use admin client here, so we enforce ownership manually)
-    const { data: report } = await admin
+    // Load the unassigned report
+    const { data: report } = await adminClient
       .from("unassigned_reports")
       .select("id, agent_id, storage_path, original_filename")
       .eq("id", id)
@@ -69,7 +29,7 @@ export async function PATCH(
     }
 
     // Load study
-    const { data: study } = await admin
+    const { data: study } = await adminClient
       .from("studies")
       .select("id, patient_reference, client_id, assigned_agent_id")
       .eq("id", studyId)
@@ -80,7 +40,7 @@ export async function PATCH(
     }
 
     // 1. Download the PDF from unassigned storage path
-    const { data: fileData, error: downloadError } = await admin.storage
+    const { data: fileData, error: downloadError } = await adminClient.storage
       .from("reports-files")
       .download(report.storage_path);
 
@@ -93,7 +53,7 @@ export async function PATCH(
 
     // 2. Upload to the study's canonical path (upsert to allow overwrite)
     const targetPath = `${studyId}/report.pdf`;
-    const { error: uploadError } = await admin.storage
+    const { error: uploadError } = await adminClient.storage
       .from("reports-files")
       .upload(targetPath, fileData, {
         upsert: true,
@@ -106,7 +66,7 @@ export async function PATCH(
 
     // 3. Update study with report path + status
     const reportPath = `reports-files/${studyId}/report.pdf`;
-    const { error: studyUpdateError } = await admin
+    const { error: studyUpdateError } = await adminClient
       .from("studies")
       .update({
         report_path: reportPath,
@@ -123,7 +83,7 @@ export async function PATCH(
     }
 
     // 4. Send email to client (fire-and-forget)
-    admin
+    adminClient
       .from("profiles")
       .select("email, full_name")
       .eq("id", study.client_id)
@@ -158,8 +118,8 @@ export async function PATCH(
       });
 
     // 5. Delete the unassigned record + original storage file (best-effort)
-    await admin.from("unassigned_reports").delete().eq("id", id);
-    admin.storage
+    await adminClient.from("unassigned_reports").delete().eq("id", id);
+    adminClient.storage
       .from("reports-files")
       .remove([report.storage_path])
       .catch(() => {});
@@ -169,9 +129,5 @@ export async function PATCH(
       study_id: studyId,
       report_path: reportPath,
     });
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
-}
+  })
+);

@@ -10,6 +10,7 @@ export const GET = withErrorHandler(
     const statusParam = searchParams.get("status") ?? "en_attente,en_cours";
     const limit = Math.min(Number(searchParams.get("limit") ?? "10"), 50);
     const noReport = searchParams.get("no_report") === "true";
+
     const statuses = statusParam.split(",").map((s) => s.trim()).filter(Boolean);
 
     let query = adminClient

@@ -10,6 +10,7 @@ export const POST = withErrorHandler(
 
     const reportId = crypto.randomUUID();
     const storagePath = `unassigned/${user.id}/${reportId}.pdf`;
+
     const { error: uploadError } = await adminClient.storage.from("reports-files").upload(storagePath, file, { upsert: false, contentType: "application/pdf" });
     if (uploadError) throw uploadError;
 
