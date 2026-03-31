@@ -42,15 +42,13 @@ export const GET = withErrorHandler(
 );
 
 export const POST = withErrorHandler(
-  requireAuth(["client", "agent", "admin"], async (req, { user, profile, adminClient }) => {
+  requireAuth(["client", "agent", "admin"], { schema: commentSchema }, async (req, { user, profile, adminClient, validatedData }) => {
     const rl = await limiters.comment.check(`comment:${user.id}`);
     if (!rl.allowed) return NextResponse.json({ error: "Too many messages. Try again in a minute." }, { status: 429, headers: rl.headers });
 
-    const raw = await req.json();
-    const parsed = commentSchema.safeParse(raw);
-    if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
-
-    const { study_id, message } = parsed.data;
+    // validatedData is already parsed and validated by requireAuth
+    const { study_id, message } = validatedData!;
+    
     const hasAccess = await checkStudyAccess(user.id, study_id, profile.role, adminClient);
     if (!hasAccess) return NextResponse.json({ error: "Access denied" }, { status: 403 });
 

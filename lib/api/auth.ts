@@ -1,10 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { type ZodSchema } from "zod";
 
 export type UserRole = "admin" | "agent" | "client";
 
-export interface AuthContext {
+export interface AuthContext<T = any> {
   user: any;
   profile: {
     id: string;
@@ -14,28 +15,38 @@ export interface AuthContext {
     is_suspended: boolean;
   };
   adminClient: ReturnType<typeof createAdminClient>;
-  params: any; // Inject route params here
+  params: any;
+  validatedData?: T; // Inject validated data if schema is provided
 }
 
 /**
  * Handler type for authenticated routes.
- * Accepts both standard Request and Next.js NextRequest.
  */
-export type AuthenticatedHandler = (
+export type AuthenticatedHandler<T = any> = (
   req: any,
-  context: AuthContext,
+  context: AuthContext<T>,
 ) => Promise<NextResponse> | NextResponse;
 
+export interface RequireAuthOptions<T = any> {
+  schema?: ZodSchema<T>;
+}
+
 /**
- * Middleware-like wrapper to enforce authentication and role-based access.
+ * Middleware-like wrapper to enforce authentication, role-based access,
+ * and optional Zod validation.
  *
  * @param allowedRoles - Array of roles permitted to access the route
- * @param handler - The actual API logic to execute if authorized
+ * @param optionsOrHandler - Either an options object with a schema or the handler itself
+ * @param maybeHandler - The handler if options were provided as the second argument
  */
-export function requireAuth(
+export function requireAuth<T = any>(
   allowedRoles: UserRole[],
-  handler: AuthenticatedHandler,
+  optionsOrHandler: RequireAuthOptions<T> | AuthenticatedHandler<T>,
+  maybeHandler?: AuthenticatedHandler<T>,
 ) {
+  const options = typeof optionsOrHandler === "object" ? optionsOrHandler : {};
+  const handler = typeof optionsOrHandler === "function" ? optionsOrHandler : maybeHandler!;
+
   return async (req: Request | NextRequest, context: { params: any }): Promise<NextResponse> => {
     const supabase = await createClient();
     const {
@@ -72,12 +83,33 @@ export function requireAuth(
       );
     }
 
-    // Inject context AND params into the handler
+    let validatedData: T | undefined;
+    if (options.schema) {
+      try {
+        const body = await req.json();
+        const result = options.schema.safeParse(body);
+        if (!result.success) {
+          return NextResponse.json(
+            { error: result.error.issues[0]?.message ?? "Invalid data" },
+            { status: 400 },
+          );
+        }
+        validatedData = result.data;
+      } catch (e) {
+        return NextResponse.json(
+          { error: "Invalid JSON body" },
+          { status: 400 },
+        );
+      }
+    }
+
+    // Inject context, params, and validatedData into the handler
     return handler(req, {
       user,
       profile: profile as AuthContext["profile"],
       adminClient,
       params: context?.params || {},
+      validatedData,
     });
   };
 }
