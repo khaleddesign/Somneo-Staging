@@ -99,45 +99,12 @@ export function AgentReportsPage() {
   const loadAssigned = useCallback(async () => {
     setAssignedLoading(true);
     try {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) return;
-
-      // Studies with a report assigned to the current agent
-      const { data } = await supabase
-        .from("studies")
-        .select(
-          "id, patient_reference, study_type, updated_at, profiles!studies_client_id_fkey(full_name)",
-        )
-        .eq("assigned_agent_id", user.id)
-        .not("report_path", "is", null)
-        .order("updated_at", { ascending: false })
-        .limit(100);
-
-      setAssigned(
-        (data ?? []).map(
-          (row: {
-            id: string;
-            patient_reference: string;
-            study_type: string;
-            updated_at: string;
-            profiles:
-              | { full_name: string | null }[]
-              | { full_name: string | null }
-              | null;
-          }) => ({
-            id: row.id,
-            patient_reference: row.patient_reference,
-            study_type: row.study_type,
-            client_name: Array.isArray(row.profiles)
-              ? (row.profiles[0]?.full_name ?? null)
-              : (row.profiles?.full_name ?? null),
-            updated_at: row.updated_at,
-          }),
-        ),
-      );
+      const res = await fetch("/api/studies/assigned");
+      if (!res.ok) throw new Error("Failed to fetch assigned studies");
+      const data = await res.json();
+      setAssigned(data.studies ?? []);
+    } catch {
+      setAssigned([]);
     } finally {
       setAssignedLoading(false);
     }
