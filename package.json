@@ -9,7 +9,14 @@
     "lint": "eslint",
     "test": "vitest",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:staging": "playwright test --config=playwright.staging.config.ts",
+    "test:staging:headed": "playwright test --config=playwright.staging.config.ts --headed",
+    "test:staging:client": "playwright test --config=playwright.staging.config.ts client.spec.ts",
+    "test:staging:agent": "playwright test --config=playwright.staging.config.ts agent.spec.ts",
+    "test:staging:admin": "playwright test --config=playwright.staging.config.ts admin.spec.ts",
+    "test:staging:security": "playwright test --config=playwright.staging.config.ts security.spec.ts",
+    "test:staging:report": "playwright show-report"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1010.0",
