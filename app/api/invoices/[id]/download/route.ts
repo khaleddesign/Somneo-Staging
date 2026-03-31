@@ -1,79 +1,13 @@
-import { NextResponse, type NextRequest } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { NextResponse } from "next/server";
+import { withErrorHandler } from "@/lib/api/withErrorHandler";
+import { requireAuth } from "@/lib/api/auth";
 import { logAudit } from "@/lib/audit";
 
-async function requireAdminUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return {
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    };
-  }
-
-  const admin = createAdminClient();
-  const { data: profile, error: profileError } = await admin
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profileError || !profile || profile.role !== "admin") {
-    return {
-      error: NextResponse.json({ error: "Access denied" }, { status: 403 }),
-    };
-  }
-
-  return { admin };
-}
-
-async function requireInvoiceReadUser() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
-
-  if (authError || !user) {
-    return {
-      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
-    };
-  }
-
-  const admin = createAdminClient();
-  const { data: profile, error: profileError } = await admin
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .maybeSingle();
-
-  if (profileError || !profile || !["admin", "client"].includes(profile.role)) {
-    return {
-      error: NextResponse.json({ error: "Access denied" }, { status: 403 }),
-    };
-  }
-
-  return { admin, user, role: profile.role };
-}
-
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
+export const GET = withErrorHandler(
+  requireAuth(["admin", "client"], async (req, { user, profile, adminClient, params }) => {
     const { id } = await params;
 
-    const auth = await requireInvoiceReadUser();
-    if ("error" in auth) return auth.error;
-
-    const { admin, role, user } = auth;
-
-    const { data: invoice, error: invoiceError } = await admin
+    const { data: invoice, error: invoiceError } = await adminClient
       .from("invoices")
       .select("pdf_path, client_id")
       .eq("id", id)
@@ -83,7 +17,8 @@ export async function GET(
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    if (role === "client" && invoice.client_id !== user.id) {
+    // RLS-like check for client
+    if (profile.role === "client" && invoice.client_id !== user.id) {
       return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
@@ -95,7 +30,7 @@ export async function GET(
       ? invoice.pdf_path.slice("invoices-files/".length)
       : invoice.pdf_path;
 
-    const { data: signed, error: signedError } = await admin.storage
+    const { data: signed, error: signedError } = await adminClient.storage
       .from("invoices-files")
       .createSignedUrl(storagePath, 15 * 60);
 
@@ -106,12 +41,9 @@ export async function GET(
       );
     }
 
-    await logAudit(user!.id, "download_invoice", "invoice", id);
+    // Audit (non-blocking)
+    logAudit(user.id, "download_invoice", "invoice", id).catch(err => console.error("[Audit Error]", err));
 
     return NextResponse.json({ url: signed.signedUrl });
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 500 });
-  }
-}
+  })
+);

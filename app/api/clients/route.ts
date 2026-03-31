@@ -19,7 +19,6 @@ export const GET = withErrorHandler(
 export const PATCH = withErrorHandler(
   requireAuth(["admin"], { schema: updateProfileSchema }, async (req, { adminClient, validatedData }) => {
     const { id, ...updates } = validatedData!;
-
     const { data, error } = await adminClient
       .from("profiles")
       .update(updates)

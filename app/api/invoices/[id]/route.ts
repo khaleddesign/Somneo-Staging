@@ -2,9 +2,14 @@ import { NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/api/withErrorHandler";
 import { requireAuth } from "@/lib/api/auth";
 import { decrypt } from "@/lib/encryption";
+import { z } from "zod";
+
+const updateInvoiceSchema = z.object({
+  status: z.enum(["draft", "sent", "paid", "cancelled"]),
+});
 
 export const GET = withErrorHandler(
-  requireAuth(["admin"], async (req, { adminClient, params }) => {
+  requireAuth(["admin", "client"], async (req, { user, profile, adminClient, params }) => {
     const { id } = await params;
     const { data: invoice, error } = await adminClient
       .from("invoices")
@@ -14,6 +19,11 @@ export const GET = withErrorHandler(
 
     if (error) throw error;
     if (!invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+
+    // RLS-like check for client
+    if (profile.role === "client" && invoice.client_id !== user.id) {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
+    }
 
     const studyIds = Array.isArray(invoice.study_ids) ? invoice.study_ids.filter(Boolean) : [];
     let studies: any[] = [];
@@ -35,21 +45,44 @@ export const GET = withErrorHandler(
 );
 
 export const PATCH = withErrorHandler(
-  requireAuth(["admin"], async (req, { adminClient, params }) => {
+  requireAuth(["admin"], { schema: updateInvoiceSchema }, async (req, { adminClient, params, validatedData }) => {
     const { id } = await params;
-    const body = await req.json();
-    if (!body.status || !["sent", "paid", "cancelled"].includes(body.status)) {
-      return NextResponse.json({ error: "status invalide" }, { status: 400 });
-    }
+    const { status } = validatedData!;
 
     const { data: updated, error } = await adminClient
       .from("invoices")
-      .update({ status: body.status, updated_at: new Date().toISOString() })
+      .update({ status, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select("*")
       .single();
 
     if (error) throw error;
     return NextResponse.json({ invoice: updated });
+  })
+);
+
+export const DELETE = withErrorHandler(
+  requireAuth(["admin"], async (req, { adminClient, params }) => {
+    const { id } = await params;
+
+    // 1. Get invoice to find PDF path
+    const { data: invoice } = await adminClient
+      .from("invoices")
+      .select("pdf_path")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (!invoice) return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
+
+    // 2. Delete PDF from storage if exists
+    if (invoice.pdf_path) {
+      await adminClient.storage.from("invoices-files").remove([invoice.pdf_path]);
+    }
+
+    // 3. Delete from DB
+    const { error } = await adminClient.from("invoices").delete().eq("id", id);
+    if (error) throw error;
+
+    return NextResponse.json({ success: true });
   })
 );

@@ -6,7 +6,6 @@ import { updateProfileSchema } from "@/lib/validation";
 export const GET = withErrorHandler(
   requireAuth(["agent", "admin"], async (req, { adminClient, profile }) => {
     const isAdmin = profile.role === "admin";
-
     const { data: agents, error } = await adminClient
       .from("profiles")
       .select("*")
@@ -32,7 +31,6 @@ export const GET = withErrorHandler(
 export const PATCH = withErrorHandler(
   requireAuth(["admin"], { schema: updateProfileSchema }, async (req, { adminClient, validatedData }) => {
     const { id, ...updates } = validatedData!;
-
     const { data, error } = await adminClient
       .from("profiles")
       .update(updates)
