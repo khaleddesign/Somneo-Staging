@@ -53,7 +53,6 @@ const intlConfig = withNextIntl(nextConfig)
 export default withSentryConfig(intlConfig, {
   // Sentry org/project — set via SENTRY_ORG and SENTRY_PROJECT env vars
   silent: true,           // suppress CLI output in CI
-  disableLogger: true,
   // Only upload source maps when DSN is configured (avoids build failures in local dev)
   sourcemaps: {
     disable: !process.env.SENTRY_DSN && !process.env.NEXT_PUBLIC_SENTRY_DSN,
