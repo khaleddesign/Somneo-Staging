@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/api/withErrorHandler";
 import { requireAuth } from "@/lib/api/auth";
+import { updateStudySchema } from "@/lib/validation";
+import { encrypt } from "@/lib/encryption";
 
 export const GET = withErrorHandler(
   requireAuth(["client", "agent", "admin"], async (req, { user, profile, adminClient, params }) => {
@@ -17,6 +19,27 @@ export const GET = withErrorHandler(
   })
 );
 
+export const PATCH = withErrorHandler(
+  requireAuth(["agent", "admin"], { schema: updateStudySchema }, async (req, { adminClient, params, validatedData }) => {
+    const { id } = await params;
+    const updates: any = { ...validatedData };
+
+    if (updates.patient_reference) {
+      updates.patient_reference = encrypt(updates.patient_reference);
+    }
+
+    const { data, error } = await adminClient
+      .from("studies")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json({ study: data });
+  })
+);
+
 export const DELETE = withErrorHandler(
   requireAuth(["client", "admin"], async (req, { user, profile, adminClient, params }) => {
     const { id } = await params;
@@ -25,6 +48,7 @@ export const DELETE = withErrorHandler(
 
     const isAdmin = profile.role === "admin";
     if (study.client_id !== user.id && !isAdmin) return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+
     if (["en_cours", "termine"].includes(study.status) && !isAdmin) return NextResponse.json({ error: "Cannot delete active study" }, { status: 403 });
 
     if (study.file_path) await adminClient.storage.from("study-files").remove([study.file_path]);

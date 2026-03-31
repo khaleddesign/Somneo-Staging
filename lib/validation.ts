@@ -34,10 +34,35 @@ export const studySchema = z.object({
   study_type: z.enum(["PSG", "PV"]),
   priority: z.enum(["low", "medium", "high"]),
   notes: safeText(5000).optional(),
+  client_id: uuidSchema.optional(), // Optionnel car injecté pour les clients
+});
+
+export const updateStudySchema = z.object({
+  patient_reference: safeText(100).optional(),
+  study_type: z.enum(["PSG", "PV"]).optional(),
+  priority: z.enum(["low", "medium", "high"]).optional(),
+  notes: safeText(5000).optional(),
+  status: z.enum(["en_attente", "en_cours", "termine", "annule"]).optional(),
 });
 
 export const inviteSchema = z.object({
   email: emailSchema,
   full_name: safeText(100).nullish(),
   role: z.enum(["admin", "agent", "client"]).optional().default("client"),
+  institution_id: uuidSchema.optional(),
+});
+
+export const updateProfileSchema = z.object({
+  id: uuidSchema,
+  full_name: safeText(100).optional(),
+  email: emailSchema.optional(),
+  is_suspended: z.boolean().optional(),
+  institution_id: uuidSchema.optional(),
+});
+
+export const invoiceSchema = z.object({
+  clientId: uuidSchema,
+  mode: z.enum(["manual", "monthly"]),
+  billingMonth: z.string().regex(/^\d{4}-\d{2}$/, "Format YYYY-MM requis").optional(),
+  studyIds: z.array(uuidSchema).optional(),
 });

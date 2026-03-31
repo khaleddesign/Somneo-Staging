@@ -1,45 +1,47 @@
 import { NextResponse } from "next/server";
 import { withErrorHandler } from "@/lib/api/withErrorHandler";
 import { requireAuth } from "@/lib/api/auth";
-import { studySchema } from "@/lib/validation";
 import { encrypt } from "@/lib/encryption";
+import { studySchema } from "@/lib/validation";
 
-export const POST = withErrorHandler(
+export const GET = withErrorHandler(
   requireAuth(["client", "agent", "admin"], async (req, { user, profile, adminClient }) => {
-    const raw = await req.json();
-    const parsed = studySchema.safeParse(raw);
-    if (!parsed.success) return NextResponse.json({ error: parsed.error.issues[0]?.message ?? "Invalid data" }, { status: 400 });
-
-    const { patient_reference, study_type, notes, priority } = parsed.data;
-    let client_id: string;
+    let query = adminClient
+      .from("studies")
+      .select("*, profiles!studies_client_id_fkey(full_name, institution_id)")
+      .order("created_at", { ascending: false });
 
     if (profile.role === "client") {
-      client_id = user.id;
-    } else {
-      const bodyClientId = raw.client_id as string | undefined;
-      if (!bodyClientId) return NextResponse.json({ error: "client_id requis pour les agents/admins" }, { status: 400 });
-
-      const { data: clientProfile } = await adminClient.from("profiles").select("id, role, institution_id").eq("id", bodyClientId).maybeSingle();
-      if (!clientProfile || clientProfile.role !== "client") return NextResponse.json({ error: "Client introuvable" }, { status: 404 });
-      if (clientProfile.institution_id !== profile.institution_id) return NextResponse.json({ error: "Access denied : client hors institution" }, { status: 403 });
-      
-      client_id = bodyClientId;
+      query = query.eq("client_id", user.id);
     }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return NextResponse.json({ studies: data });
+  })
+);
+
+export const POST = withErrorHandler(
+  requireAuth(["client", "admin"], { schema: studySchema }, async (req, { user, profile, adminClient, validatedData }) => {
+    const { patient_reference, study_type, priority, notes, client_id } = validatedData!;
+    
+    const finalClientId = profile.role === "admin" ? (client_id || user.id) : user.id;
+    const encryptedRef = encrypt(patient_reference);
 
     const { data, error } = await adminClient
       .from("studies")
       .insert({
-        client_id,
-        patient_reference: encrypt(patient_reference),
+        patient_reference: encryptedRef,
         study_type,
-        notes: notes ?? "",
         priority,
+        notes,
+        client_id: finalClientId,
         status: "en_attente",
       })
-      .select("id")
+      .select()
       .single();
 
     if (error) throw error;
-    return NextResponse.json({ study_id: data.id });
+    return NextResponse.json({ study: data }, { status: 201 });
   })
 );

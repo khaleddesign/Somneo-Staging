@@ -6,6 +6,7 @@ import { withIdempotency, makeSupabaseIdempotencyStore } from "@/lib/idempotency
 import { renderToBuffer } from "@react-pdf/renderer";
 import React from "react";
 import { InvoicePDF } from "@/lib/pdf/InvoicePDF";
+import { invoiceSchema } from "@/lib/validation";
 
 function toDateYmd(date: Date): string {
   return date.toISOString().slice(0, 10);
@@ -45,17 +46,13 @@ export const GET = withErrorHandler(
 );
 
 export const POST = withErrorHandler(
-  requireAuth(["agent", "admin"], async (req, { user, adminClient }) => {
+  requireAuth(["agent", "admin"], { schema: invoiceSchema }, async (req, { user, adminClient, validatedData }) => {
     const idempotencyKey = req.headers.get("x-idempotency-key");
     if (!idempotencyKey) {
       return NextResponse.json({ error: "X-Idempotency-Key header required" }, { status: 400 });
     }
 
-    const body = await req.json();
-    const { clientId, mode, billingMonth, studyIds } = body;
-
-    if (!clientId || !mode) return NextResponse.json({ error: "clientId and mode are required" }, { status: 400 });
-
+    const { clientId, mode, billingMonth, studyIds } = validatedData!;
     const store = makeSupabaseIdempotencyStore(adminClient);
     
     const result = await withIdempotency(idempotencyKey, async () => {
