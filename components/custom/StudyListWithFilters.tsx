@@ -15,7 +15,6 @@ import {
 import { Search } from "lucide-react";
 import StudyListSkeleton from "@/components/custom/skeletons/StudyListSkeleton";
 import EmptyState from "@/components/custom/EmptyState";
-import { decrypt } from "@/lib/encryption";
 
 interface StudyListWithFiltersProps {
   studies: Study[];
@@ -76,7 +75,7 @@ export default function StudyListWithFilters({
     const normalizedQuery = searchQuery.trim().toLowerCase();
     if (normalizedQuery) {
       result = result.filter((s) =>
-        decrypt(s.patient_reference).toLowerCase().includes(normalizedQuery),
+        s.patient_reference.toLowerCase().includes(normalizedQuery),
       );
     }
 

@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import type { ReportBatchItem, StudyMatch } from "@/hooks/useBatchReportUpload";
 import { formatFileSize } from "@/lib/utils";
-import { decrypt } from "@/lib/encryption";
 
 interface ReportMatchRowProps {
   item: ReportBatchItem;
@@ -163,7 +162,7 @@ export function ReportMatchRow({
       {item.matchedStudy && item.uploadState === "idle" && (
         <div className="bg-white rounded-lg border border-gray-100 px-3 py-2 text-xs text-gray-700">
           <span className="font-medium">
-            {decrypt(item.matchedStudy.patient_reference)}
+            {item.matchedStudy.patient_reference}
           </span>
           <span className="text-gray-400 ml-2">
             {item.matchedStudy.study_type} ·{" "}
@@ -234,7 +233,7 @@ export function ReportMatchRow({
             className="text-xs text-amber-800 cursor-pointer leading-relaxed"
           >
             Je confirme écraser le rapport existant pour l&apos;étude{" "}
-            <strong>{decrypt(item.matchedStudy?.patient_reference || "")}</strong>.
+            <strong>{item.matchedStudy?.patient_reference}</strong>.
           </Label>
         </div>
       )}
@@ -242,7 +241,7 @@ export function ReportMatchRow({
       {/* Completed summary */}
       {isCompleted && item.matchedStudy && (
         <p className="text-xs text-green-700">
-          Report uploaded → {decrypt(item.matchedStudy.patient_reference)} · study marked
+          Report uploaded → {item.matchedStudy.patient_reference} · study marked
           as <strong>completed</strong>
         </p>
       )}

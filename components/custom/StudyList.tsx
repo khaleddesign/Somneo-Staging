@@ -8,7 +8,6 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { decrypt } from "@/lib/encryption";
 
 const priorityColors = {
   low: "bg-gray-200 text-gray-700",
@@ -137,7 +136,7 @@ export const StudyList: FC<StudyListProps> = ({
       headers.join(","),
       ...toExport.map((s) =>
         [
-          decrypt(s.patient_reference),
+          s.patient_reference,
           s.study_type,
           s.priority,
           s.status,
@@ -258,8 +257,8 @@ export const StudyList: FC<StudyListProps> = ({
       "Status",
       "Submission",
     ];
-    const tableRows = toExport.map((s: Study) => [
-      decrypt(s.patient_reference),
+    const tableRows = toExport.map((s) => [
+      s.patient_reference,
       s.study_type,
       s.priority ? s.priority.toUpperCase() : "N/A",
       s.status.replace("_", " ").toUpperCase(),
@@ -503,11 +502,11 @@ export const StudyList: FC<StudyListProps> = ({
                     onCheckedChange={(checked) =>
                       handleSelect(study.id, checked as boolean)
                     }
-                    aria-label={`Select study ${decrypt(study.patient_reference)}`}
+                    aria-label={`Select study ${study.patient_reference}`}
                   />
                 </td>
                 <td className="px-3 py-3 font-body text-sm text-midnight">
-                  {decrypt(study.patient_reference)}
+                  {study.patient_reference}
                 </td>
                 {showOwner && (
                   <td className="px-3 py-3 font-body text-sm text-gray-600">
@@ -615,7 +614,7 @@ export const StudyList: FC<StudyListProps> = ({
                       study.status !== "termine" && (
                         <AssignReportPopover
                           studyId={study.id}
-                          studyPatientRef={decrypt(study.patient_reference)}
+                          studyPatientRef={study.patient_reference}
                           onSuccess={() => onAssigned?.()}
                         />
                       )}

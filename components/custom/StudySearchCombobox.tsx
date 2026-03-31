@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Loader2, Search } from "lucide-react";
 import type { StudyMatch } from "@/hooks/useBatchReportUpload";
-import { decrypt } from "@/lib/encryption";
 
 interface StudySearchComboboxProps {
   onSelect: (study: StudyMatch) => void;
@@ -84,7 +83,7 @@ export function StudySearchCombobox({
 
   function handleSelect(study: StudyMatch) {
     setOpen(false);
-    setQuery(decrypt(study.patient_reference));
+    setQuery(study.patient_reference);
     onSelect(study);
   }
 
@@ -132,7 +131,7 @@ export function StudySearchCombobox({
                 onClick={() => handleSelect(study)}
               >
                 <span className="text-sm font-medium text-gray-900">
-                  {decrypt(study.patient_reference)}
+                  {study.patient_reference}
                 </span>
                 <span className="text-xs text-gray-400 ml-2">
                   {study.study_type} · {formatDate(study.submitted_at)}

@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { decrypt } from "@/lib/encryption";
 
 /**
  * GET /api/studies/search
@@ -71,7 +72,7 @@ export async function GET(req: NextRequest) {
 
     const studies = (data ?? []).map((s) => ({
       id: s.id,
-      patient_reference: s.patient_reference,
+      patient_reference: decrypt(s.patient_reference),
       study_type: s.study_type,
       status: s.status,
       submitted_at: s.submitted_at,
