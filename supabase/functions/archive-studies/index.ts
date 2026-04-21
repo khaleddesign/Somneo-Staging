@@ -1,24 +1,32 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
+import { S3Client, HeadObjectCommand } from 'npm:@aws-sdk/client-s3@3'
 
-Deno.serve(async (req) => {
+Deno.serve(async (_req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
+    const r2AccountId = Deno.env.get('R2_ACCOUNT_ID') || ''
+    const r2AccessKey = Deno.env.get('R2_ACCESS_KEY_ID') || ''
+    const r2SecretKey = Deno.env.get('R2_SECRET_ACCESS_KEY') || ''
+    const r2Bucket = Deno.env.get('R2_BUCKET_NAME') || ''
 
     if (!supabaseUrl || !serviceRoleKey) {
       return new Response(
         JSON.stringify({ error: 'Missing Supabase configuration' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
       )
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey)
+    const r2 = new S3Client({
+      region: 'auto',
+      endpoint: `https://${r2AccountId}.r2.cloudflarestorage.com`,
+      credentials: { accessKeyId: r2AccessKey, secretAccessKey: r2SecretKey },
+    })
 
-    // Calculate date 30 days ago
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    // Fetch studies eligible for archival
     const { data: studies, error: fetchErr } = await admin
       .from('studies')
       .select('id, file_path')
@@ -28,48 +36,50 @@ Deno.serve(async (req) => {
       .is('archived_at', null)
 
     if (fetchErr) {
-      console.error('Error fetching studies:', fetchErr)
       return new Response(
         JSON.stringify({ error: fetchErr.message }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } }
+        { status: 500, headers: { 'Content-Type': 'application/json' } },
       )
     }
 
     const errors: string[] = []
     let archived = 0
+    let skippedNotInR2 = 0
 
     for (const study of studies || []) {
+      if (!study.file_path) continue
+
       try {
-        // Parse file_path to get bucket and path
-        if (study.file_path) {
-          const parts = study.file_path.split('/')
-          const bucket = parts[0] || 'studies-files'
-          const filePath = parts.slice(1).join('/')
-
-          if (filePath) {
-            // Delete file from storage
-            const { error: deleteErr } = await admin.storage
-              .from(bucket)
-              .remove([filePath])
-
-            if (deleteErr) {
-              console.warn(`Warning deleting file ${study.id}:`, deleteErr)
-              // Continue even if delete fails
-            }
-          }
+        // Only delete from Supabase Storage if confirmed backed up in R2.
+        // file_path is the path within the study-files bucket (no bucket prefix).
+        const r2Key = `study-files/${study.file_path}`
+        let backedUp = false
+        try {
+          await r2.send(new HeadObjectCommand({ Bucket: r2Bucket, Key: r2Key }))
+          backedUp = true
+        } catch (e: unknown) {
+          const err = e as { name?: string; $metadata?: { httpStatusCode?: number } }
+          if (err.name !== 'NotFound' && err.$metadata?.httpStatusCode !== 404) throw e
         }
 
-        // Mark as archived
+        if (!backedUp) {
+          console.warn(`[archive-studies] Skipping ${study.id} — not yet in R2`)
+          skippedNotInR2++
+          continue
+        }
+
+        // FILE DELETION DISABLED — waiting for R2 backup confirmation.
+        // To re-enable: uncomment the block below and remove this comment.
+        // const { error: deleteErr } = await admin.storage.from('study-files').remove([study.file_path])
+        // if (deleteErr) console.warn(`[archive-studies] Storage delete failed for ${study.id}:`, deleteErr)
+
         const { error: updateErr } = await admin
           .from('studies')
-          .update({
-            file_path: null,
-            archived_at: new Date().toISOString(),
-          })
+          .update({ file_path: null, archived_at: new Date().toISOString() })
           .eq('id', study.id)
 
         if (updateErr) {
-          errors.push(`Error archiving study ${study.id}: ${updateErr.message}`)
+          errors.push(`DB update failed for study ${study.id}: ${updateErr.message}`)
         } else {
           archived++
         }
@@ -81,20 +91,14 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        archived,
-        errors,
-        message: `${archived} file(s) archived`,
-      }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } }
+      JSON.stringify({ success: true, archived, skippedNotInR2, errors }),
+      { status: 200, headers: { 'Content-Type': 'application/json' } },
     )
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.error('Archive function error:', msg)
     return new Response(
       JSON.stringify({ error: msg }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } }
+      { status: 500, headers: { 'Content-Type': 'application/json' } },
     )
   }
 })

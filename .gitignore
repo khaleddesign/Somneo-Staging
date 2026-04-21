@@ -43,6 +43,9 @@ next-env.d.ts
 # Playwright
 test-results/
 playwright-report/
+tests/e2e/results/
+tests/e2e/report/
+tests/e2e/screenshots/
 
 # Fichiers SQL temporaires
 tmp_*.sql

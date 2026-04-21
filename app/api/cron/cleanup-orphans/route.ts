@@ -65,23 +65,13 @@ export async function GET(req: Request) {
       });
     }
 
-    // 4. Delete orphan files in one batch call
-    const { error: deleteError } = await admin.storage
-      .from(BUCKET)
-      .remove(orphanPaths);
-
-    if (deleteError) {
-      return NextResponse.json(
-        { error: "Storage delete error", paths: orphanPaths },
-        { status: 500 },
-      );
-    }
-
+    // FILE DELETION DISABLED — waiting for R2 backup confirmation.
+    // Re-enable once backup-r2 Edge Function is verified working.
     return NextResponse.json({
-      success: true,
-      deleted: orphanPaths.length,
+      disabled: true,
+      reason: "Pending R2 backup verification",
+      would_delete: orphanPaths.length,
       paths: orphanPaths,
-      timestamp: new Date().toISOString(),
     });
   } catch (err) {
     console.error("[CRON cleanup-orphans] Fatal error:", err);

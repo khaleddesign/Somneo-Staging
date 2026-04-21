@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { decrypt } from "@/lib/encryption";
 import StudyActions from "@/components/custom/StudyActions";
 import StudyComments from "@/components/custom/StudyComments";
@@ -28,13 +29,18 @@ export default async function AgentStudyDetail({
 }) {
   const { id } = await params;
 
+  // Auth check via session client (RLS-aware)
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return notFound();
 
-  const { data: profile } = await supabase
+  // Use admin client for data queries — agents need access to all studies,
+  // not just the ones assigned to them (RLS restricts this otherwise).
+  const admin = createAdminClient();
+
+  const { data: profile } = await admin
     .from("profiles")
     .select("role, full_name")
     .eq("id", user.id)
@@ -42,7 +48,7 @@ export default async function AgentStudyDetail({
 
   if (!profile || !["agent", "admin"].includes(profile.role)) return notFound();
 
-  const { data: study, error } = await supabase
+  const { data: study, error } = await admin
     .from("studies")
     .select("*, profiles!studies_client_id_fkey(full_name, email)")
     .eq("id", id)
