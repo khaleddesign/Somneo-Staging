@@ -105,7 +105,7 @@ const QUERIES = [
 ] as const
 
 const PAGE_SIZE = 5
-const TIME_LIMIT_MS = 7_500
+const TIME_LIMIT_MS = 55_000
 
 Deno.serve(async (req) => {
   const cronSecret = Deno.env.get('CRON_SECRET')
