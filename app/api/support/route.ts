@@ -9,6 +9,10 @@ interface Body {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
+function escapeHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+
 export async function POST(req: Request) {
   try {
     const body: Body = await req.json();
@@ -46,17 +50,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const userName = profile?.full_name || "SomnoConnect User";
+    const userName = escapeHtml(profile?.full_name || "SomnoConnect User");
+    const safeEmail   = escapeHtml(userEmail);
+    const safeSubject = escapeHtml(subject);
+    const safeMessage = escapeHtml(message).replace(/\n/g, "<br />");
 
     const supportEmail = await resend.emails.send({
       from: "no-reply@somnoventis.com",
       to: "contact@somnoventis.com",
       subject: `[SomnoConnect Support] ${subject}`,
       html: `
-        <p><strong>From:</strong> ${userName} (${userEmail})</p>
-        <p><strong>Subject:</strong> ${subject}</p>
+        <p><strong>From:</strong> ${userName} (${safeEmail})</p>
+        <p><strong>Subject:</strong> ${safeSubject}</p>
         <p><strong>Message:</strong></p>
-        <p>${message.replace(/\n/g, "<br />")}</p>
+        <p>${safeMessage}</p>
       `,
     });
 
@@ -75,8 +82,8 @@ export async function POST(req: Request) {
       html: `
         <p>Hello ${userName},</p>
         <p>We have received your support request:</p>
-        <p><strong>${subject}</strong></p>
-        <p>${message.replace(/\n/g, "<br />")}</p>
+        <p><strong>${safeSubject}</strong></p>
+        <p>${safeMessage}</p>
         <p>Our team will get back to you shortly.</p>
       `,
     });
