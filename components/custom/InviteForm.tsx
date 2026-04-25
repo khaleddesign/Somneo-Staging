@@ -14,7 +14,7 @@ interface InviteFormProps {
 export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
-  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [invited, setInvited] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +22,7 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setInviteLink(null);
+    setInvited(false);
 
     const res = await fetch("/api/auth/invite", {
       method: "POST",
@@ -42,9 +42,7 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
       return;
     }
 
-    setInviteLink(
-      `${process.env.NEXT_PUBLIC_APP_URL}/auth/signup?token=${data.token}`,
-    );
+    setInvited(true);
     setEmail("");
     setFullName("");
     setLoading(false);
@@ -89,13 +87,10 @@ export default function InviteForm({ onInvite, onSuccess }: InviteFormProps) {
             {loading ? "Sending..." : "Send invitation"}
           </Button>
         </form>
-        {inviteLink && (
+        {invited && (
           <div className="mt-4 p-3 bg-green-50 rounded-md">
             <p className="text-sm text-green-700 font-medium">
-              Lien d'invitation :
-            </p>
-            <p className="text-xs text-green-600 break-all mt-1">
-              {inviteLink}
+              Invitation envoyée — le lien d'activation a été transmis par email.
             </p>
           </div>
         )}

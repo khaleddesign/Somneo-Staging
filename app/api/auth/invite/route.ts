@@ -66,8 +66,7 @@ export async function POST(req: Request) {
       created_by: userId,
     });
 
-    // Retourner le token UNIQUEMENT pour que l'admin puisse l'afficher dans l'interface UI
-    return NextResponse.json({ success: true, token: result.token });
+    return NextResponse.json({ success: true });
   } catch (err: unknown) {
     const message =
       err instanceof Error ? err.message : "Internal server error";

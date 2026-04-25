@@ -100,7 +100,7 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, token });
+    return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error("[POST /api/invite] unhandled error", error);
     return NextResponse.json(

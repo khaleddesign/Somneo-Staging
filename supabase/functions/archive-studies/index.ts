@@ -1,7 +1,17 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { S3Client, HeadObjectCommand } from 'npm:@aws-sdk/client-s3@3'
 
-Deno.serve(async (_req) => {
+Deno.serve(async (req) => {
+  const cronSecret = Deno.env.get('CRON_SECRET')
+  if (!cronSecret) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+  }
+  const bearer = req.headers.get('authorization') === `Bearer ${cronSecret}`
+  const custom  = req.headers.get('x-cron-secret') === cronSecret
+  if (!bearer && !custom) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+  }
+
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''

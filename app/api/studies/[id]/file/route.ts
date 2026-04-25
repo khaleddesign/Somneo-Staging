@@ -17,6 +17,12 @@ export async function PATCH(
       );
     }
 
+    // Prevent path traversal: must be <uuid>/<filename>.<allowed-ext>
+    const FILE_PATH_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/[\w.-]+\.(edf|bdf|zip)$/i;
+    if (!FILE_PATH_RE.test(file_path)) {
+      return NextResponse.json({ error: "Invalid file path" }, { status: 400 });
+    }
+
     const supabase = await createClient();
     const { data: userData, error: userErr } = await supabase.auth.getUser();
     if (userErr || !userData?.user) {
