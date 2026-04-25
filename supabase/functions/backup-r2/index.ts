@@ -98,6 +98,14 @@ async function streamToR2(
 
 // ---------------------------------------------------------------------------
 
+const ALLOWED_ORIGIN = 'https://app.somnoventis.com'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-cron-secret, content-type',
+}
+
 const QUERIES = [
   { bucket: 'study-files',    table: 'studies',  column: 'file_path',   stripPrefix: null as string | null },
   { bucket: 'reports-files',  table: 'studies',  column: 'report_path', stripPrefix: 'reports-files/' },
@@ -108,12 +116,16 @@ const PAGE_SIZE = 5
 const TIME_LIMIT_MS = 55_000
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { status: 200, headers: corsHeaders })
+  }
+
   const cronSecret = Deno.env.get('CRON_SECRET')
   if (!cronSecret) return respond({ error: 'Unauthorized' }, 401)
 
   // Accept either:
   //   Authorization: Bearer <CRON_SECRET>  (direct curl / legacy)
-  //   x-cron-secret: <CRON_SECRET>         (from /api/backup route via service role key)
+  //   x-cron-secret: <CRON_SECRET>         (from pg_cron via vault secret)
   const bearer = req.headers.get('authorization') === `Bearer ${cronSecret}`
   const custom = req.headers.get('x-cron-secret') === cronSecret
   if (!bearer && !custom) return respond({ error: 'Unauthorized' }, 401)
@@ -222,5 +234,8 @@ Deno.serve(async (req) => {
 })
 
 function respond(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  })
 }

@@ -1,30 +1,42 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4'
 import { S3Client, HeadObjectCommand } from 'npm:@aws-sdk/client-s3@3'
 
+const ALLOWED_ORIGIN = 'https://app.somnoventis.com'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Allow-Headers': 'authorization, x-cron-secret, content-type',
+}
+
+const json = (body: unknown, status = 200) =>
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  })
+
 Deno.serve(async (req) => {
-  const cronSecret = Deno.env.get('CRON_SECRET')
-  if (!cronSecret) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { status: 200, headers: corsHeaders })
   }
+
+  const cronSecret = Deno.env.get('CRON_SECRET')
+  if (!cronSecret) return json({ error: 'Unauthorized' }, 401)
+
   const bearer = req.headers.get('authorization') === `Bearer ${cronSecret}`
   const custom  = req.headers.get('x-cron-secret') === cronSecret
-  if (!bearer && !custom) {
-    return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { 'Content-Type': 'application/json' } })
-  }
+  if (!bearer && !custom) return json({ error: 'Unauthorized' }, 401)
 
   try {
-    const supabaseUrl = Deno.env.get('SUPABASE_URL') || ''
+    const supabaseUrl    = Deno.env.get('SUPABASE_URL') || ''
     const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || ''
-    const r2AccountId = Deno.env.get('R2_ACCOUNT_ID') || ''
-    const r2AccessKey = Deno.env.get('R2_ACCESS_KEY_ID') || ''
-    const r2SecretKey = Deno.env.get('R2_SECRET_ACCESS_KEY') || ''
-    const r2Bucket = Deno.env.get('R2_BUCKET_NAME') || ''
+    const r2AccountId    = Deno.env.get('R2_ACCOUNT_ID') || ''
+    const r2AccessKey    = Deno.env.get('R2_ACCESS_KEY_ID') || ''
+    const r2SecretKey    = Deno.env.get('R2_SECRET_ACCESS_KEY') || ''
+    const r2Bucket       = Deno.env.get('R2_BUCKET_NAME') || ''
 
     if (!supabaseUrl || !serviceRoleKey) {
-      return new Response(
-        JSON.stringify({ error: 'Missing Supabase configuration' }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
-      )
+      return json({ error: 'Missing Supabase configuration' }, 500)
     }
 
     const admin = createClient(supabaseUrl, serviceRoleKey)
@@ -45,12 +57,7 @@ Deno.serve(async (req) => {
       .not('file_path', 'is', null)
       .is('archived_at', null)
 
-    if (fetchErr) {
-      return new Response(
-        JSON.stringify({ error: fetchErr.message }),
-        { status: 500, headers: { 'Content-Type': 'application/json' } },
-      )
-    }
+    if (fetchErr) return json({ error: fetchErr.message }, 500)
 
     const errors: string[] = []
     let archived = 0
@@ -60,7 +67,7 @@ Deno.serve(async (req) => {
       if (!study.file_path) continue
 
       try {
-        // Only delete from Supabase Storage if confirmed backed up in R2.
+        // Only archive if the file is confirmed backed up in R2.
         // file_path is the path within the study-files bucket (no bucket prefix).
         const r2Key = `study-files/${study.file_path}`
         let backedUp = false
@@ -100,15 +107,9 @@ Deno.serve(async (req) => {
       }
     }
 
-    return new Response(
-      JSON.stringify({ success: true, archived, skippedNotInR2, errors }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
-    )
+    return json({ success: true, archived, skippedNotInR2, errors })
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    return new Response(
-      JSON.stringify({ error: msg }),
-      { status: 500, headers: { 'Content-Type': 'application/json' } },
-    )
+    return json({ error: msg }, 500)
   }
 })
