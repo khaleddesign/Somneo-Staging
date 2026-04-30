@@ -112,7 +112,7 @@ const QUERIES = [
   { bucket: 'invoices-files', table: 'invoices', column: 'pdf_path',    stripPrefix: null },
 ] as const
 
-const PAGE_SIZE = 5
+const PAGE_SIZE = 50
 const TIME_LIMIT_MS = 55_000
 
 Deno.serve(async (req) => {
@@ -176,23 +176,32 @@ Deno.serve(async (req) => {
         await saveCheckpoint(); continue
       }
 
-      for (const row of rows as Record<string, string | null>[]) {
+      if (Date.now() - startTime >= TIME_LIMIT_MS) break
+
+      // Build candidates for this page
+      const candidates = (rows as Record<string, string | null>[])
+        .map(row => {
+          const raw = row[q.column]
+          if (!raw) return null
+          const storagePath = q.stripPrefix && raw.startsWith(q.stripPrefix) ? raw.slice(q.stripPrefix.length) : raw
+          return { storagePath, r2Key: `${q.bucket}/${storagePath}` }
+        })
+        .filter((c): c is { storagePath: string; r2Key: string } => c !== null)
+
+      // Parallel HEAD checks for the whole page — ~50x faster than sequential
+      const existsFlags = await Promise.all(
+        candidates.map(c => existsInR2(creds, c.r2Key).catch(() => false))
+      )
+
+      for (let i = 0; i < candidates.length; i++) {
         if (Date.now() - startTime >= TIME_LIMIT_MS) break outer
+        if (existsFlags[i]) continue
 
-        const raw = row[q.column]
-        if (!raw) continue
-
-        const storagePath = q.stripPrefix && raw.startsWith(q.stripPrefix) ? raw.slice(q.stripPrefix.length) : raw
-        const r2Key = `${q.bucket}/${storagePath}`
-
+        const { storagePath, r2Key } = candidates[i]
         try {
-          if (await existsInR2(creds, r2Key)) continue
-
-          // Get a short-lived signed download URL — stream to R2 without buffering
           const { data: signed, error: signErr } = await admin.storage.from(q.bucket).createSignedUrl(storagePath, 120)
           if (signErr || !signed?.signedUrl) { failedThisRun++; continue }
 
-          // Detect content type from extension
           const ext = storagePath.split('.').pop()?.toLowerCase() ?? ''
           const contentType = ext === 'pdf' ? 'application/pdf' : ext === 'zip' ? 'application/zip' : 'application/octet-stream'
 

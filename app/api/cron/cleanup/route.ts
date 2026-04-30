@@ -28,6 +28,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // FILE DELETION DISABLED — waiting for R2 backup to be fully verified.
+    // Re-enable once nightly backup-r2 runs are confirmed stable.
+    return NextResponse.json({
+      disabled: true,
+      reason: "Pending R2 backup verification",
+    });
+
     const admin = createAdminClient();
 
     const deadline = new Date();
