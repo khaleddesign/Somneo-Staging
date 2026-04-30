@@ -51,7 +51,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
-    if (!expiredStudies || expiredStudies.length === 0) {
+    if (!expiredStudies?.length) {
       return NextResponse.json({ success: true, cleanedFiles: 0, skippedNotInR2: 0 });
     }
 
