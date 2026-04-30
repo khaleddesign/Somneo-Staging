@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     const parsed = inviteSchema.safeParse(raw);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues[0]?.message ?? "Invalid data" },
+        { error: "Bad Request" },
         { status: 400 },
       );
     }
