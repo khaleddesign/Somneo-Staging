@@ -59,7 +59,7 @@ export async function GET(req: Request) {
     let failedCount = 0;
     let skippedCount = 0;
 
-    for (const study of expiredStudies) {
+    for (const study of (expiredStudies ?? [])) {
       if (!study.file_path) continue;
 
       try {
