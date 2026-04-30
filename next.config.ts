@@ -4,23 +4,8 @@ import { withSentryConfig } from '@sentry/nextjs'
 
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts')
 
-const SUPABASE_HOST = "wzvvdbbdnlhjqpydqvur.supabase.co";
-
-const csp = [
-  "default-src 'self'",
-  // Next.js App Router requires unsafe-inline for hydration scripts.
-  // unsafe-eval only included in dev for Turbopack hot-reload.
-  `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
-  "font-src 'self'",
-  `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://*.sentry.io`,
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-].join("; ");
-
+// CSP is set dynamically per-request by middleware.ts (nonce-based).
+// Only static headers that don't need per-request values live here.
 const securityHeaders = [
   { key: "X-DNS-Prefetch-Control",      value: "on" },
   { key: "Strict-Transport-Security",    value: "max-age=63072000; includeSubDomains; preload" },
@@ -30,7 +15,6 @@ const securityHeaders = [
   { key: "Permissions-Policy",           value: "camera=(), microphone=(), geolocation=(), payment=()" },
   { key: "Cross-Origin-Opener-Policy",   value: "same-origin" },
   { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
-  { key: "Content-Security-Policy",      value: csp },
 ];
 
 const nextConfig: NextConfig = {

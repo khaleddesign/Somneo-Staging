@@ -26,15 +26,38 @@ function getClientIp(req: NextRequest): string {
   )
 }
 
+const SUPABASE_HOST = "wzvvdbbdnlhjqpydqvur.supabase.co";
+
+function buildCsp(nonce: string): string {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${
+      process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : ""
+    }`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob:",
+    "font-src 'self'",
+    `connect-src 'self' https://${SUPABASE_HOST} wss://${SUPABASE_HOST} https://*.sentry.io`,
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join("; ");
+}
+
 export async function proxy(request: NextRequest) {
   // Capture nextUrl values before any request object mutation
   const { pathname } = request.nextUrl
   const origin = request.headers.get('origin') ?? ''
 
-  // Drop manual CSP to avoid blocking Next.js React hydration
+  // ── CSP nonce ─────────────────────────────────────────────────────
+  // Generate a fresh nonce per request; forwarded to RSC via x-nonce header
+  const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+  const csp = buildCsp(nonce)
 
   // Build forwarded headers for downstream RSC access
   const requestHeaders = new Headers(request.headers)
+  requestHeaders.set('x-nonce', nonce)
 
   // ── Correlation ID ────────────────────────────────────────────────
   // Propagate X-Request-ID from upstream or generate one per request
@@ -82,8 +105,8 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Session Supabase ─────────────────────────────────────────────
-  // Pass the original NextRequest to preserve POST bodies
-  let supabaseResponse = NextResponse.next({ request })
+  // Forward requestHeaders (nonce + correlation-id) to server components
+  let supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -95,7 +118,7 @@ export async function proxy(request: NextRequest) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           )
-          supabaseResponse = NextResponse.next({ request })
+          supabaseResponse = NextResponse.next({ request: { headers: requestHeaders } })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, {
               ...options,
@@ -164,6 +187,7 @@ export async function proxy(request: NextRequest) {
     }
     return NextResponse.redirect(new URL('/dashboard/client', request.url))
   }
+  supabaseResponse.headers.set('content-security-policy', csp)
   return supabaseResponse
 }
 

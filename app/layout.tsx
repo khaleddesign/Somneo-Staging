@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Cormorant_Garamond, Syne, DM_Sans } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
@@ -34,10 +35,11 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
   const messages = await getMessages();
 
   return (
-    <html lang="en">
+    <html lang="en" nonce={nonce}>
       <body
         className={`${cormorantGaramond.variable} ${syne.variable} ${dmSans.variable} antialiased bg-sand text-midnight`}
       >
