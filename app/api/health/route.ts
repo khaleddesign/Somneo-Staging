@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function GET() {
+export async function GET(req: Request) {
+  const token = req.headers.get('x-health-token')
+  if (!token || token !== process.env.HEALTH_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   const checks = {
     api: true,
     database: false,
