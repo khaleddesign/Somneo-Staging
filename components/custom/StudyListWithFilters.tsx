@@ -238,8 +238,9 @@ export default function StudyListWithFilters({
         )}
 
         {!loading && !error && filteredStudies.length > 0 && (
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex gap-2">
+          <div className="flex items-center mt-4 gap-2">
+            {/* Left: first-page + previous — fixed width so center stays centered */}
+            <div className="flex gap-2 w-[120px] shrink-0">
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage(1)}
@@ -256,18 +257,24 @@ export default function StudyListWithFilters({
                 Previous
               </Button>
             </div>
-            <p className="text-sm text-gray-500">
+
+            {/* Center */}
+            <p className="flex-1 text-center text-sm text-gray-500">
               Page {currentPage} sur {totalPages}
             </p>
-            <Button
-              variant="outline"
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(totalPages, prev + 1))
-              }
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </Button>
+
+            {/* Right: next — same fixed width for symmetry */}
+            <div className="flex justify-end w-[120px] shrink-0">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+                }
+                disabled={currentPage === totalPages}
+              >
+                Next
+              </Button>
+            </div>
           </div>
         )}
       </div>
