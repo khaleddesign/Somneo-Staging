@@ -239,13 +239,23 @@ export default function StudyListWithFilters({
 
         {!loading && !error && filteredStudies.length > 0 && (
           <div className="flex items-center justify-between mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-              disabled={currentPage === 1}
-            >
-              Previous
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                title="First page"
+              >
+                «
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </Button>
+            </div>
             <p className="text-sm text-gray-500">
               Page {currentPage} sur {totalPages}
             </p>

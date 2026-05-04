@@ -31,7 +31,7 @@ function AgentDashboardContent() {
     loading: studiesLoading,
     error: studiesError,
     refresh,
-  } = useStudies();
+  } = useStudies(500, undefined, true);
 
   const searchParams = useSearchParams();
   const router = useRouter();

@@ -13,7 +13,7 @@ export interface PaginationParams {
 }
 
 const DEFAULT_LIMIT = 50;
-const MAX_LIMIT = 100;
+const MAX_LIMIT = 500;
 const MIN_LIMIT = 1;
 
 export function parsePaginationParams(

@@ -1,5 +1,5 @@
 "use client"
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { buildStudiesUrl } from '@/lib/studies/studiesUrlBuilder'
 
 export interface Study {
@@ -36,10 +36,14 @@ export interface UseStudiesResult {
 /**
  * Fetches studies from /api/studies/list with cursor-based pagination.
  *
- * Default limit: 100 (covers all active studies for most deployments).
- * Existing consumers are unaffected — they receive the same { studies, loading, error, refresh }.
+ * Pass fetchAll=true to automatically load all pages in sequence (agent dashboard use case).
+ * Each page uses the configured limit (max 500 per API call).
  */
-export function useStudies(limit = 100, scope?: 'mine' | 'institution'): UseStudiesResult {
+export function useStudies(
+  limit = 100,
+  scope?: 'mine' | 'institution',
+  fetchAll = false,
+): UseStudiesResult {
   const [studies, setStudies] = useState<Study[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -70,11 +74,51 @@ export function useStudies(limit = 100, scope?: 'mine' | 'institution'): UseStud
     [limit, scope]
   )
 
-  useEffect(() => {
-    fetchPage(null, false)
-  }, [fetchPage])
+  // Auto-load all pages when fetchAll=true, sequentially following cursors.
+  const fetchAllPages = useCallback(async () => {
+    setLoading(true)
+    setError(null)
+    const all: Study[] = []
+    let cursor: string | null = null
+    try {
+      do {
+        const url = buildStudiesUrl({ limit, scope, cursor })
+        const res = await fetch(url)
+        if (!res.ok) throw new Error('Erreur lors du chargement des études')
+        const data = await res.json()
+        all.push(...(data.studies ?? []))
+        cursor = data.nextCursor ?? null
+      } while (cursor)
+      setStudies(all)
+      setNextCursor(null)
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : 'Erreur lors du chargement des études'
+      setError(message)
+    } finally {
+      setLoading(false)
+    }
+  }, [limit, scope])
 
-  const refresh = useCallback(() => fetchPage(null, false), [fetchPage])
+  // Keep a stable ref so the effect doesn't re-run when callbacks change identity.
+  const fetchAllRef = useRef(fetchAllPages)
+  fetchAllRef.current = fetchAllPages
+  const fetchPageRef = useRef(fetchPage)
+  fetchPageRef.current = fetchPage
+
+  useEffect(() => {
+    if (fetchAll) {
+      fetchAllRef.current()
+    } else {
+      fetchPageRef.current(null, false)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchAll])
+
+  const refresh = useCallback(() => {
+    if (fetchAll) fetchAllPages()
+    else fetchPage(null, false)
+  }, [fetchAll, fetchAllPages, fetchPage])
+
   const loadMore = useCallback(() => {
     if (nextCursor) fetchPage(nextCursor, true)
   }, [fetchPage, nextCursor])
