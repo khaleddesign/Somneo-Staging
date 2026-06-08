@@ -107,8 +107,8 @@ const corsHeaders = {
 }
 
 const QUERIES = [
+  { bucket: 'reports-files',  table: 'studies',  column: 'report_path', stripPrefix: 'reports-files/' as string | null },
   { bucket: 'study-files',    table: 'studies',  column: 'file_path',   stripPrefix: null as string | null },
-  { bucket: 'reports-files',  table: 'studies',  column: 'report_path', stripPrefix: 'reports-files/' },
   { bucket: 'invoices-files', table: 'invoices', column: 'pdf_path',    stripPrefix: null },
 ] as const
 
@@ -193,8 +193,14 @@ Deno.serve(async (req) => {
         candidates.map(c => existsInR2(creds, c.r2Key).catch(() => false))
       )
 
+      const pageStart = queryOffset
       for (let i = 0; i < candidates.length; i++) {
-        if (Date.now() - startTime >= TIME_LIMIT_MS) break outer
+        if (Date.now() - startTime >= TIME_LIMIT_MS) {
+          // Save exact mid-page position so next run doesn't re-process from pageStart
+          queryOffset = pageStart + i
+          await saveCheckpoint()
+          break outer
+        }
         if (existsFlags[i]) continue
 
         const { storagePath, r2Key } = candidates[i]
@@ -207,6 +213,9 @@ Deno.serve(async (req) => {
 
           await streamToR2(creds, r2Key, signed.signedUrl, contentType)
           copiedThisRun++; totalCopied++
+          // Save after each upload so mid-page progress survives a timeout
+          queryOffset = pageStart + i + 1
+          await saveCheckpoint()
         } catch (e) {
           const msg = e instanceof Error ? e.message : String(e)
           console.error('[backup-r2] error:', r2Key, msg)
@@ -215,7 +224,7 @@ Deno.serve(async (req) => {
         }
       }
 
-      queryOffset += rows.length
+      queryOffset = pageStart + rows.length
       await saveCheckpoint()
     }
 
