@@ -34,6 +34,9 @@ export const studySchema = z.object({
   study_type: z.enum(["PSG", "PV"]),
   priority: z.enum(["low", "medium", "high"]),
   notes: safeText(5000).optional(),
+  file_path: z.string().trim().min(1, "File is required").max(500),
+  file_size_orig: z.number().nonnegative(),
+  checksum: z.string().trim().min(1, "Checksum is required").max(200),
 });
 
 export const inviteSchema = z.object({

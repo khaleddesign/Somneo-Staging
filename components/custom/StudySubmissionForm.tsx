@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { FileUpload } from "@/components/custom/FileUpload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
 
 interface UploadedFileData {
   fileName: string;
@@ -38,7 +37,6 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
   const patientRefError = !!error && !patientRef;
   const studyTypeError = !!error && !studyType;
   const fileError = !!error && !uploadedFile;
-  const supabaseRef = useRef(createClient());
 
   const handleUploadComplete = (data: UploadedFileData) => {
     setUploadedFile(data);
@@ -55,33 +53,29 @@ export function StudySubmissionForm({ onSuccess }: { onSuccess?: () => void }) {
     setError(null);
 
     try {
-      const supabase = supabaseRef.current;
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        setError("Session expired. Please sign in again.");
-        setLoading(false);
-        return;
-      }
-
-      // Create the record in the studies table
-      const { error: insertError } = await supabase.from("studies").insert({
-        client_id: user.id,
-        patient_reference: patientRef,
-        study_type: studyType,
-        priority: priority,
-        status: "en_attente",
-        file_path: uploadedFile.filePath,
-        file_size_orig: uploadedFile.fileSize,
-        checksum: uploadedFile.checksum,
-        notes: notes || null,
-        submitted_at: new Date().toISOString(),
+      const res = await fetch("/api/studies", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          patient_reference: patientRef,
+          study_type: studyType,
+          priority,
+          notes: notes || undefined,
+          file_path: uploadedFile.filePath,
+          file_size_orig: uploadedFile.fileSize,
+          checksum: uploadedFile.checksum,
+        }),
       });
+      const result = await res.json();
 
-      if (insertError) {
-        setError("Error creating study: " + insertError.message);
+      if (!res.ok) {
+        if (res.status === 401) {
+          setError("Session expired. Please sign in again.");
+        } else {
+          setError(
+            "Error creating study: " + (result.error || "Unknown error"),
+          );
+        }
         return;
       }
 

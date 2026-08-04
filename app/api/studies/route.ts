@@ -14,7 +14,15 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
-    const { patient_reference, study_type, notes, priority } = parsed.data;
+    const {
+      patient_reference,
+      study_type,
+      notes,
+      priority,
+      file_path,
+      file_size_orig,
+      checksum,
+    } = parsed.data;
 
     const supabase = await createClient();
     const { data: userData, error: userErr } = await supabase.auth.getUser();
@@ -101,6 +109,9 @@ export async function POST(req: Request) {
         notes: notes ?? "",
         priority,
         status: "en_attente",
+        file_path,
+        file_size_orig,
+        checksum,
       })
       .select("id")
       .single();
